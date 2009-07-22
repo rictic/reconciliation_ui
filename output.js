@@ -42,8 +42,6 @@ function onHideOutputScreen() {
         tripleGetterYielder.cancel();
 }
 
-var triplewriter_service = "http://spreadsheet.rictic.user.dev.freebaseapps.com/"
-
 function encodeLine(arr) {
     var values = [];
     for(var i = 0; i < headers.length; i++){
