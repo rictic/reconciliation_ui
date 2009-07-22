@@ -213,8 +213,7 @@ function renderReconChoices(entity) {
             if (entity.reconResults.length <= numCandidates)
                 return $(".moreButton",template).fadeOut();
             for (var i = numCandidates; i < entity.reconResults.length; i++){
-                var candidate = renderCandidate(entity.reconResults[i], mqlProps, entity).hide().appendTo(tableBody);
-                candidate.fadeIn();
+                var candidate = renderCandidate(entity.reconResults[i], mqlProps, entity).appendTo(tableBody);
                 fetchMqlProps(entity.reconResults[i], entity);
             }
             updateCandidates();
