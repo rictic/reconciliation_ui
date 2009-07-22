@@ -151,12 +151,19 @@
               <h3>Upload your data to Freebase:</h3>
               We've found <span class='triple_count'></span> assertions that you can upload.
               <br>
+              <label for="username">Your Freebase username: </label><input type="text" name="username" value="" id="username"><br>
+              Note: for the moment, you must be logged into freebase.com as this user before you upload or you will get a Forbidden error.<br><br>
+              <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
+              <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
+              
+              <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
               <form action="http://data.labs.freebase.com/freeq/spreadsheet/" target="_blank" method="POST" accept-charset="utf-8">
-                  <label for="user">Your Freebase username: </label><input type="text" name="user" value="/user/" id="user"><br>
+                  <input type='hidden' name='user', value='' id='user'>
                   <input type='hidden' name="action_type" value="LOAD_TRIPLE" id="action_type">
                   <input type="hidden" name="operator" value="/user/spreadsheet_bot" id="operator">
                   <input type="hidden" name="check_params" value="false" id="check_params">
                   <input type="hidden" name="graphport" value="sandbox" id="graphport">
+                  <input type='hidden' name='mdo_info' value='' id='mdo_info'>
                   <input type="hidden" name="payload" value="" id="payload">
                   <input type="submit" value="Upload">
               </form>
@@ -164,9 +171,7 @@
               
               <button class="triplesDisplayButton">Display Triples</button>
               <div>
-                  <pre class='triplesDisplay invisible'>
-                  
-                  </pre>
+                  <pre class='triplesDisplay invisible'></pre>
               </div>
           </div>
       </div>
@@ -339,6 +344,7 @@
              spreadsheetProcessed(beginAutoReconciliation);
          }
          var reconciliationBegun = false;
+         var defaultMDOName = "Spreadsheet Upload about (kind of data)"
          $(document).ready(function() {
              jQuery.ajaxSettings.cache = true; //keeps jquery from inserting cache-busting timecodes into json requests
 
@@ -359,7 +365,19 @@
      	         if (reconciliationBegun)
                      return "You may have unsaved changes.  Make sure to copy your updated spreadsheet or upload your data to Freebase on the Retrieve Your Data tab.";
              };
-             
+             $("#username").suggest({type:"/type/user",
+                       flyout:true, required:"always"})
+                       .bind("fb-select", function(e, data) { 
+                         $("#user")[0].value = data.id;
+                       });
+             $("#mdo_data_source").suggest({type:"/dataworld/information_source",
+                                        flyout:true,type_strict:"should"})
+                                  .bind("fb-select", function(e, data) { 
+                                        $("#mdo_data_source_id")[0].value = data.id;
+                                        updateMdoInfo();
+                                  });
+             $("#mdo_name")[0].value = defaultMDOName;
+             $("#mdo_name").change(updateMdoInfo);
          	 $.historyInit(displayReconChoices);
          	 $(".triplesDisplayButton").click(function(){$(".triplesDisplay").slideToggle()})
          });
@@ -369,6 +387,17 @@
              $("#progressbar").progressbar("value", pctProgress);
              $("#progressbar label").html(pctProgress.toFixed(1) + "%");
              $(".manual_count").html("("+numProperties(manualQueue)+")");
+         }
+
+         function updateMdoInfo() {
+             var mdo_info = {};
+             var name = $("#mdo_name")[0].value;
+             if (name != "" && name != defaultMDOName)
+                mdo_info.name = name;
+             var info_source = $("#mdo_data_source_id")[0].value;
+             if (info_source != "")
+                mdo_info.info_source = info_source;
+             $("#mdo_info")[0].value = JSON.stringify(mdo_info);
          }
 
          var freebase_url = "http://www.freebase.com/";
