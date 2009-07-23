@@ -239,9 +239,7 @@
              });
          }
          function showAmbiguousRowPrompt(startingRowIdx) {
-             var headersHTML = "";
-             for (var i = 0; i < headers.length; i++)
-                 headersHTML += "<th>" + headers[i] + "<\/th>";
+             var headersHTML = "<th>" + $.map(headers,getPropName).join("<\/th><th>") + "<\/th>";
              $("#formatDisambiguation table thead tr.headers").html(headersHTML);
 
              var rowHTML = function(row){
@@ -293,8 +291,9 @@
          }
          function showConfirmationSpreadsheet() {
              var spreadSheetData = {"aoColumns":[], "aaData":[]};
-             for (var i = 0; i < headers.length; i++)
-                 spreadSheetData.aoColumns.push({"sTitle":headers[i]});
+             var columnNames = $.map(headers, getPropName);
+             for (var i = 0; i < columnNames.length; i++)
+                 spreadSheetData.aoColumns.push({"sTitle":columnNames[i]});
              for (var i = 0; i < rows.length; i++){
                  var row = [];
                  for (var j = 0; j < headers.length; j++){

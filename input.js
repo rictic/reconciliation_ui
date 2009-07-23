@@ -285,7 +285,7 @@ function handleMQLPropMetadata(results) {
             result.inverse_property = result.reverse_property || result.master_property;
             mqlMetadata[result.id] = result;
             var idColumn = partsSoFar.concat("id").join(":");
-            if (!isValueProperty(result.id) && !contains(headers,idColumn))
+            if (!isValueProperty(result.id) && !contains(headers,idColumn) && mqlProp != "/type/object/type")
                 headers.push(idColumn);
             if (result.expected_type && mqlMetadata[result.expected_type.id] == undefined)
                 mqlMetadata[result.expected_type.id] = {inverse_property: result.id};
@@ -312,7 +312,7 @@ function objectifyRows(onComplete) {
             }
             
             var meta = mqlMetadata[prop];
-            if (meta == undefined || isValueType(meta.expected_type))
+            if (meta == undefined || isValueType(meta.expected_type) || prop == "/type/object/type")
                 continue;
             var newProp = [];
             for (var i = 0; i < row[prop].length; i++)

@@ -175,12 +175,12 @@ function renderReconChoices(entity) {
     
     var currentRecord = $(".recordVals",template);
     for(var i = 0; i < headers.length; i++) {
-        currentRecord.append(node("label", headers[i] + ":", {"for":idToClass(headers[i])}));
+        currentRecord.append(node("label", getPropName(headers[i]) + ":", {"for":idToClass(headers[i])}));
         currentRecord.append(node("div").append(displayValue(entity.getChainedProperty(headers[i]))));
     }
     
     var tableHeader = $(".reconciliationCandidates table thead", template).empty();
-    var columnHeaders = ["","Image","Names","Types"].concat(mqlProps).concat(["Score"]);
+    var columnHeaders = ["","Image","Name","Type"].concat($.map(mqlProps,getPropName)).concat(["Score"]);
     for (var i = 0; i < columnHeaders.length; i++)
         tableHeader.append(node("th",columnHeaders[i]));
     

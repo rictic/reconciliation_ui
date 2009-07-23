@@ -278,21 +278,29 @@ function concat(arrays) {
 
 function getMqlProperties(headers) {
     return filter(getProperties(headers), function(header) {
-        return !header.match(/(^|:)id$/)
-    });
-}
-
-function getProperties(headers) {
-    return filter(headers, function(header) {
-        if (header.charAt(0) !== "/")
-            return false;
-        var invalidList = ["/type/object/name","/type/object/type","/type/object/id"];
+        var invalidList = ["/type/object/name","/type/object/type","/type/object/id",/(^|:)id$/];
         for (var i = 0; i<invalidList.length; i++){
             if (header.match(invalidList[i]))
                 return false;
         }
         return true;
+    });
+}
+
+function getProperties(headers) {
+    return filter(headers, function(header) {
+        return header.charAt(0) == "/"
     })
+}
+
+function getPropName(complexProp) {
+    if (complexProp.charAt(0) !== "/")
+        return complexProp;
+    var props = complexProp.split(":");
+    var prop = props[props.length-1];
+    if (mqlMetadata[prop] && mqlMetadata[prop].name)
+        return mqlMetadata[prop].name;
+    return complexProp;
 }
 
 /*
