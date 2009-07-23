@@ -152,19 +152,21 @@
               We've found <span class='triple_count'></span> assertions that you can upload.
               <br>
               <label for="username">Your Freebase username: </label><input type="text" name="username" value="" id="username"><br>
-              Note: for the moment, you must be logged into freebase.com as this user before you upload or you will get a Forbidden error.<br><br>
+              <div class='note'>You must be logged into freebase.com as this user before you upload or you will get a Forbidden error.</div>
               <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
               <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
               
+              
               <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
               <form action="http://data.labs.freebase.com/freeq/spreadsheet/" target="_blank" method="POST" accept-charset="utf-8">
-                  <input type='hidden' name='user', value='' id='user'>
+                  <input type='hidden' name='user' value='' id='user'>
                   <input type='hidden' name="action_type" value="LOAD_TRIPLE" id="action_type">
                   <input type="hidden" name="operator" value="/user/spreadsheet_bot" id="operator">
                   <input type="hidden" name="check_params" value="false" id="check_params">
-                  <input type="hidden" name="graphport" value="sandbox" id="graphport">
                   <input type='hidden' name='mdo_info' value='' id='mdo_info'>
                   <input type="hidden" name="payload" value="" id="payload">
+                  Upload to: <label for='sandbox'>Sandbox</label><input type="radio" name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" name="graphport" id='otg' value="otg"><br>
+                  <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
                   <input type="submit" value="Upload">
               </form>
               <br>
@@ -378,7 +380,14 @@
                                   });
              $("#mdo_name")[0].value = defaultMDOName;
              $("#mdo_name").change(updateMdoInfo);
-         	 $.historyInit(displayReconChoices);
+         	 $("input:name='option_layout'").change(function(){
+                 var warning = $("#otg_upload_warning"); 
+                 if (this.value === "otg") 
+                     warning.show(); 
+                 else 
+                     warning.hide();
+             });
+         	 $.historyInit(displayReconChoices);         	 
          	 $(".triplesDisplayButton").click(function(){$(".triplesDisplay").slideToggle()})
          });
 

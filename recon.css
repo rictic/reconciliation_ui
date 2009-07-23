@@ -198,3 +198,13 @@ label.findItem {
 .expandOverflow {
     cursor: pointer;
 }
+
+.note {
+    margin-left: 15px;
+    color:#999;
+}
+
+.warning {
+    margin-left: 15px;
+    color:#f40;
+}
