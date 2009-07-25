@@ -85,7 +85,6 @@ a:hover {
 
 table.manualReconciliationChoices thead th {
     padding: 3px 10px;
-	border-bottom: 1px solid black;
 	font-weight: bold;
 	cursor: default;
 }
@@ -215,4 +214,7 @@ th {
 
 th.upperHeader {
     border-bottom: 1px solid #999;
+}
+th.bottomHeader {
+	border-bottom: 1px solid black;
 }

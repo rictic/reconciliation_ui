@@ -179,10 +179,9 @@ function renderReconChoices(entity) {
         currentRecord.append(node("div").append(displayValue(entity.getChainedProperty(headers[i]))));
     }
     
-    var tableHeader = $(".reconciliationCandidates table thead", template).empty();
-    var columnHeaders = ["","Image","Name","Type"].concat($.map(mqlProps,getPropName)).concat(["Score"]);
-    for (var i = 0; i < columnHeaders.length; i++)
-        tableHeader.append(node("th",columnHeaders[i]));
+    var columnHeaders =  ["","Image","Name","Type"].concat(mqlProps).concat(["Score"]);
+    var groupedHeaders = groupProperties(columnHeaders);
+    $(".reconciliationCandidates table thead", template).replaceWith(buildTableHeaders(groupedHeaders));
     
     var tableBody = $(".reconciliationCandidates table tbody", template).empty();
     for (var i = 0; i < entity.reconResults.length; i++){
@@ -239,7 +238,7 @@ function renderCandidate(result, mqlProps, entity) {
     
     tableRow.append(node("td",displayValue(result)));
     tableRow.append(node("td",displayValue(result.type)));
-    
+    mqlProps = groupProperties(mqlProps).getPropsForRows();
     for(var j = 0; j < mqlProps.length; j++)
         tableRow.append(
             node("td", node("img",{src:"spinner.gif"}),

@@ -382,6 +382,8 @@ function buildTableHeaders(groupedProps) {
             tr.append(header);
             if (i > 0 && header.html() != "")
                 header.addClass("upperHeader")
+            if (i == 0)
+                header.addClass("bottomHeader");
         });
         tableHeader.append(tr);
     }
