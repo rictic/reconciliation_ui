@@ -137,9 +137,6 @@ function parseTSV(spreadsheet, onComplete) {
 function buildRowInfo(spreadsheetRows, onComplete) {
     resetEntities();
     headers = spreadsheetRows.shift();
-    //make the id column if it doesn't exist
-    if (!contains(headers, "id"))
-        headers.push("id");
     mqlProps = getMqlProperties(headers);
     fetchPropMetadata(buildRows, function(errorProps) {
         error("Can't find these mqlProps:")
@@ -226,6 +223,7 @@ function spreadsheetProcessed(callback) {
             return false;
         return contains([undefined,null,"indeterminate",""], entity.id);
     }
+    addIdColumns();
     objectifyRows(function() {
         totalRecords = rows.length;
         var rec_partition = partition(rows,isUnreconciled);
@@ -272,11 +270,9 @@ function handleMQLPropMetadata(results) {
     assert(results.code == "/api/status/ok", results);
     var errorProps = [];
     $.each(getProperties(headers), function(_,complexProp){
-        var partsSoFar = [];
         $.each(complexProp.split(":"), function(_, mqlProp) {
             if (mqlProp == "id") return;
             var result = results[mqlProp.replace(/\//g,'Z')];
-            partsSoFar.push(mqlProp);
             if (result.code != "/api/status/ok" || result.result === null){
                 errorProps.push(mqlProp)
                 return
@@ -284,14 +280,28 @@ function handleMQLPropMetadata(results) {
             result = result.result;
             result.inverse_property = result.reverse_property || result.master_property;
             mqlMetadata[result.id] = result;
-            var idColumn = partsSoFar.concat("id").join(":");
-            if (!isValueProperty(result.id) && !contains(headers,idColumn) && mqlProp != "/type/object/type")
-                headers.push(idColumn);
             if (result.expected_type && mqlMetadata[result.expected_type.id] == undefined)
                 mqlMetadata[result.expected_type.id] = {inverse_property: result.id};
         });
     });
     return errorProps;
+}
+
+function addIdColumns() {
+    if (!contains(headers, "id"))
+        headers.push("id");
+    $.each(getProperties(headers), function(_,complexProp) {
+        var partsSoFar = [];
+        $.each(complexProp.split(":"), function(_, mqlProp) {
+            if (mqlProp == "id") return;
+            partsSoFar.push(mqlProp);
+            var idColumn = partsSoFar.concat("id").join(":");
+            var meta = mqlMetadata[mqlProp];
+            if (!meta) return;
+            if (!isValueProperty(mqlProp) && !contains(headers,idColumn) && mqlProp != "/type/object/type")
+                headers.push(idColumn);
+        });
+    });
 }
 
 function objectifyRows(onComplete) {
