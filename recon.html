@@ -28,34 +28,23 @@
         
         <!--    If the spreadsheet is ambiguous, ask for clarification     -->
         <div id="formatDisambiguation" class="container invisible">
-            <h3>Which of these is correct?</h3>
-            <div class='selection' id='separateRows'>
-              <button onclick='$("#formatDisambiguation").hide(); showConfirmationSpreadsheet();'>
-                Each row is separate
-              </button>
-              <table>
-                <thead>
-                  <tr class='headers'><th></th></tr>
-                </thead>
-                <tbody>
-                  <tr><td></td></tr>
-                </tbody>
-              </table>
-            </div>
+            <h3>Are these rows about <span class='numThings'>several</span> <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'>one</span>"?</h3>
 
-            <div class='selection' id='combineRows'>
-              <button onclick='doCombineRows();'>
-                Combine rows missing the first column
-              </button>
-              <table>
+            <button onclick='$("#formatDisambiguation").hide(); showConfirmationSpreadsheet();'>
+                This is about <span class='numThings'>several</span> <span class='thingType'>topic</span>s. 
+            </button>
+            <button onclick='doCombineRows();'>
+                These rows are all about "<span class='thingName'>one thing</span>".
+            </button>
+
+            <table>
                 <thead>
-                  <tr class='headers'><th></th></tr>
+                    <tr class='headers'><th></th></tr>
                 </thead>
                 <tbody>
-                  <tr><td></td></tr>
+                    <tr><td></td></tr>
                 </tbody>
-              </table>
-            </div>
+            </table>
         </div>
     
         <!--    Confirm that the parse was correct      -->
@@ -240,7 +229,8 @@
          }
          function showAmbiguousRowPrompt(startingRowIdx) {
              var groupedHeaders = groupProperties(headers);
-             $("#formatDisambiguation table thead").replaceWith(buildTableHeaders(groupedHeaders));
+             var context = $("#formatDisambiguation");
+             $("table thead",context).replaceWith(buildTableHeaders(groupedHeaders));
 
              var headerProps = groupedHeaders.getPropsForRows();
              var rowHTML = function(row){
@@ -260,27 +250,23 @@
              } 
 
              var separateRows = rowHTML(rows[startingRowIdx]);
-             for (var i = startingRowIdx + 1; i < rows.length && rows[i][headerProps[0]][0] == undefined; i++)
+             var numThings = 1;
+             for (var i = startingRowIdx + 1; i < rows.length && rows[i][headerProps[0]][0] == undefined; i++) {
                  separateRows += rowHTML(rows[i]);
-             $("#separateRows tbody").html(separateRows);
-
-             var combinedRow = clone(rows[startingRowIdx]);
-             for (var i = startingRowIdx + 1; i < rows.length && rows[i][headerProps[0]][0] == undefined; i++){
-                 for (var j = 0; j<headerProps.length; j++){
-                     var col = headerProps[j];
-                     if (rows[i][col] == undefined) continue;
-                     if (combinedRow[col].length === 1)
-                         combinedRow[col] = [combinedRow[col][0], rows[i][col][0]];
-                     else
-                         combinedRow[col].push(rows[i][col][0]);
-                 }
+                 numThings++;
              }
+             $("table tbody", context).html(separateRows);
 
-             $("#combineRows tbody").html(rowHTML(combinedRow));
+             $(".thingName", context).html(textValue(rows[startingRowIdx]));
+             var thingType = rows[startingRowIdx]['/type/object/type'];
+             if (thingType)
+                 $(".thingType", context).html(getPropName(thingType[0]));
+             $(".numThings", context).html(numThings);
+             
 
-             $('#formatDisambiguation table tbody tr:odd').addClass('odd');
-             $('#formatDisambiguation table tbody tr:even').addClass('even');
-             $("#formatDisambiguation").show();
+             $('table tbody tr:odd', context).addClass('odd');
+             $('table tbody tr:even', context).addClass('even');
+             context.show();
          }
          function doCombineRows() {
              $("button").attr("disabled","disabled");
