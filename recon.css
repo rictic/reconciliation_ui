@@ -208,3 +208,11 @@ label.findItem {
     margin-left: 15px;
     color:#f40;
 }
+
+th {
+    text-align: center;
+}
+
+th.upperHeader {
+    border-bottom: 1px solid #999;
+}

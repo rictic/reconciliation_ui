@@ -5,6 +5,12 @@ function pass() {
 }
 
 function assertEq(msg, a1, a2) {
+    if (arguments.length == 2){
+        a2 = a1;
+        a1 = msg;
+        msg = "";
+    }
+        
     var message = areNotEq(a1,a2);
     if (message)
         fail(msg + " " + message);
@@ -14,9 +20,8 @@ function assertEq(msg, a1, a2) {
 
 function areNotEq(a1,a2){
     if (a1 == a2) return;
-    if (typeof a1 != typeof a2) return "differently typed: " + a1 + " " + a2;
     if ($.isArray(a1) || $.isArray(a2)){
-        if (!$.isArray(a1) || !$.isArray(a2))
+        if (!($.isArray(a1) && $.isArray(a2)))
             return "one is an array, the other isn't: " + a1 + " " + a2;
 
         if (a1.length != a2.length) return "lengths of arrays were different: " + a1 + " " + a2;
@@ -27,6 +32,7 @@ function areNotEq(a1,a2){
         }
         return;
     }
+    if (typeof a1 != typeof a2) return "differently typed: " + a1 + " " + a2;
     if (typeof a1 != "object")
         return "Expected " + a1 + " but got " + a2;
     

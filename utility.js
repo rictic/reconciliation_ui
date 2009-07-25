@@ -84,6 +84,16 @@ function arrayDifference(source, toRemove) {
     return result;
 }
 
+function union(a, b) {
+    a = $.makeArray(a); b = $.makeArray(b);
+    var result = [];
+    $.each(a, function(_,val) {
+        if (contains(b,val))
+            result.push(val);
+    });
+    return result;
+}
+
 //Uniquely maps MQL ids to valid CSS class names
 function idToClass(idName) {
     return idName.replace(/\//g,"_").replace(":","___");
@@ -276,6 +286,10 @@ function concat(arrays) {
     return result;
 }
 
+function concatMap(array, f) {
+    return concat($.map(array,f));
+}
+
 function getMqlProperties(headers) {
     return filter(getProperties(headers), function(header) {
         var invalidList = ["/type/object/name","/type/object/type","/type/object/id",/(^|:)id$/];
@@ -301,6 +315,111 @@ function getPropName(complexProp) {
     if (mqlMetadata[prop] && mqlMetadata[prop].name)
         return mqlMetadata[prop].name;
     return complexProp;
+}
+
+function groupProperties(complexProps) {
+    var groupedProps = new OrderedMap();
+    function groupProp(complexProp, map) {
+        var props = complexProp.split(":");
+        if (props.length === 1){
+            map.setIfAbsent(complexProp,new OrderedMap());
+            return;
+        }
+        
+        var innerMap = map.setIfAbsent(props.shift(), new OrderedMap());
+        groupProp(props.join(":"), innerMap);
+    }
+    $.each(complexProps, function(_,complexProp){groupProp(complexProp,groupedProps)});
+    groupedProps.getPropsForRows = function() {
+        return union(this.getComplexProperties(), complexProps);
+    }
+    return groupedProps;
+}
+
+function buildTableHeaders(groupedProps) {
+    var rows = [];
+    function forcePush(idx, val) {
+        rows[idx] = rows[idx] || [];
+        rows[idx].push(val);
+    }
+    function header(value, columnspan) {
+        return node("th",value,{colspan:columnspan});
+    }
+    function padTo(idx,amt) {
+        rows[idx] = rows[idx] || [];
+        var currentPadding = 0;
+        $.each(rows[idx],function(_,header) {
+            currentPadding += header.attr('colspan');
+        });
+        var amtToPad = amt - currentPadding;
+        if (amtToPad > 0)
+            rows[idx].push(header("",amt - currentPadding));
+    }
+    function buildHeaders(group, prop) {
+        var innerGroup = group.get(prop);
+        var innerProps = innerGroup.getProperties();
+        if (innerProps.length === 0) {
+            forcePush(0, header(getPropName(prop),1));
+            return [0,1];
+        }
+        var maxDepth = -1;
+        var totalBredth = 0;
+        $.each(innerProps, function(_,innerProp) {
+            var depthBredth = buildHeaders(innerGroup, innerProp);
+            maxDepth = Math.max(depthBredth[0], maxDepth);
+            totalBredth += depthBredth[1];
+        });
+        padTo(maxDepth+1, rows[0].length-totalBredth);
+        rows[maxDepth+1].push(header(getPropName(prop),totalBredth));
+        return [maxDepth+1,totalBredth];
+    }
+    $.each(groupedProps.getProperties(), function(_,prop) {buildHeaders(groupedProps,prop);});
+    var tableHeader = node("thead");
+    for (var i = rows.length-1; i >= 0; i--) {
+        row = rows[i];
+        var tr = node("tr");
+        $.each(row,function(_,header){
+            tr.append(header);
+            if (i > 0 && header.html() != "")
+                header.addClass("upperHeader")
+        });
+        tableHeader.append(tr);
+    }
+    return tableHeader;
+}
+
+function OrderedMap() {
+    var properties = [];
+    var map = {};
+    this.set = function(key, value) {
+        if (key in map)
+            map[key] = value;
+        else
+            this.add(key,value);
+    }
+    this.setIfAbsent = function(key,value) {
+        if (!(key in map))
+            this.set(key,value);
+        return this.get(key);
+    }
+    this.add = function(key, value) {
+        properties.push(key);
+        map[key] = value;
+    }
+    this.get = function(key, defaultValue) {
+        return map[key] || defaultValue;
+    }
+    this.getProperties = function() {
+        return properties;
+    }
+    //assumes OrderedMap<String,OrderedMap>
+    this.getComplexProperties = function() {
+        var self = this;
+        return concatMap(properties, function(prop) {
+            var innerProps = self.get(prop).getComplexProperties();
+            return [prop].concat($.map(innerProps,function(innerProp){return prop + ":" + innerProp}));
+        });
+    }
 }
 
 /*

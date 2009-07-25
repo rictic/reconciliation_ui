@@ -239,14 +239,15 @@
              });
          }
          function showAmbiguousRowPrompt(startingRowIdx) {
-             var headersHTML = "<th>" + $.map(headers,getPropName).join("<\/th><th>") + "<\/th>";
-             $("#formatDisambiguation table thead tr.headers").html(headersHTML);
+             var groupedHeaders = groupProperties(headers);
+             $("#formatDisambiguation table thead").replaceWith(buildTableHeaders(groupedHeaders));
 
+             var headerProps = groupedHeaders.getPropsForRows();
              var rowHTML = function(row){
                  var html = "<tr>";
-                 for (var i = 0; i < headers.length; i++) {
+                 for (var i = 0; i < headerProps.length; i++) {
                      html += "<td>" 
-                     var val = row[headers[i]] || "";
+                     var val = row[headerProps[i]] || "";
                      if (typeof val == "string")
                          html += val;
                      else
@@ -259,14 +260,14 @@
              } 
 
              var separateRows = rowHTML(rows[startingRowIdx]);
-             for (var i = startingRowIdx + 1; i < rows.length && rows[i][headers[0]][0] == undefined; i++)
+             for (var i = startingRowIdx + 1; i < rows.length && rows[i][headerProps[0]][0] == undefined; i++)
                  separateRows += rowHTML(rows[i]);
              $("#separateRows tbody").html(separateRows);
 
              var combinedRow = clone(rows[startingRowIdx]);
-             for (var i = startingRowIdx + 1; i < rows.length && rows[i][headers[0]][0] == undefined; i++){
-                 for (var j = 0; j<headers.length; j++){
-                     var col = headers[j];
+             for (var i = startingRowIdx + 1; i < rows.length && rows[i][headerProps[0]][0] == undefined; i++){
+                 for (var j = 0; j<headerProps.length; j++){
+                     var col = headerProps[j];
                      if (rows[i][col] == undefined) continue;
                      if (combinedRow[col].length === 1)
                          combinedRow[col] = [combinedRow[col][0], rows[i][col][0]];
