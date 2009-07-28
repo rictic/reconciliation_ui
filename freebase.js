@@ -6,8 +6,8 @@ var freebase = (function() {
         element.bind("mouseover",function() {
             mouseIsOver = true;
             miniTopicFloaterEl.empty().freebaseMiniTopic(id, function(){
-                if (mouseIsOver){
-                    miniTopicFloaterEl.show()
+                if (mouseIsOver)
+                    miniTopicFloaterEl.show();
             });
         })
         element.bind("mouseout", function() {
