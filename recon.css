@@ -138,11 +138,11 @@ a.optionsButton {
     font-color: #aaa;
 }
 
-.currentRecord div {
+.currentRecord .propertyGroup {
     margin-left: 12px;
     margin-top: 4px;
     margin-bottom: 8px;
-    font-size: 110%;
+    font-size: 125%;
     font-weight: bold;
 }
 
