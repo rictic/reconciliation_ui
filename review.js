@@ -1,5 +1,5 @@
 function onDisplayRenderScreen() {
-    renderReviews();
+    setTimeout(renderReviews,0);
 }
 
 function onHideRenderScreen() {

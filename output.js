@@ -32,8 +32,8 @@
 */
 
 function onDisplayOutputScreen() {
-    renderSpreadsheet();
-    prepareTriples();
+    setTimeout(renderSpreadsheet,0);
+    setTimeout(prepareTriples,0);
 }
 function onHideOutputScreen() {
     if (spreadsheetRendererYielder)
