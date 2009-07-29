@@ -179,10 +179,12 @@ function renderReconChoices(entity) {
         currentRecord.append(node("div").append(displayValue(entity.getChainedProperty(headers[i]))));
     }
     
-    var columnHeaders =  ["","Image","Name","Type"].concat(mqlProps).concat(["Score"]);
-    var groupedHeaders = groupProperties(columnHeaders);
-    $(".reconciliationCandidates table thead", template).replaceWith(buildTableHeaders(groupedHeaders));
-    
+    var tableHeader = $(".reconciliationCandidates table thead", template).empty();
+    var columnHeaders = ["","Image","Name","Type"].concat($.map(mqlProps,getPropName)).concat(["Score"]);
+    for (var i = 0; i < columnHeaders.length; i++)
+        tableHeader.append(node("th",columnHeaders[i],{"class":"bottomHeader"}));
+
+
     var tableBody = $(".reconciliationCandidates table tbody", template).empty();
     for (var i = 0; i < entity.reconResults.length; i++){
         tableBody.append(renderCandidate(entity.reconResults[i], mqlProps, entity));
