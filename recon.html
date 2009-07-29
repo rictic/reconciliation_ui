@@ -179,7 +179,7 @@
       
       <span class='app_info'>
       <a href="http://github.com/freebase/reconciliation_ui/" target='_blank' class='view_source'>Source Code</a> 
-      | <a href="http://github.com/rictic/reconciliation_ui/tree/development" target='_blank'>Version</a> | <a href="https://bugs.freebase.com/secure/CreateIssueDetails!init.jspa?pid=10148&issuetype=1&priority=3&components=10402&assignee=peter&description=%22lol%22" target="_blank">Found a Bug?</a>
+      | <a href="http://github.com/rictic/reconciliation_ui/tree/development" class='versionLink' target='_blank'>Version</a> | <a href="https://bugs.freebase.com/secure/CreateIssueDetails!init.jspa?pid=10148&issuetype=1&priority=3&components=10402&assignee=peter" class='bugReportLink' target="_blank">Found a Bug?</a>
       </span>
       
       <a href="#optionsPanel" class='optionsButton' onclick='$("#main_app").hide();$("#optionsPanel").show(); return false;'>Options</a>
@@ -217,6 +217,7 @@
         <script language="javascript" charset="utf-8" src="freebase.js"></script>
         <script language="javascript" charset="utf-8" src="sampledata.js" defer async></script>
         <script language="javascript" charset="utf-8" src="complexdata.js" defer async></script>
+        <script language="javascript" charset="utf-8" src="version.js"></script>
 
         <script type="text/javascript" language="javascript">
             function handleNewSpreadsheet() {
@@ -373,15 +374,20 @@
                                      });
                 $("#mdo_name")[0].value = defaultMDOName;
                 $("#mdo_name").change(updateMdoInfo);
-            	 $("input:name='option_layout'").change(function(){
+            	$("input:name='option_layout'").change(function(){
                     var warning = $("#otg_upload_warning"); 
                     if (this.value === "otg") 
                         warning.show(); 
                     else 
                         warning.hide();
                 });
-            	 $.historyInit(displayReconChoices);         	 
-            	 $(".triplesDisplayButton").click(function(){$(".triplesDisplay").slideToggle()})
+            	$.historyInit(displayReconChoices);         	 
+            	$(".triplesDisplayButton").click(function(){$(".triplesDisplay").slideToggle()})
+            	if ("SPREADSHEET_LOADER_VERSION" in window) {
+            	    $(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + SPREADSHEET_LOADER_VERSION);
+            	    var bugReportDetails = "&description=" + escape("Found in version: " + SPREADSHEET_LOADER_VERSION + "\r\n\r\n");
+            	    $(".bugReportLink").attr("href", $(".bugReportLink").attr("href") + bugReportDetails);
+            	}
             });
 
             function updateUnreconciledCount() {
