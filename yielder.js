@@ -5,7 +5,7 @@ function time() {
 function Yielder() {
     this.startTime = time();
     this.shouldYield = function(continueFunction){
-        if (time() <= this.startTime + 100)
+        if (time() <= this.startTime + 50)
             return false;
         
         info("yielding to UI thread");
