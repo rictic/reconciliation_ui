@@ -34,6 +34,7 @@
 function onDisplayOutputScreen() {
     setTimeout(renderSpreadsheet,0);
     setTimeout(prepareTriples,0);
+    checkLogin();
 }
 function onHideOutputScreen() {
     if (spreadsheetRendererYielder)
@@ -187,4 +188,29 @@ function getTriples(rows, callback) {
             })
         });
     }, function() {callback(triples)}, tripleGetterYielder);
+}
+
+function checkLogin() {
+    $(".uploadLogin").hide();
+    $(".uploadForm").hide();
+    var response = $.get("http://data.labs.freebase.com/freeq/spreadsheet/");
+    $.ajax({
+        url:"http://data.labs.freebase.com/freeq/spreadsheet/",
+        type:"GET",
+        complete:function(response){
+            if (!response || !response.status){
+                error(response);
+                return;
+            }
+            if (response.status === 200){
+                $(".uploadLogin").hide();
+                $(".uploadForm").show();
+            }
+            else if (response.status === 401){
+                $(".uploadLogin").show();
+                $(".uploadForm").hide();
+            }
+            else
+                error(response);
+        }})
 }
