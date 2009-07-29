@@ -25,6 +25,24 @@ var freebase = (function() {
         if (!('query' in envelope))
             param = {queries:param.query};
         $.getJSON(freebase_url + "/api/service/mqlread?callback=?&", param, handler);
+    };
+    
+    /* Given an id and a callback, immediately calls the callback with the freebase name
+      if it has been looked up before.
+      
+      If it hasn't, then the callback is called once with the id immediately, and once again
+      with the name after it has been looked up.*/
+    var nameCache = {};
+    freebase.getName = function(id, callback) {
+        if (id in nameCache){
+            callback(nameCache[id]);
+            return;
+        }
+        callback(id);
+        freebase.mqlRead({query:{id:id,name:null}}, function(results) {
+            nameCache[id] = (results && results.result && results.result.name) || id;
+            callback(nameCache[id]);
+        });
     }
     return freebase;
 }());
