@@ -17,7 +17,7 @@ var freebase = (function() {
         return element;
     }
     freebase.link = function(name, id) {
-        var linkVal = $("<a target='_blank' href='"+freebase_url+"/view"+id+"'>" + name + "</a>");
+        var linkVal = node("a", name, {target:'_blank',href:freebase_url + '/view' + id})
         return miniTopicFloater(linkVal, id);
     };
     freebase.mqlRead = function(envelope, handler) {
@@ -43,6 +43,14 @@ var freebase = (function() {
             nameCache[id] = (results && results.result && results.result.name) || id;
             callback(nameCache[id]);
         });
+    }
+    freebase.makeLink = function(id) {
+        var simpleEl = node("span",id);
+        var link = freebase.link(simpleEl, id);
+        freebase.getName(id, function(name) {
+            simpleEl.html(name);
+        })
+        return link;
     }
     return freebase;
 }());

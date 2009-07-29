@@ -239,7 +239,15 @@ function renderCandidate(result, mqlProps, entity) {
     ).appendTo(tableRow);
     
     tableRow.append(node("td",displayValue(result)));
-    tableRow.append(node("td",displayValue(result.type)));
+    var typeCell = node("td");
+    $.each($.makeArray(result.type), function(_,typeId) {
+        //types that end in /topic are uninteresting
+        if (typeId.match(/\/topic$/)) return;
+        typeCell.append(freebase.makeLink(typeId));
+        typeCell.append("<br>");
+    })
+    tableRow.append(typeCell);
+
     mqlProps = groupProperties(mqlProps).getPropsForRows();
     for(var j = 0; j < mqlProps.length; j++)
         tableRow.append(
