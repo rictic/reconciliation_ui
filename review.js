@@ -35,11 +35,13 @@ function renderReviews() {
             })
             freebaseName = freebaseName || entity['/rec_ui/freebase_name'][0];
         }
-        freebaseName = "" + (freebaseName || entity.id);
-        
-        $(".freebaseName", template).html(entity.freebaseLink(freebaseName));
-        if (freebaseName && textValue(entity).toLowerCase() === freebaseName.toLowerCase())
-            $(".freebaseName", template).addClass("identicalMatch");
+        var handleName = function(freebaseName) {
+            $(".freebaseName", template).html(entity.freebaseLink(freebaseName));
+            if (freebaseName && textValue(entity).toLowerCase() === freebaseName.toLowerCase())
+                $(".freebaseName", template).addClass("identicalMatch");
+        }
+        if (freebaseName) handleName(freebaseName);
+        else freebase.getName(entity.id, handleName);
             
         $(".internalLink", template).click(function(val) {
             $.historyLoad(entity["/rec_ui/id"]);
