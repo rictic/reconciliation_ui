@@ -40,6 +40,7 @@ function onHideOutputScreen() {
         spreadsheetRendererYielder.cancel();
     if (tripleGetterYielder)
         tripleGetterYielder.cancel();
+    $("#outputSpreadSheet")[0].value = "";
 }
 
 function encodeLine(arr) {

@@ -5,12 +5,13 @@ function onDisplayRenderScreen() {
 function onHideRenderScreen() {
     if (renderYielder)
         renderYielder.cancel();
+    $('.reconciliationsToReview').empty();
 }
 
 var renderYielder;
 function renderReviews() {
     renderYielder = new Yielder();
-    var container = $('.reconciliationsToReview').empty();
+    var container = $('.reconciliationsToReview');
     var newTemplate = $(".templates .reviewNewTemplate");
     var skippedTemplate = $(".templates .reviewSkippedTemplate");
     var reconciledTemplate = $(".templates .reviewReconciledTemplate");
