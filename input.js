@@ -367,7 +367,7 @@ function objectifyRows(onComplete) {
                     row[firstPart][i] = cvtEntity(mqlMetadata[firstPart], row);;
                 slot = row[firstPart][i];
                 $.each(parts.slice(1,parts.length-1), function(_,part) {
-                    if (!part in slot)
+                    if (!(part in slot))
                         slot[part] = cvtEntity(mqlMetadata[part], slot);
                     slot = slot[part];
                 });
