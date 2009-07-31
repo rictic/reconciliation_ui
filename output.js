@@ -32,9 +32,9 @@
 */
 
 function onDisplayOutputScreen() {
+    setTimeout(checkLogin,0);
     setTimeout(renderSpreadsheet,0);
     setTimeout(prepareTriples,0);
-    checkLogin();
 }
 function onHideOutputScreen() {
     if (spreadsheetRendererYielder)
