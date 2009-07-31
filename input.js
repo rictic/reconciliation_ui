@@ -381,7 +381,7 @@ function objectifyRows(onComplete) {
                     var new_entity = new Entity({"/type/object/type":meta.expected_type.id,
                                                 "/type/object/name":value,
                                                 '/rec_ui/headers': ['/type/object/name','/type/object/type'],
-                                                '/rec_ui/mql_props': [],
+                                                '/rec_ui/mql_props': []
                                                 });
                     if (meta.inverse_property) {
                         new_entity[meta.inverse_property] = slot;
