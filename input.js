@@ -134,6 +134,16 @@ function parseTSV(spreadsheet, onComplete) {
     parseSpreadsheet();
 }
 
+function removeBlankLines(rows, onComplete) {
+    var newRows = [];
+    politeEach(rows, function(_,row) {
+        if (row.length === 1 && row[0] === "")
+            return;
+        newRows.push(row);
+    }, 
+    function(){onComplete(newRows);});
+}
+
 function buildRowInfo(spreadsheetRows, onComplete) {
     resetEntities();
     headers = spreadsheetRows.shift();

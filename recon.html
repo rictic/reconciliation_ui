@@ -222,18 +222,20 @@
         <script type="text/javascript" language="javascript">
             function handleNewSpreadsheet() {
                 $("button").attr("disabled","disabled");
-                parseTSV($('#spreadsheet')[0].value,function(spreadsheetRows) {
-                    buildRowInfo(spreadsheetRows, function(rows){
-                        function afterwards(f){
-                            return function(a) {
-                                $("#spreadsheetInput").hide();
-                                $("button").removeAttr("disabled");
-                                f(a);
-                            }
-                        };
+                parseTSV($('#spreadsheet')[0].value,function(spreadsheetRowsWithBlanks) {
+                    removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
+                        buildRowInfo(spreadsheetRows, function(rows){
+                            function afterwards(f){
+                                return function(a) {
+                                    $("#spreadsheetInput").hide();
+                                    $("button").removeAttr("disabled");
+                                    f(a);
+                                }
+                            };
 
-                        getAmbiguousRowIndex(undefined, afterwards(showAmbiguousRowPrompt), afterwards(showConfirmationSpreadsheet));
-                    });
+                            getAmbiguousRowIndex(undefined, afterwards(showAmbiguousRowPrompt), afterwards(showConfirmationSpreadsheet));
+                        });
+                    })
                 });
             }
             function showAmbiguousRowPrompt(startingRowIdx) {
