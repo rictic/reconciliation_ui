@@ -146,7 +146,7 @@ function removeBlankLines(rows, onComplete) {
 
 function buildRowInfo(spreadsheetRows, onComplete) {
     resetEntities();
-    headers = spreadsheetRows.shift();
+    headers = $.map(spreadsheetRows.shift(), function(header){return $.trim(header)});
     mqlProps = getMqlProperties(headers);
     fetchPropMetadata(buildRows, function(errorProps) {
         error("Can't find these mqlProps:")
