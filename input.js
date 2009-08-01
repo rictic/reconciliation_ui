@@ -251,7 +251,8 @@ function fetchPropMetadata(onComplete, onError) {
         return {
             "expected_type" : {
                 "extends" : [],
-                "id" : null
+                "id" : null,
+                "/freebase/type_hints/mediator" : {"optional":true, "value":null}
             },
             "reverse_property" : null,
             "master_property"  : null,
@@ -307,9 +308,20 @@ function addIdColumns() {
             partsSoFar.push(mqlProp);
             var idColumn = partsSoFar.concat("id").join(":");
             var meta = mqlMetadata[mqlProp];
+            //if we don't have metadata on it, it's not a valid property, so no id column for it
             if (!meta) return;
-            if (!isValueProperty(mqlProp) && !contains(headers,idColumn) && mqlProp != "/type/object/type")
-                headers.push(idColumn);
+            //if it's a value then it doesn't get an id
+            if (isValueProperty(mqlProp)) return;
+            //if there already is an id column for it, then don't create a new one
+            if (contains(headers,idColumn)) return;
+            //if the property is /type/objec/type then we treat it as an id automatically, no id column needed
+            if (mqlProp == "/type/object/type") return;
+            //if it's a CVT then we won't do reconciliation of it ourselves (that's triplewriter's job)
+            //so no id column
+            if (meta.expected_type && isCVTType(meta.expected_type))
+                return;
+            //otherwise, add an id column
+            headers.push(idColumn);
         });
     });
 }
@@ -347,7 +359,7 @@ function objectifyRows(onComplete) {
             var slot;
             function cvtEntity(meta, parent) {
                 var cvt = new Entity({"/type/object/type":meta.expected_type.id,
-                                     "/rec_ui/is_cvt":true,
+                                     "/rec_ui/is_cvt":isCVTType(meta.expected_type),
                                      "/rec_ui/parent":parent,
                                      "/rec_ui/mql_props" :[],
                                      "/rec_ui/cvt_props":[]});
@@ -369,6 +381,9 @@ function objectifyRows(onComplete) {
                 $.each(parts.slice(1,parts.length-1), function(_,part) {
                     if (!(part in slot))
                         slot[part] = cvtEntity(mqlMetadata[part], slot);
+                    if (slot['/rec_ui/is_cvt'])
+                        slot['/rec_ui/cvt_props'].push(part)
+                    slot['/rec_ui/mql_props'].push(part);
                     slot = slot[part];
                 });
                 var lastPart = parts[parts.length-1];
@@ -386,18 +401,18 @@ function objectifyRows(onComplete) {
                     if (meta.inverse_property) {
                         new_entity[meta.inverse_property] = slot;
 //                         cvt["/rec_ui/mql_props"].push(meta.inverse_property);
-                        var reversedParts = $.map(parts.slice().reverse(), function(part) {return (mqlMetadata[part] && mqlMetadata[part].inverse_property) || false;});
+                        var reversedParts = $.map(parts.slice().reverse(), function(part) {
+                            return (mqlMetadata[part] && mqlMetadata[part].inverse_property) || false;
+                        });
                         if (all(reversedParts)){
                             new_entity["/rec_ui/mql_props"].push(reversedParts.join(":"));
                             new_entity["/rec_ui/headers"].push(reversedParts.join(":"));
                         }
-                            
                     }
                     slot[lastPart] = new_entity;
-                    if (slot['/rec_ui/is_cvt'])
-                        slot['/rec_ui/cvt_props'].push(lastPart);
                 }
-                    
+                if (slot['/rec_ui/is_cvt'])
+                    slot['/rec_ui/cvt_props'].push(lastPart);
             });
             delete row[complexHeader];
         });

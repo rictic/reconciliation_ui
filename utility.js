@@ -180,6 +180,11 @@ function isValueType(type) {
     return contains(type['extends'], "/type/value");
 }
 
+function isCVTType(type) {
+    return type["/freebase/type_hints/mediator"] 
+        && type["/freebase/type_hints/mediator"].value;
+}
+
 //I can't believe I can't find a better way of doing these:
 function getFirstValue(obj) {
     for (var key in obj)

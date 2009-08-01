@@ -141,10 +141,20 @@ function getTriples(rows, callback) {
         var props = cvt['/rec_ui/cvt_props'];
         var empty = true;
         for (var i = 0; i < props.length; i++){
-            var id = getID(cvt[props[i]]);
-            if (id){
-                result[props[i]] = id;
-                empty = false;
+            var predicate = props[i];
+            if (isValueProperty(predicate)) {
+                var value = cvt[predicate];
+                if (value){
+                    result[predicate] = value
+                    empty = false;
+                }
+            }
+            else {
+                var id = getID(cvt[predicate]);
+                if (id){
+                    result[predicate] = id;
+                    empty = false;
+                }
             }
         }
         if (empty)
