@@ -290,9 +290,7 @@ function handleMQLPropMetadata(results) {
             }
             result = result.result;
             result.inverse_property = result.reverse_property || result.master_property;
-            mqlMetadata[result.id] = result;
-            if (result.expected_type && mqlMetadata[result.expected_type.id] == undefined)
-                mqlMetadata[result.expected_type.id] = {inverse_property: result.id};
+            mqlMetadata[mqlProp] = result;
         });
     });
     return errorProps;
