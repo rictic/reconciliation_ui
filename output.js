@@ -140,19 +140,25 @@ function getTriples(rows, callback) {
         var result = {};
         var props = cvt['/rec_ui/cvt_props'];
         var empty = true;
+        var type = $.makeArray(cvt['/type/object/type'])[0];
         for (var i = 0; i < props.length; i++){
             var predicate = props[i];
+            if (predicate.indexOf(type) != 0){
+                warn("bad predicate " + predicate + " in CVT with type" + type);
+                continue;
+            }
+            var value = cvt[predicate];
+            var outputPredicate = predicate.replace(type + "/","");
             if (isValueProperty(predicate)) {
-                var value = cvt[predicate];
                 if (value){
-                    result[predicate] = value
+                    result[outputPredicate] = value
                     empty = false;
                 }
             }
             else {
-                var id = getID(cvt[predicate]);
+                var id = getID(value);
                 if (id){
-                    result[predicate] = id;
+                    result[outputPredicate] = id;
                     empty = false;
                 }
             }
