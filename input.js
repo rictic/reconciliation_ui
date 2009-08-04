@@ -134,6 +134,30 @@ function parseTSV(spreadsheet, onComplete) {
     parseSpreadsheet();
 }
 
+function parseJSON(json, onComplete) {
+    var data = JSON.parse(json);
+    headers = data.headers;
+    mqlProps = getMqlProperties(headers);
+
+    function objectToEntity(object) {
+        if (typeof object === 'string') return object;
+        var entity = new Entity(object);
+        $.each(entity['/rec_ui/mql_props'], function(_,prop) {
+            if (!isValueProperty(prop))
+                entity[prop] = $.map(entity[prop], objectToEntity);
+        })
+        return entity;
+    }
+    
+    fetchPropMetadata(data.all_properties, function() {
+        addIdColumns();
+        rows = [];
+        politeEach(data.rows, function(_,row) {
+            rows.push(objectToEntity(row));
+        },onComplete);
+    });
+}
+
 function removeBlankLines(rows, onComplete) {
     var newRows = [];
     politeEach(rows, function(_,row) {
@@ -144,11 +168,15 @@ function removeBlankLines(rows, onComplete) {
     function(){onComplete(newRows);});
 }
 
+function setupHeaderInfo(headers, onComplete, onError) {
+    mqlProps = getMqlProperties(headers);
+    fetchPropMetadata(getProperties(headers), onComplete, onError);
+}
+
 function buildRowInfo(spreadsheetRows, onComplete) {
     resetEntities();
     headers = $.map(spreadsheetRows.shift(), function(header){return $.trim(header)});
-    mqlProps = getMqlProperties(headers);
-    fetchPropMetadata(buildRows, function(errorProps) {
+    setupHeaderInfo(headers, buildRows, function(errorProps) {
         error("Can't find these mqlProps:")
         error(errorProps);
         mqlProps = arrayDifference(mqlProps, errorProps);
@@ -234,19 +262,18 @@ function spreadsheetProcessed(callback) {
         return contains([undefined,null,"indeterminate",""], entity.id);
     }
     addIdColumns();
-    objectifyRows(function() {
-        totalRecords = rows.length;
-        var rec_partition = partition(rows,isUnreconciled);
-        automaticQueue = rec_partition[0];
-        $.each(rec_partition[1],function(_,reconciled_row){
-            addColumnRecCases(reconciled_row);
-        });
+    totalRecords = rows.length;
+    var rec_partition = partition(rows,isUnreconciled);
+    automaticQueue = rec_partition[0];
+    politeEach(rec_partition[1],function(_,reconciled_row){
+        addColumnRecCases(reconciled_row);
+    }, function() {
         $(".initialLoadingMessage").hide();
         callback();
     });
 }
 
-function fetchPropMetadata(onComplete, onError) {
+function fetchPropMetadata(properties, onComplete, onError) {
     function getQuery(prop) {
         return {
             "expected_type" : {
@@ -262,14 +289,14 @@ function fetchPropMetadata(onComplete, onError) {
         }
     }
     var envelope = {};
-    $.each(getProperties(headers), function(i, mqlProp) {
+    $.each(properties, function(i, mqlProp) {
         $.each(mqlProp.split(":"), function(i, simpleProp) {
             if (simpleProp == "id") return;
             envelope[simpleProp.replace(/\//g,'Z')] = {"query": getQuery(simpleProp)};
         })
     })
     function handler(results) {
-        var errorProps = handleMQLPropMetadata(results);
+        var errorProps = handleMQLPropMetadata(results, properties);
         if (errorProps.length > 0)
             return onError(errorProps);
         onComplete();
@@ -277,10 +304,10 @@ function fetchPropMetadata(onComplete, onError) {
     freebase.mqlRead(envelope, handler);
 }
 
-function handleMQLPropMetadata(results) {
+function handleMQLPropMetadata(results, properties) {
     assert(results.code == "/api/status/ok", results);
     var errorProps = [];
-    $.each(getProperties(headers), function(_,complexProp){
+    $.each(properties, function(_,complexProp){
         $.each(complexProp.split(":"), function(_, mqlProp) {
             if (mqlProp == "id") return;
             var result = results[mqlProp.replace(/\//g,'Z')];

@@ -21,7 +21,7 @@
         <div id="spreadsheetInput" class="container">
             <h3>Copy your spreadsheet here:</h3>
             <textarea rows="15" cols="80" name="spreadsheet" id="spreadsheet"></textarea><br>
-            <button onclick="handleNewSpreadsheet();">Parse Spreadsheet</button>
+            <button onclick="handleInput();">Parse Spreadsheet</button>
             <button onclick="$('#spreadsheet')[0].value = sampleData;">Sample Data</button>
             <button onclick="$('#spreadsheet')[0].value = complexData;">Complex Sample</button>
         </div>
@@ -220,9 +220,19 @@
         <script language="javascript" charset="utf-8" src="version.js"></script>
 
         <script type="text/javascript" language="javascript">
-            function handleNewSpreadsheet() {
+            function handleInput() {
                 $("button").attr("disabled","disabled");
-                parseTSV($('#spreadsheet')[0].value,function(spreadsheetRowsWithBlanks) {
+                var input = $('#spreadsheet')[0].value;
+                if (input.charAt(0) === "{") {
+                    parseJSON(input, function() {
+                        initializeTabs();
+                        spreadsheetProcessed(beginAutoReconciliation);
+                        $("button").removeAttr("disabled");
+                    });
+                    return;
+                }
+                
+                parseTSV(input,function(spreadsheetRowsWithBlanks) {
                     removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
                         buildRowInfo(spreadsheetRows, function(rows){
                             function afterwards(f){
@@ -326,7 +336,7 @@
                 $('#spreadsheetPreview').show();
             }
             var previousSelectedTab = 0;
-            function continueToReconciliation() {
+            function initializeTabs() {
                 $("#spreadsheetPreview").hide();
                 var tabs = $("#tabs > ul");
                 tabs.tabs();
@@ -344,7 +354,12 @@
                 });
                 $("#tabs").show();
                 tabs.tabs("select", 0);
-                spreadsheetProcessed(beginAutoReconciliation);
+            }
+            function continueToReconciliation() {
+                initializeTabs();
+                objectifyRows(function() {
+                    spreadsheetProcessed(beginAutoReconciliation);
+                });
             }
             var reconciliationBegun = false;
             var defaultMDOName = "Spreadsheet Upload about (kind of data)"

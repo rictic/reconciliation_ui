@@ -60,13 +60,14 @@ function constructReconciliationQuery(entity, typeless) {
         if (value.id != undefined && value.id != "" && value.id != "None")
             return {"id":value.id, "name":value["/type/object/name"]}
         if (value['/rec_ui/id'] !== undefined)
-            return value["/type/object/name"];
+            return $.makeArray(value["/type/object/name"])[0];
         return value;
     }
     var query = {}
     var headers = entity["/rec_ui/headers"];
     for (var i = 0; i < headers.length; i++) {
         var prop = headers[i];
+        if (prop.charAt(0) != "/") continue;
         var parts = prop.split(":");
         $.each($.makeArray(entity.getChainedProperty(prop)),function(j, value) {
             var slot = query;
