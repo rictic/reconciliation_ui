@@ -136,6 +136,20 @@ function getTriples(rows, callback) {
             return "$entity" + entity['/rec_ui/id'];
         return entity.id;
     }
+    function getValue(property, stringValue) {
+        var expectedType = mqlMetadata[property].expected_type.id;
+        if (contains(["/type/int","/type/float"], expectedType))
+            return Number($.trim(stringValue));
+        if (expectedType === "/type/boolean"){
+            var lowerValue = $.trim(stringValue.toLowerCase());
+            if (lowerValue === "true")
+                return true;
+            if (lowerValue === "false")
+                return false;
+            return undefined;
+        }
+        return stringValue;
+    }
     function cvtObject(cvt) {
         var result = {};
         var props = cvt['/rec_ui/cvt_props'];
@@ -150,6 +164,7 @@ function getTriples(rows, callback) {
             var value = cvt[predicate];
             var outputPredicate = predicate.replace(type + "/","");
             if (isValueProperty(predicate)) {
+                value = getValue(predicate, value);
                 if (value){
                     result[outputPredicate] = value
                     empty = false;
@@ -185,7 +200,7 @@ function getTriples(rows, callback) {
             
             $.each($.makeArray(subject[predicate]), function(_, object) {
                 if (isValueProperty(predicate)) {
-                    triples.push({s:getID(subject), p:predicate, o:object});
+                    triples.push({s:getID(subject), p:predicate, o:getValue(predicate, object)});
                     return;
                 }
                 
