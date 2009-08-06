@@ -121,24 +121,30 @@ function textValue(value) {
     return value;
 }
 
-function displayValue(value) {
-    if ($.isArray(value)){
-        var result = node("div");
-        displayValues = $.map(value, displayValue);
-        var overflowCutoff = 4;
-        if (displayValues.length > overflowCutoff+1){
-            for (var i = 0; i < overflowCutoff; i++)
-                result.append(displayValues[i]).append("<br>");
-            var overflowContainer = node("div", {"class":"overflowContainer"}).appendTo(result);
-            for (var i = overflowCutoff; i < displayValues.length; i++)
-                overflowContainer.append(displayValues[i]).append("<br>");
-            var showMoreLink = node("a","More &darr;",{"class":"expandOverflow",onclick:function(){showMoreLink.slideUp();overflowContainer.slideDown();}}).appendTo(result);
-        }
-        else
-            for (var i = 0; i < value.length; i++)
-                result.append(displayValues[i]).append("<br>");
-        return result;
+function wrapForOverflow(elementArray, cutoff) {
+    var result = node("div")
+    cutoff = cutoff || 4;
+    if (elementArray.length > cutoff+1){
+        for (var i = 0; i < cutoff; i++)
+            result.append(elementArray[i]).append("<br>");
+        var overflowContainer = node("div", {"class":"overflowContainer"}).appendTo(result);
+        for (var i = cutoff; i < elementArray.length; i++)
+            overflowContainer.append(elementArray[i]).append("<br>");
+        var showMoreLink = node("a",
+                                "More &darr;",
+                                {"class":"expandOverflow",
+                                 onclick:function(){showMoreLink.slideUp();overflowContainer.slideDown();}})
+                          .appendTo(result);
     }
+    else
+        for (var i = 0; i < elementArray.length; i++)
+            result.append(elementArray[i]).append("<br>");
+    return result;
+}
+
+function displayValue(value) {
+    if ($.isArray(value))
+        return wrapForOverflow($.map(value, displayValue));
     if (value == undefined || value == null)
         return "";
     if (value.displayValue)
