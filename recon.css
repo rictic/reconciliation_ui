@@ -89,7 +89,7 @@ table.manualReconciliationChoices thead th {
 	cursor: default;
 }
 
-table.manualReconciliationChoices tbody tr {
+table.manualReconciliationChoices tbody tr td {
     height: 100px;
 }
 
@@ -183,7 +183,7 @@ label.findItem {
 
 .manualReconciliationChoices td img {
     max-height: 100px;
-    min-height: 100px;
+    max-width: 100px;
 }
 
 .view_source {
