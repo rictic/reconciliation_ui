@@ -5,12 +5,12 @@ function time() {
 function Yielder() {
     this.startTime = time();
     this.shouldYield = function(continueFunction){
-        if (time() <= this.startTime + 50)
+        if (time() <= this.startTime + 10)
             return false;
         
         info("yielding to UI thread");
         this.startTime = time();
-        this.nextAction = setTimeout(continueFunction, 0);
+        this.nextAction = setTimeout(continueFunction, 10);
         return true;
     };
     this.cancel = function(){
