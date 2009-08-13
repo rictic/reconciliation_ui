@@ -176,9 +176,9 @@ function addColumnRecCases(entity) {
 }
 
 function isValueProperty(propName) {
-    assert(mqlMetadata[propName], "mqlMetadata of " + propName + " is " + mqlMetadata[propName]);
-    if (mqlMetadata[propName])
-        return isValueType(mqlMetadata[propName].expected_type);
+    assert(freebase.getPropMetadata(propName), "mqlMetadata of " + propName + " is " + freebase.getPropMetadata(propName));
+    if (freebase.getPropMetadata(propName))
+        return isValueType(freebase.getPropMetadata(propName).expected_type);
     return undefined;
 }
 
@@ -323,8 +323,8 @@ function getPropName(complexProp) {
         return complexProp;
     var props = complexProp.split(":");
     var prop = props[props.length-1];
-    if (mqlMetadata[prop] && mqlMetadata[prop].name)
-        return mqlMetadata[prop].name;
+    if (freebase.getPropMetadata(prop) && freebase.getPropMetadata(prop).name)
+        return freebase.getPropMetadata(prop).name;
     return complexProp;
 }
 
@@ -434,6 +434,20 @@ function OrderedMap() {
         });
     }
 }
+
+var Set = function() {
+    var set = {};
+    this.add = function(val) {set[val] = true;};
+    this.addAll = function(array) {
+        for(var i = 0; i < array.length; i++) 
+            this.add(array[i]);
+    }
+    this.contains = function(val) {return val in set;};
+    //getAll only valid for 
+    this.getAll = function() {var all = []; for (var val in set) all.push(val); return all;};
+    this.addAll(arguments);
+}
+
 
 /*
 ** create debugging tools if they're not available

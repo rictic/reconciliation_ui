@@ -125,7 +125,6 @@ function prepareTriples() {
 var tripleGetterYielder;
 function getTriples(rows, callback) {
     tripleGetterYielder = new Yielder();
-    var triples = [];
     function isValidID(id) {
         if ($.isArray(id))
             id = id[0];
@@ -137,7 +136,7 @@ function getTriples(rows, callback) {
         return entity.id;
     }
     function getValue(property, stringValue) {
-        var expectedType = mqlMetadata[property].expected_type.id;
+        var expectedType = freebase.getPropMetadata(property).expected_type.id;
         if (contains(["/type/int","/type/float"], expectedType))
             return Number($.trim(stringValue));
         if (expectedType === "/type/boolean"){
@@ -182,12 +181,24 @@ function getTriples(rows, callback) {
             return undefined;
         return result;
     }
+    
+    var triples = [];
     politeEach(entities, function(_,subject) {
         if (!subject || !isValidID(subject.id) || subject['/rec_ui/is_cvt'])
             return;
+        $.makeArray(subject['/type/object/type'])
+        
+        var types = new Set();
         $.each($.makeArray(subject['/type/object/type']), function(_, type){
-            triples.push({s:getID(subject), p:"/type/object/type",o:type});
+            types.add(type);
+            var metadata = freebase.getTypeMetadata(type);
+            if (metadata)
+                types.addAll(metadata["/freebase/type_hints/included_types"]);
         });
+        $.each(types.getAll(), function(_,type) {
+            if (type)
+                triples.push({s:getID(subject), p:"/type/object/type",o:type});
+        })
         if (subject.id === "None"){
             $.each($.makeArray(subject["/type/object/name"]), function(_, name) {
                 if (name)

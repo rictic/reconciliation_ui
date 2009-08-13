@@ -28,11 +28,11 @@
 
 var totalRecords = 0;
 var mqlProps;
-var mqlMetadata = {};
 var headers;
 var rows;
 var complexHeaders;
 var simpleHeaders;
+var typesSeen = new Set();
 
 /*
 ** Parsing and munging the input
@@ -146,15 +146,19 @@ function parseJSON(json, onComplete) {
             if (!isValueProperty(prop))
                 entity[prop] = $.map(entity[prop], objectToEntity);
         })
+        $.each(entity['/type/object/type'], function(_,type){typesSeen.add(type)});
         return entity;
     }
     
-    fetchPropMetadata(data.all_properties, function() {
+    freebase.fetchPropertyInfo(data.all_properties, function() {
         addIdColumns();
         rows = [];
         politeEach(data.rows, function(_,row) {
             rows.push(objectToEntity(row));
-        },onComplete);
+        },
+        function() {
+            freebase.fetchTypeInfo(typesSeen.getAll(), onComplete);
+        });
     });
 }
 
@@ -170,7 +174,7 @@ function removeBlankLines(rows, onComplete) {
 
 function setupHeaderInfo(headers, onComplete, onError) {
     mqlProps = getMqlProperties(headers);
-    fetchPropMetadata(getProperties(headers), onComplete, onError);
+    freebase.fetchPropertyInfo(getProperties(headers), onComplete, onError);
 }
 
 function buildRowInfo(spreadsheetRows, onComplete) {
@@ -196,7 +200,7 @@ function buildRowInfo(spreadsheetRows, onComplete) {
                 if (rowArray[i] === "")
                     val = undefined;
                 entity[headers[i]] = [val];
-            }   
+            }
             rows.push(entity);
         },function() {onComplete(rows);});
     }
@@ -268,60 +272,14 @@ function spreadsheetProcessed(callback) {
     politeEach(rec_partition[1],function(_,reconciled_row){
         addColumnRecCases(reconciled_row);
     }, function() {
-        $(".initialLoadingMessage").hide();
-        callback();
-    });
-}
-
-function fetchPropMetadata(properties, onComplete, onError) {
-    function getQuery(prop) {
-        return {
-            "expected_type" : {
-                "extends" : [],
-                "id" : null,
-                "/freebase/type_hints/mediator" : {"optional":true, "value":null}
-            },
-            "reverse_property" : null,
-            "master_property"  : null,
-            "type" : "/type/property",
-            "name":null,
-            "id" : prop
-        }
-    }
-    var envelope = {};
-    $.each(properties, function(i, mqlProp) {
-        $.each(mqlProp.split(":"), function(i, simpleProp) {
-            if (simpleProp == "id") return;
-            envelope[simpleProp.replace(/\//g,'Z')] = {"query": getQuery(simpleProp)};
+        freebase.fetchTypeInfo(typesSeen.getAll(), function() {
+            $(".initialLoadingMessage").hide();
+            callback();
         })
-    })
-    function handler(results) {
-        var errorProps = handleMQLPropMetadata(results, properties);
-        if (errorProps.length > 0)
-            return onError(errorProps);
-        onComplete();
-    }
-    freebase.mqlRead(envelope, handler);
+    });
 }
 
-function handleMQLPropMetadata(results, properties) {
-    assert(results.code == "/api/status/ok", results);
-    var errorProps = [];
-    $.each(properties, function(_,complexProp){
-        $.each(complexProp.split(":"), function(_, mqlProp) {
-            if (mqlProp == "id") return;
-            var result = results[mqlProp.replace(/\//g,'Z')];
-            if (result.code != "/api/status/ok" || result.result === null){
-                errorProps.push(mqlProp)
-                return
-            }
-            result = result.result;
-            result.inverse_property = result.reverse_property || result.master_property;
-            mqlMetadata[mqlProp] = result;
-        });
-    });
-    return errorProps;
-}
+
 
 function addIdColumns() {
     if (!contains(headers, "id"))
@@ -332,7 +290,7 @@ function addIdColumns() {
             if (mqlProp == "id") return;
             partsSoFar.push(mqlProp);
             var idColumn = partsSoFar.concat("id").join(":");
-            var meta = mqlMetadata[mqlProp];
+            var meta = freebase.getPropMetadata(mqlProp);
             //if we don't have metadata on it, it's not a valid property, so no id column for it
             if (!meta) return;
             //if it's a value then it doesn't get an id
@@ -368,7 +326,7 @@ function objectifyRows(onComplete) {
                 return result;
             }
             
-            var meta = mqlMetadata[prop];
+            var meta = freebase.getPropMetadata(prop);
             if (meta == undefined || isValueType(meta.expected_type) || prop == "/type/object/type")
                 continue;
             var newProp = [];
@@ -474,5 +432,6 @@ function objectifyRows(onComplete) {
         cleanup(row);
         if ($.isArray(row.id))
             row.id = row.id[0];
+        $.each($.makeArray(row['/type/object/type']), function(_,type){if (type) typesSeen.add(type);})
     }, onComplete);
 }

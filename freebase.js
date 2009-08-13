@@ -58,6 +58,101 @@ var freebase = (function() {
         })
         return link;
     }
+    
+    function idToQueryName(id) {
+        return id.replace(/\//g,'Z');
+    }
+    
+    var typeMetadata = {};
+    freebase.fetchTypeInfo = function(types, onComplete, onError) {
+        function getQuery(type) {
+            return {
+                id:type,
+                type:'/type/type',
+                "/freebase/type_hints/included_types":[]
+            }
+        }
+        var envelope = {};
+        $.each(types, function(_,type) {
+            envelope[idToQueryName(type)] = {query:getQuery(type)};
+        })
+        function handler(results) {
+            var errorTypes = [];
+            $.each(types, function(_,type) {
+                var result = results[idToQueryName(type)];
+                if (freebase.isBadOrEmptyResult(result)){
+                    errorTypes.push(result);
+                    return;
+                }
+                typeMetadata[type] = result.result;
+            });
+            if (errorTypes.length > 0 && onError){
+                onError(errorTypes);
+                return;
+            }
+            onComplete();
+        }
+        freebase.mqlRead(envelope, handler);
+    }
+    freebase.getTypeMetadata = function(type) {return typeMetadata[type];}
+    
+    var propMetadata = {};
+    freebase.fetchPropertyInfo = function(properties, onComplete, onError) {
+        function getQuery(prop) {
+            return {
+                "expected_type" : {
+                    "extends" : [],
+                    "id" : null,
+                    "/freebase/type_hints/mediator" : {"optional":true, "value":null}
+                },
+                "reverse_property" : null,
+                "master_property"  : null,
+                "type" : "/type/property",
+                "name":null,
+                "id" : prop
+            }
+        }
+        var envelope = {};
+        $.each(properties, function(i, mqlProp) {
+            $.each(mqlProp.split(":"), function(i, simpleProp) {
+                if (simpleProp == "id") return;
+                envelope[idToQueryName(simpleProp)] = {"query": getQuery(simpleProp)};
+            })
+        })
+        function handler(results) {
+            var errorProps = handlePropertyInfo(results, properties);
+            if (errorProps.length > 0)
+                return onError(errorProps);
+            onComplete();
+        }
+        freebase.mqlRead(envelope, handler);
+    }
+    function handlePropertyInfo(results, properties) {
+        assert(results.code == "/api/status/ok", results);
+        var errorProps = [];
+        $.each(properties, function(_,complexProp){
+            $.each(complexProp.split(":"), function(_, mqlProp) {
+                if (mqlProp == "id") return;
+                var result = results[idToQueryName(mqlProp)];
+                if (freebase.isBadOrEmptyResult(result)){
+                    errorProps.push(mqlProp)
+                    return
+                }
+                result = result.result;
+                if (result.expected_type.id) typesSeen.add(result.expected_type.id)
+                result.inverse_property = result.reverse_property || result.master_property;
+                propMetadata[mqlProp] = result;
+            });
+        });
+        return errorProps;
+    }
+    freebase.getPropMetadata = function(prop) {return propMetadata[prop];}
+
+    freebase.isBadOrEmptyResult = function(mqlResult) {
+        return mqlResult.code != "/api/status/ok" || mqlResult.result === null;
+    }
+
+    
     return freebase;
 }());
 
