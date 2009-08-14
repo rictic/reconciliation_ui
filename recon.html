@@ -56,8 +56,9 @@
                 <br>
                 <button style='float:right;' onclick='continueToReconciliation();'>Yep, Let's Continue &gt;</button>
             </div>
-          </div>
+        </div>
       </div>
+
 <!--    The main app area    -->
       <div id="tabs" class="invisible">
           <ul>
@@ -263,6 +264,7 @@
                 }, inputProcessingYielder);
             }
             function cancelInputProcessing() {
+                $(".inputLoading").hide()
                 inputProcessingYielder.cancel();
             }
             function showAmbiguousRowPrompt(startingRowIdx) {
