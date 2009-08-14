@@ -169,6 +169,12 @@ label.findItem {
     -moz-opacity:0.5;
 }
 
+.disabled {
+    opacity:0.5;  
+    filter:alpha(opacity=50);  
+    -moz-opacity:0.5;
+}
+
 #miniTopicFloater {
     background-color: #fff;
     border: 2px solid #999;

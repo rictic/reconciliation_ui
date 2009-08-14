@@ -448,6 +448,25 @@ var Set = function() {
     this.addAll(arguments);
 }
 
+//Useful for handling events on rapidly changing input elements
+//  Returns a function that calls `initially` when throttler is first called in a period,
+//  then the throttler waits until it hasn't been called in `timeout` milliseconds before
+//  calling `updated` 
+function throttler(initially, updated, timeout) {
+    timeout = timeout || 250;
+    var waiter = null;
+    return function() {
+        if (waiter === null)
+            initially();
+        else
+            clearTimeout(waiter);
+        
+        waiter = setTimeout(function() {
+            waiter = null;
+            updated();
+        }, timeout);
+    }
+}
 
 /*
 ** create debugging tools if they're not available

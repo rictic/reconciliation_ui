@@ -20,44 +20,44 @@
         <!--    Ask for a spreadsheet        -->
         <div id="spreadsheetInput" class="container">
             <h3>Copy your spreadsheet here:</h3>
-            <textarea rows="15" cols="80" name="spreadsheet" id="spreadsheet"></textarea><br>
-            <button onclick="handleInput();">Parse Spreadsheet</button>
-            <button onclick="$('#spreadsheet')[0].value = sampleData;">Sample Data</button>
-            <button onclick="$('#spreadsheet')[0].value = complexData;">Complex Sample</button>
+            <textarea rows="15" cols="80" name="initialInput" id="initialInput"></textarea><br>
+            <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').change();">Sample Data</button>
+            <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').change();">Complex Sample</button>
+            <img src='spinner.gif' class='inputLoading invisible'>
         </div>
         
-        <!--    If the spreadsheet is ambiguous, ask for clarification     -->
-        <div id="formatDisambiguation" class="container invisible">
-            <h3>Are these <span class='numThings'>several</span> rows about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'></span>"?</h3>
+        <div id='inputWindow'>
+            <!--    If the spreadsheet is ambiguous, ask for clarification     -->
+            <div id="formatDisambiguation" class="container invisible screen">
+                <h3>Are these <span class='numThings'>several</span> rows about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'></span>"?</h3>
 
-            <button onclick='$("#formatDisambiguation").hide(); showConfirmationSpreadsheet();'>
-                This is about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s. 
-            </button>
-            <button onclick='doCombineRows();'>
-                These rows are all about "<span class='thingName'>one thing</span>"
-            </button>
+                <button onclick='$("#formatDisambiguation").hide(); showConfirmationSpreadsheet();'>
+                    This is about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s. 
+                </button>
+                <button onclick='doCombineRows();'>
+                    These rows are all about "<span class='thingName'>one thing</span>"
+                </button>
 
-            <table>
-                <thead>
-                    <tr class='headers'><th></th></tr>
-                </thead>
-                <tbody>
-                    <tr><td></td></tr>
-                </tbody>
-            </table>
-        </div>
-    
-        <!--    Confirm that the parse was correct      -->
-        <div id="spreadsheetPreview" class="container invisible">
-            <h3>Does this look right?</h3>
-            <div id="spreadsheetDiv" class="container">
+                <table>
+                    <thead>
+                        <tr class='headers'><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td></td></tr>
+                    </tbody>
+                </table>
             </div>
-            <br>
-            <button onclick='$("#spreadsheetInput").show();$("#spreadsheetPreview").hide();'>&lt; Back</button>
-            <button style='float:right;' onclick='continueToReconciliation();'>Continue &gt;</button>
-        </div>
+    
+            <!--    Confirm that the parse was correct      -->
+            <div id="spreadsheetPreview" class="container invisible screen">
+                <h3>Does this look right?</h3>
+                <div id="spreadsheetDiv" class="container">
+                </div>
+                <br>
+                <button style='float:right;' onclick='continueToReconciliation();'>Yep, Let's Continue &gt;</button>
+            </div>
+          </div>
       </div>
-
 <!--    The main app area    -->
       <div id="tabs" class="invisible">
           <ul>
@@ -220,14 +220,29 @@
         <script language="javascript" charset="utf-8" src="version.js"></script>
 
         <script type="text/javascript" language="javascript">
-            function handleInput() {
-                $("button").attr("disabled","disabled");
-                var input = $('#spreadsheet')[0].value;
+            var inputProcessingYielder = new Yielder();
+            
+            function initialInputChanged() {
+                cancelInputProcessing();
+                resetEntities();
+                $("#inputWindow").addClass("disabled");
+                $("#inputWindow button").attr("disabled","disabled");
+            }
+            function initialInputUpdated() {
+                $(".inputLoading").show()
+                handleInput(function() {
+                    $(".inputLoading").hide()
+                    $("#inputWindow").removeClass("disabled");
+                    $("#inputWindow button").removeAttr("disabled");
+                });
+            }
+
+            function handleInput(callback) {
+                var input = $('#initialInput')[0].value;
                 if (input.charAt(0) === "{") {
                     parseJSON(input, function() {
                         initializeTabs();
                         spreadsheetProcessed(beginAutoReconciliation);
-                        $("button").removeAttr("disabled");
                     });
                     return;
                 }
@@ -237,16 +252,18 @@
                         buildRowInfo(spreadsheetRows, function(rows){
                             function afterwards(f){
                                 return function(a) {
-                                    $("#spreadsheetInput").hide();
-                                    $("button").removeAttr("disabled");
+                                    $("#inputWindow .screen").hide();
                                     f(a);
+                                    if (callback) callback();
                                 }
-                            };
-
-                            getAmbiguousRowIndex(undefined, afterwards(showAmbiguousRowPrompt), afterwards(showConfirmationSpreadsheet));
-                        });
-                    })
-                });
+                            }
+                            getAmbiguousRowIndex(undefined, afterwards(showAmbiguousRowPrompt), afterwards(showConfirmationSpreadsheet), inputProcessingYielder);
+                        }, inputProcessingYielder);
+                    }, inputProcessingYielder)
+                }, inputProcessingYielder);
+            }
+            function cancelInputProcessing() {
+                inputProcessingYielder.cancel();
             }
             function showAmbiguousRowPrompt(startingRowIdx) {
                 var groupedHeaders = groupProperties(headers);
@@ -332,12 +349,10 @@
                 spreadSheetData["bSort"] = false;
                 $("#spreadsheetDiv").html('<table class="display" id="spreadsheetTable"><\/table>');
                 $('#spreadsheetTable').dataTable(spreadSheetData);
-                $('#spreadsheetInput').hide();
                 $('#spreadsheetPreview').show();
             }
             var previousSelectedTab = 0;
             function initializeTabs() {
-                $("#spreadsheetPreview").hide();
                 var tabs = $("#tabs > ul");
                 tabs.tabs();
                 tabs.bind("tabsselect", function(event, ui) {
@@ -356,6 +371,7 @@
                 tabs.tabs("select", 0);
             }
             function continueToReconciliation() {
+                $("#gettingInput").remove();
                 initializeTabs();
                 objectifyRows(function() {
                     spreadsheetProcessed(beginAutoReconciliation);
@@ -405,6 +421,8 @@
             	    var bugReportDetails = "&description=" + escape("Found in version: " + SPREADSHEET_LOADER_VERSION + "\r\n\r\n");
             	    $(".bugReportLink").attr("href", $(".bugReportLink").attr("href") + bugReportDetails);
             	}
+            	var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
+            	$("#initialInput").change(inputThrottler).keyup(inputThrottler).keydown(inputThrottler);
             });
 
             function updateUnreconciledCount() {

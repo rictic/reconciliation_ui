@@ -38,9 +38,9 @@ var typesSeen = new Set();
 ** Parsing and munging the input
 */
 
-function parseTSV(spreadsheet, onComplete) {
-    var position = 0;
-    
+function parseTSV(spreadsheet, onComplete, yielder) {
+
+    var position = 0;    
     function parseLine() {
         var fields = [];
         var inQuotes = false;
@@ -122,7 +122,6 @@ function parseTSV(spreadsheet, onComplete) {
         }
     }
     var rows = [];
-    var yielder = new Yielder();
     function parseSpreadsheet() {
         while(spreadsheet.charAt(position) != "") {
             rows.push(parseLine());
@@ -162,7 +161,7 @@ function parseJSON(json, onComplete) {
     });
 }
 
-function removeBlankLines(rows, onComplete) {
+function removeBlankLines(rows, onComplete, yielder) {
     var newRows = [];
     politeEach(rows, function(_,row) {
         if (row.length === 1 && row[0] === "")
