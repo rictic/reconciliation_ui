@@ -19,8 +19,8 @@
       <div id="gettingInput">
         <!--    Ask for a spreadsheet        -->
         <div id="spreadsheetInput" class="container">
-            <h3>Copy your spreadsheet here:</h3>
-            <textarea rows="15" cols="80" name="initialInput" id="initialInput"></textarea><br>
+            <h3>Paste your spreadsheet here:</h3>
+            <textarea name="initialInput" id="initialInput" class='spreadsheet' ></textarea><br>
             <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').change();">Sample Data</button>
             <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').change();">Complex Sample</button>
             <img src='spinner.gif' class='inputLoading invisible'>
@@ -134,7 +134,7 @@
           <div id="spreadsheetRender" class="container">
               
               <h3>Copy your updated spreadsheet from here:</h3>
-              <textarea rows="15" cols="80" name="outputSpreadSheet" id="outputSpreadSheet"></textarea><br>
+              <textarea name="outputSpreadSheet" id="outputSpreadSheet" class='spreadsheet'></textarea><br>
               
 
               <h3>Upload your data to Freebase:</h3>
