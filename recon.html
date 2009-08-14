@@ -425,6 +425,7 @@
             	}
             	var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
             	$("#initialInput").change(inputThrottler).keyup(inputThrottler).keydown(inputThrottler);
+            	if ($("#initialInput")[0].value != "") $("#initialInput").change();
             });
 
             function updateUnreconciledCount() {
