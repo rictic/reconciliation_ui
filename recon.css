@@ -11,10 +11,6 @@ body {
     display: none;
 }
 
-table {
-    border-collapse: collapse;
-}
-
 .container {
 	padding: 30px;
 }
@@ -214,10 +210,6 @@ label.findItem {
     color:#f40;
 }
 
-th {
-    text-align: center;
-}
-
 th.upperHeader {
     border-bottom: 1px solid #999;
 }
@@ -228,4 +220,28 @@ th.bottomHeader {
 textarea.spreadsheet {
     width: 100%;
     height: 200px;
+}
+
+table {
+	border-collapse: collapse;
+	text-align: left;
+}
+
+th {
+	font-size: 120%;
+	padding: 10px 8px;
+}
+
+td {
+	border-bottom: 1px solid #ccc;
+	padding: 9px 8px 0px 8px;
+}
+
+.reconciliationsToReview td {
+    border: none;
+}
+
+.reconciliationsToReview a {
+    color: #0063DC;
+    text-decoration: none;
 }
