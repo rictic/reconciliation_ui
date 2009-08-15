@@ -387,7 +387,7 @@ function buildTableHeaders(groupedProps) {
     $.each(groupedProps.getProperties(), function(_,prop) {buildHeaders(groupedProps,prop);});
     var tableHeader = node("thead");
     for (var i = rows.length-1; i >= 0; i--) {
-        row = rows[i];
+        var row = rows[i];
         var tr = node("tr");
         $.each(row,function(_,header){
             tr.append(header);
