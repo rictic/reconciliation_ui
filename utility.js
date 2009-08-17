@@ -123,7 +123,7 @@ function textValue(value) {
 
 function wrapForOverflow(elementArray, cutoff) {
     var result = node("div")
-    cutoff = cutoff || 4;
+    cutoff = cutoff || 3;
     if (elementArray.length > cutoff+1){
         for (var i = 0; i < cutoff; i++)
             result.append(elementArray[i]).append("<br>");
