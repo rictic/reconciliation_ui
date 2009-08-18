@@ -131,9 +131,12 @@ function autoReconcileResults(entity) {
     }
     else {
         var wasEmpty = isObjectEmpty(manualQueue);
+        var wasSingleton = getSecondValue(manualQueue) === undefined;
         manualQueue[entity["/rec_ui/id"]] = entity;
         if (wasEmpty)
             manualReconcile();
+        else if (wasSingleton)
+            renderReconChoices(entity)
     }
     autoReconcile();
 }
