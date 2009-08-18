@@ -201,7 +201,6 @@
         <script language="javascript" charset="utf-8" src="lib/jquery.ui/ui/ui.tabs.js"></script>
         <script language="javascript" charset="utf-8" src="lib/jquery.ui/ui/ui.progressbar.js"></script>
         <script language="javascript" charset="utf-8" src="lib/dataTables/media/js/jquery.dataTables.js"></script>
-        <script language="javascript" charset="utf-8" src="lib/jquery.history.js"></script>
         <script language="javascript" charset="utf-8" src="lib/jquery.event.hover.js"></script>
 
         <script language="javascript" charset="utf-8" src="lib/suggest/jquery.freebase.minitopic.js"></script>
@@ -376,11 +375,8 @@
                   input.value = eval(input.id);
                 });
                 $("#progressbar").progressbar({value:0});
-                if (window.location.hash != "")
-                  window.location.hash = "";
-            		$.historyInit(displayReconChoices);
-        	     window.onbeforeunload = function() {
-        	         if (reconciliationBegun)
+                window.onbeforeunload = function() {
+        	        if (reconciliationBegun)
                         return "You may have unsaved changes.  Make sure to copy your updated spreadsheet or upload your data to Freebase on the Retrieve Your Data tab.";
                 };
                 $("#mdo_data_source").suggest({type:"/dataworld/information_source",
@@ -398,7 +394,6 @@
                     else 
                         warning.hide();
                 });
-            	$.historyInit(displayReconChoices);         	 
             	$(".triplesDisplayButton").click(function(){$(".triplesDisplay").slideToggle()})
             	if ("SPREADSHEET_LOADER_VERSION" in window) {
             	    $(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + SPREADSHEET_LOADER_VERSION);
