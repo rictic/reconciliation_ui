@@ -45,7 +45,7 @@ function renderReviews() {
         else freebase.getName(entity.id, handleName);
             
         $(".internalLink", template).click(function(val) {
-            $.historyLoad(entity["/rec_ui/id"]);
+            displayReconChoices(entity["/rec_ui/id"]);
             $("#tabs > ul").tabs("select",0);})
         container.append(template);
     }, undefined, renderYielder);

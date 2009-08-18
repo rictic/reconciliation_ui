@@ -146,7 +146,7 @@ function manualReconcile() {
     if ($(".manualReconChoices:visible").length === 0) {
         var val = getFirstValue(manualQueue);
         if(val != undefined) {
-            $.historyLoad(val["/rec_ui/id"])
+            displayReconChoices(val["/rec_ui/id"])
             renderReconChoices(getSecondValue(manualQueue)); //render-ahead the next one
         }
         else{

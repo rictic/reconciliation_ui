@@ -79,7 +79,7 @@ li.fbs-selected,
 
 
 .fbs-suggestnew { 
-    color: #fff;
+    color: #444;
 }
 
 .fbs-pane,
@@ -106,6 +106,7 @@ li.nomatch,
 .fbs-pane,
 .fbs-flyout-pane { 
     border: 1px solid #bbb;
+    padding: 2px;
 }
 
 .fbs-flyout-pane {
@@ -124,7 +125,7 @@ li.nomatch,
 
 li.fbs-help-on-focus,
 li.nomatch { 
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid #dae3e9;
 }
 
 .fbs-item-name {
@@ -138,19 +139,18 @@ li.fbs-selected .fbs-item-name {
 
 li.fbs-selected .fbs-item-name {
     border-color: #f60;
+    background: #fff;
 }
 
-.fbs-item-type { 
-    color: #777;
-}
 
 .fbs-nomatch-text {
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid #dae3e9;
     background: #f8f8f8;
 }
 
 .fbs-suggestnew { 
-    background: #999;
+    background: #eeeeee;
+    border-top: 1px solid #dae3e9;
 }
 
 
@@ -167,22 +167,25 @@ li.fbs-selected .fbs-item-name {
 .fbs-suggestnew-button,
 .fbs-flyout-pane { 
     border: 1px solid #9a9a9a;
+    color: #999999;
+}
+
+.fbs-suggestnew-button {
+    color: #444444;
 }
 
 ul.fbs-list,
 .fbs-flyout-content,
 .fbs-attribution,
-li.fbs-item, 
 .fbs-header {
-    border: 1px solid #e5e5e5;
+    border: 1px solid #dae3e9;
 }
 
 .fbs-header { border-bottom: 0; }
 
 li.fbs-item {
-    border-top: 0;
-    border-right: 0;
-    border-left: 0;
+    border-bottom: 1px solid #dae3e9;
+  
 }
 
 .fbs-attribution {
@@ -226,7 +229,6 @@ Freebase Suggest Structure
 -------------------------------------------------------
 */
 
-ul.fbs-list,
 .fbs-flyout-content,
 .fbs-attribution {
     margin: 2px;
@@ -243,6 +245,7 @@ ul.fbs-list {
     overflow: auto;
     overflow-x: hidden;
     border-bottom: 0;
+    border-top: 0;
 }
 
 .fbs-flyout-content,
@@ -293,20 +296,24 @@ a.fbs-more-link {
     margin: 2px 2px -2px 2px;
 }
 
+.fbs-item-name label {
+    font-size: 0.9em;
+}
 
-.fbs-item-alias,
+
 .fbs-item-type,
-.fbs-item-name {
-    display:block;
+.fbs-item-name label {
+    display: block;
     overflow: hidden;
-    white-space:nowrap;
-    text-overflow:ellipsis;
+    white-space: nowrap;
+/*    text-overflow:ellipsis;*/
 }
 
 .fbs-item-name {
     padding: 5px 8px 4px 6px;
     font-size: 1.4em;
     line-height: 1;
+    background: #f4f8fb;
 }
 
 /* result name */
@@ -314,23 +321,31 @@ a.fbs-more-link {
     font-weight: bold;
 }
 
+.fbs-item-type { 
+    color: #777;
+    float: right;
+    font-size: 0.7em;
+    max-width: 40%;
+    padding-left: 0.25em;    
+}
+
 /* hover state of .fbs-item */
 li.fbs-selected { 
     cursor: pointer;
 }
 
-/* what the object is */
-.fbs-item-type  {
-    font-size: 0.9em;
-}
+/*
+-------------------------------------------------------
+Freebase Suggest Status
+-------------------------------------------------------
+*/
 
-/* also known as */
-.fbs-item-alias {
-    float: right;
-    max-width: 40%;
-    vertical-align:bottom;
+.fbs-status {
+    border: 1px solid #dae3e9;
+    padding: 4px 5px;
+    color: #000;
+    font-size: 0.7em;
 }
-.fbs-item-alias:before { content:'...'; }
 
 /*
 -------------------------------------------------------
@@ -346,6 +361,7 @@ li.nomatch {
     display: block;
     font-weight: bold;
     line-height: 1;
+    font-size: .9em;
 }
 
 .fbs-nomatch-text,
@@ -356,12 +372,14 @@ ul.fbs-search-tips {
 
 .nomatch h3 {
     font-weight: bold;
+    font-size: 0.9em;
 }
 
 ul.fbs-search-tips li {
   list-style: disc;
   margin-left: 1.6em;
   margin-bottom: 0.3em;
+  font-size: 0.9em;
 }
 
 /*
@@ -372,7 +390,7 @@ Freebase Suggest Create New
 
 /* suggest new container */
 .fbs-suggestnew {
-    padding: .4em .3em .5em 8px;
+    padding: 0.4em 0.3em 0.5em 8px;
 }
 
 .fbs-suggestnew-button {
@@ -382,13 +400,17 @@ Freebase Suggest Create New
     max-width: 17em;
 }
 
-.fbs-suggestnew-description { margin-bottom: 0.6em; }
+.fbs-suggestnew-description { 
+    margin-bottom: 0.6em;
+    font-size: 0.7em;
+     }
 
 /* (Shift + Enter) */
 .fbs-more-shortcut,
 .fbs-suggestnew-shortcut {
   margin-left: 0.4em;
-  font-size: 90%;
+  font-size: 70%;
+  color: #999999;
 }
 
 /*
@@ -397,13 +419,21 @@ Freebase Suggest Flyout Elements
 -------------------------------------------------------
 */
 
+#fbs-topic-flyout
+
 /* the object title */
 h1#fbs-flyout-title {
-    font-size: 1.4em;
+    font-size: 1.2em;
     font-weight: bold;
     margin-bottom: 0.5em;
     margin-top: 0.3em;
 }
+
+h1#fbs-flyout-title .template-label {
+    color: #999999;
+    font-size: 0.8em;
+}
+
 
 /* denotes topic, type, view, base, etc. */
 #fbs-flyout-title .fbs-flyout-label {
@@ -426,7 +456,7 @@ h1#fbs-flyout-title {
 }
 
 .fbs-flyout-images img {
-    float:left;
+    float: left;
     margin-right: 1px;
 }
 
@@ -500,7 +530,7 @@ Freebase Suggest Attribution
     font-size: 1.2em;
 }
 
-
+/*
 -------------------------------------------------------
 Freebase SuggestIE Hacks
 -------------------------------------------------------
@@ -512,14 +542,11 @@ to inline Internet Explor fixes
 * html .fbs-list,
 * html .fbs-list-icons { height: expression( this.scrollHeight > 410 ? "410" : "auto" ); /* sets max-height for IE */ }
 
-* html .fbs-item-alias,
-* html .fbs-item-type,
 * html .fbs-item-name {
     width : 253px !important;
 }
 
 * html .fbs-item-name{ width: 100%; }
-* html .fbs-item-alias { display:none; }
 
 * html .fbs-flyout-content:after { height: 1px; }
 
@@ -532,9 +559,9 @@ design changes before we can fully
 update the templates.
 */
 
-.fbs-item-type,
+/*.fbs-item-type,*/
 .unicode {
-  display:none;
+  display: none;
 }
 
-/* Version:r77376:77420 Built:Fri Jul 10 2009 by will */
+/* Version:r79501 Built:Fri Aug 14 2009 by daepark */
