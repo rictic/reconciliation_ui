@@ -230,6 +230,13 @@
             }
             function initialInputUpdated() {
                 $(".inputLoading").show()
+                
+                if ($("#initialInput")[0].value === "") {
+                    $(".inputLoading").hide();
+                    $("#inputWindow").removeClass("disabled");
+                    $("#inputWindow button").removeAttr("disabled");
+                    $("#inputWindow").hide();
+                }
                 handleInput(function() {
                     $(".inputLoading").hide()
                     $("#inputWindow").removeClass("disabled");
