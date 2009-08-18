@@ -293,7 +293,7 @@
                         html += "<\/td>";
                     }
                     return html + "<\/tr>";
-                } 
+                }
 
                 var separateRows = rowHTML(rows[startingRowIdx]);
                 var numThings = 1;
@@ -331,10 +331,10 @@
                 var columnNames = $.map(headers, getPropName);
                 for (var i = 0; i < columnNames.length; i++)
                     spreadSheetData.aoColumns.push({"sTitle":columnNames[i]});
-                for (var i = 0; i < rows.length; i++){
+                politeEach(rows, function(_,entity) {
                     var row = [];
                     for (var j = 0; j < headers.length; j++){
-                        var val = rows[i][headers[j]];
+                        var val = entity[headers[j]];
                         if (val == undefined)
                             val = "";
                         else if ($.isArray(val)){
@@ -346,18 +346,20 @@
                             else
                                 val = "[" + arr.join(", ") + "]";
                         }
-    
+
                         row[j] = val;
                     }
                     spreadSheetData.aaData.push(row);
-                }
+                },
+                function() {
+                    updateUnreconciledCount();
+                    spreadSheetData["bAutoWidth"] = false;
+                    spreadSheetData["bSort"] = false;
+                    $("#spreadsheetDiv").html('<table class="display" id="spreadsheetTable"><\/table>');
+                    $('#spreadsheetTable').dataTable(spreadSheetData);
+                    $('#spreadsheetPreview').show();                    
+                });
 
-                updateUnreconciledCount();
-                spreadSheetData["bAutoWidth"] = false;
-                spreadSheetData["bSort"] = false;
-                $("#spreadsheetDiv").html('<table class="display" id="spreadsheetTable"><\/table>');
-                $('#spreadsheetTable').dataTable(spreadSheetData);
-                $('#spreadsheetPreview').show();
             }
             var previousSelectedTab = 0;
             function initializeTabs() {
