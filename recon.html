@@ -438,8 +438,15 @@
                 $("#initialInput").keypress(capture_tab).keydown(capture_tab);
 
             	var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
-
-            	$("#initialInput").change(inputThrottler).keyup(inputThrottler).keydown(inputThrottler);
+                var harmlessKeys = new Set(37,38,39,40,91,93,20,35,36,33,34,27,18,17,16);
+                var inputFilterer = function(event) {
+                    if (harmlessKeys.contains(event.keyCode))
+                        return;
+                    log(event.keyCode);
+                    inputThrottler(event);
+                }
+                
+            	$("#initialInput").change(inputFilterer).keyup(inputFilterer).keydown(inputFilterer);
             	if ($("#initialInput")[0].value != "") $("#initialInput").change();
             });
 
