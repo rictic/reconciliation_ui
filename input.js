@@ -178,6 +178,7 @@ function setupHeaderInfo(headers, onComplete, onError) {
 
 function buildRowInfo(spreadsheetRows, onComplete) {
     resetEntities();
+    if (spreadsheetRows.length === 0) return;
     headers = $.map(spreadsheetRows.shift(), function(header){return $.trim(header)});
     setupHeaderInfo(headers, buildRows, function(errorProps) {
         error("Can't find these mqlProps:")
