@@ -91,6 +91,7 @@ function constructReconciliationQuery(entity, typeless) {
     }
     if (typeless || !query['/type/object/type'])
         query['/type/object/type'] = ['/common/topic'];
+    entity['/rec_ui/recon_query'] = query;
     return query;
 }
 
@@ -117,14 +118,15 @@ function autoReconcileResults(entity) {
     if(entity.reconResults.length == 0) {
         if (!entity.typelessRecon)
             getCandidates(entity,autoReconcileResults,function(){automaticQueue.shift();autoReconcile();},true);
-        entity["id"] = "None";
+        
+        entity.reconcileWith("None", true);
         warn("No candidates found for the object:");
         warn(entity);
         addColumnRecCases(entity);
     }        
     // match found:
     else if(entity.reconResults[0]["match"] == true) {
-        entity.id = entity.reconResults[0].id;
+        entity.reconcileWith(entity.reconResults[0].id, true);
         canonicalizeFreebaseId(entity);
         entity["/rec_ui/freebase_name"] = entity.reconResults[0].name;
         addColumnRecCases(entity);
@@ -307,10 +309,8 @@ function fillInMQLProps(entity, mqlResult) {
 function handleReconChoice(entity,freebaseId) {
     delete manualQueue[entity["/rec_ui/id"]];
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
-    if (freebaseId != undefined){
-        entity.id = freebaseId;
-        canonicalizeFreebaseId(entity);
-    }
+    entity.reconcileWith(freebaseId, false);
+    canonicalizeFreebaseId(entity);
     addColumnRecCases(entity);
     updateUnreconciledCount();
     manualReconcile();
