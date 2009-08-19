@@ -449,6 +449,10 @@
                 }
                 
             	$("#initialInput").change(inputFilterer).keyup(inputFilterer).keydown(inputFilterer);
+            	//for IE
+            	$("#initialInput")[0].onpaste = inputThrottler;
+            	//for most everyone else browsers
+            	$("#initialInput")[0].oninput = inputThrottler;
             	if ($("#initialInput")[0].value != "") $("#initialInput").change();
             });
 
