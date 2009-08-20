@@ -36,7 +36,7 @@ Entity.prototype.reconcileWith = function(id, automatic) {
         query:this['/rec_ui/recon_query'],
         reconciledWith:id,
         automatic:automatic,
-        software_tool: "/guid/9202a8c04000641f800000000df257ed"
+        softwareTool: "/guid/9202a8c04000641f800000000df257ed"
     }
     $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
 }
