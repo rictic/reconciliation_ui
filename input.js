@@ -38,9 +38,9 @@ var typesSeen = new Set();
 ** Parsing and munging the input
 */
 
-function parseTSV(spreadsheet, onComplete) {
-    var position = 0;
-    
+function parseTSV(spreadsheet, onComplete, yielder) {
+
+    var position = 0;    
     function parseLine() {
         var fields = [];
         var inQuotes = false;
@@ -122,7 +122,6 @@ function parseTSV(spreadsheet, onComplete) {
         }
     }
     var rows = [];
-    var yielder = new Yielder();
     function parseSpreadsheet() {
         while(spreadsheet.charAt(position) != "") {
             rows.push(parseLine());
@@ -162,7 +161,7 @@ function parseJSON(json, onComplete) {
     });
 }
 
-function removeBlankLines(rows, onComplete) {
+function removeBlankLines(rows, onComplete, yielder) {
     var newRows = [];
     politeEach(rows, function(_,row) {
         if (row.length === 1 && row[0] === "")
@@ -179,6 +178,7 @@ function setupHeaderInfo(headers, onComplete, onError) {
 
 function buildRowInfo(spreadsheetRows, onComplete) {
     resetEntities();
+    if (spreadsheetRows.length === 0) return;
     headers = $.map(spreadsheetRows.shift(), function(header){return $.trim(header)});
     setupHeaderInfo(headers, buildRows, function(errorProps) {
         error("Can't find these mqlProps:")
@@ -359,7 +359,7 @@ function objectifyRows(onComplete) {
                 if (!(firstPart in row))
                     row[firstPart] = [];
                 if (row[firstPart][i] === undefined)
-                    row[firstPart][i] = cvtEntity(mqlMetadata[firstPart], row);;
+                    row[firstPart][i] = cvtEntity(freebase.getPropMetadata(firstPart), row);;
                 slot = row[firstPart][i];
                 $.each(parts.slice(1,parts.length-1), function(_,part) {
                     if (!(part in slot))
@@ -370,7 +370,7 @@ function objectifyRows(onComplete) {
                     slot = slot[part];
                 });
                 var lastPart = parts[parts.length-1];
-                var meta = mqlMetadata[lastPart];
+                var meta = freebase.getPropMetadata(lastPart);
                 if (meta === undefined && lastPart !== "id")
                     return; //if we don't know what it is, leave it as it is
                 if (lastPart === "id" || isValueProperty(lastPart))
@@ -385,7 +385,7 @@ function objectifyRows(onComplete) {
                         new_entity[meta.inverse_property] = slot;
 //                         cvt["/rec_ui/mql_props"].push(meta.inverse_property);
                         var reversedParts = $.map(parts.slice().reverse(), function(part) {
-                            return (mqlMetadata[part] && mqlMetadata[part].inverse_property) || false;
+                            return (freebase.getPropMetadata(part) && freebase.getPropMetadata(part).inverse_property) || false;
                         });
                         if (all(reversedParts)){
                             new_entity["/rec_ui/mql_props"].push(reversedParts.join(":"));

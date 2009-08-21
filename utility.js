@@ -123,7 +123,7 @@ function textValue(value) {
 
 function wrapForOverflow(elementArray, cutoff) {
     var result = node("div")
-    cutoff = cutoff || 4;
+    cutoff = cutoff || 3;
     if (elementArray.length > cutoff+1){
         for (var i = 0; i < cutoff; i++)
             result.append(elementArray[i]).append("<br>");
@@ -387,7 +387,7 @@ function buildTableHeaders(groupedProps) {
     $.each(groupedProps.getProperties(), function(_,prop) {buildHeaders(groupedProps,prop);});
     var tableHeader = node("thead");
     for (var i = rows.length-1; i >= 0; i--) {
-        row = rows[i];
+        var row = rows[i];
         var tr = node("tr");
         $.each(row,function(_,header){
             tr.append(header);
@@ -448,6 +448,53 @@ var Set = function() {
     this.addAll(arguments);
 }
 
+//Useful for handling events on rapidly changing input elements
+//  Returns a function that calls `initially` when throttler is first called in a period,
+//  then the throttler waits until it hasn't been called in `timeout` milliseconds before
+//  calling `updated` 
+function throttler(initially, updated, timeout) {
+    timeout = timeout || 250;
+    var waiter = null;
+    return function() {
+        if (waiter === null)
+            initially();
+        else
+            clearTimeout(waiter);
+        
+        waiter = setTimeout(function() {
+            waiter = null;
+            updated();
+        }, timeout);
+    }
+}
+
+//adds insertAtCaret function to jQuery objects, to insert text where the caret is in
+// a textarea
+$.fn.insertAtCaret = function (myValue) {
+	return this.each(function(){
+			//IE support
+			if (document.selection) {
+					this.focus();
+					sel = document.selection.createRange();
+					sel.text = myValue;
+					this.focus();
+			}
+			//MOZILLA / NETSCAPE support
+			else if (this.selectionStart || this.selectionStart == '0') {
+					var startPos = this.selectionStart;
+					var endPos = this.selectionEnd;
+					var scrollTop = this.scrollTop;
+					this.value = this.value.substring(0, startPos)+ myValue+ this.value.substring(endPos,this.value.length);
+					this.focus();
+					this.selectionStart = startPos + myValue.length;
+					this.selectionEnd = startPos + myValue.length;
+					this.scrollTop = scrollTop;
+			} else {
+					this.value += myValue;
+					this.focus();
+			}
+	});
+};
 
 /*
 ** create debugging tools if they're not available
