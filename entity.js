@@ -39,4 +39,6 @@ Entity.prototype.reconcileWith = function(id, automatic) {
         softwareTool: "/guid/9202a8c04000641f800000000df257ed"
     }
     $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
+    addReviewItem(this);
 }
+
