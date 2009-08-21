@@ -45,8 +45,9 @@ function renderReviews() {
         else freebase.getName(entity.id, handleName);
             
         $(".internalLink", template).click(function(val) {
+            $("#tabs > ul").tabs("select",0);
             displayReconChoices(entity["/rec_ui/id"]);
-            $("#tabs > ul").tabs("select",0);})
+            return false;})
         container.append(template);
     }, undefined, renderYielder);
 }

@@ -52,7 +52,7 @@ function autoReconcile() {
         return;
     }
     updateUnreconciledCount();
-    getCandidates(automaticQueue[0], autoReconcileResults);
+    getCandidates(automaticQueue[0], autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
 }
 
 function constructReconciliationQuery(entity, typeless) {
@@ -91,12 +91,13 @@ function constructReconciliationQuery(entity, typeless) {
     }
     if (typeless || !query['/type/object/type'])
         query['/type/object/type'] = ['/common/topic'];
+    entity['/rec_ui/recon_query'] = query;
     return query;
 }
 
-function getCandidates(entity, callback,typeless) {
+function getCandidates(entity, callback, onError,typeless) {
     function handler(results) {
-        entity.reconResults = results; 
+        entity.reconResults = results;
         callback(entity);
     }
     var defaultLimit = 4;
@@ -108,7 +109,7 @@ function getCandidates(entity, callback,typeless) {
         limit = defaultLimit;
     }
     var query = constructReconciliationQuery(entity,typeless);
-    $.getJSON(reconciliation_url + "query?jsonp=?", {q:JSON.stringify(query), limit:limit}, handler);
+    getJSON(reconciliation_url + "query?jsonp=?", {q:JSON.stringify(query), limit:limit}, handler, onError);
 }
 
 function autoReconcileResults(entity) {
@@ -116,34 +117,38 @@ function autoReconcileResults(entity) {
     // no results, set to None:
     if(entity.reconResults.length == 0) {
         if (!entity.typelessRecon)
-            getCandidates(entity,autoReconcileResults,true);
-        entity["id"] = "None";
+            getCandidates(entity,autoReconcileResults,function(){automaticQueue.shift();autoReconcile();},true);
+        
+        entity.reconcileWith("None", true);
         warn("No candidates found for the object:");
         warn(entity);
         addColumnRecCases(entity);
     }        
     // match found:
     else if(entity.reconResults[0]["match"] == true) {
-        entity.id = entity.reconResults[0].id;
+        entity.reconcileWith(entity.reconResults[0].id, true);
         canonicalizeFreebaseId(entity);
         entity["/rec_ui/freebase_name"] = entity.reconResults[0].name;
         addColumnRecCases(entity);
     }
-    else {
-        var wasEmpty = isObjectEmpty(manualQueue);
-        var wasSingleton = getSecondValue(manualQueue) === undefined;
-        manualQueue[entity["/rec_ui/id"]] = entity;
-        if (wasEmpty)
-            manualReconcile();
-        else if (wasSingleton)
-            renderReconChoices(entity)
-    }
+    else
+        addToManualQueue(entity)
     autoReconcile();
 }
 
 /*
 ** Manual Reconciliation
 */
+
+function addToManualQueue(entity) {
+    var wasEmpty = isObjectEmpty(manualQueue);
+    var wasSingleton = getSecondValue(manualQueue) === undefined;
+    manualQueue[entity["/rec_ui/id"]] = entity;
+    if (wasEmpty)
+        manualReconcile();
+    else if (wasSingleton)
+        renderReconChoices(entity)
+}
 
 function manualReconcile() {
     if ($(".manualReconChoices:visible").length === 0) {
@@ -222,8 +227,7 @@ function renderReconChoices(entity) {
                 fetchMqlProps(entity.reconResults[i], entity);
             }
             updateCandidates();
-            
-        });
+        }, function(){;});
     });
     template.insertAfter("#manualReconcileTemplate")
 }
@@ -307,10 +311,8 @@ function fillInMQLProps(entity, mqlResult) {
 function handleReconChoice(entity,freebaseId) {
     delete manualQueue[entity["/rec_ui/id"]];
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
-    if (freebaseId != undefined){
-        entity.id = freebaseId;
-        canonicalizeFreebaseId(entity);
-    }
+    entity.reconcileWith(freebaseId, false);
+    canonicalizeFreebaseId(entity);
     addColumnRecCases(entity);
     updateUnreconciledCount();
     manualReconcile();

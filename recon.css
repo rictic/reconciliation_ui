@@ -127,6 +127,7 @@ a.optionsButton {
     padding-left: 5px;
     padding-right: 5px;
     width: 20%;
+    overflow: hidden;
 }
 
 .currentRecord label {
@@ -241,7 +242,7 @@ td {
     border: none;
 }
 
-.reconciliationsToReview a {
+#main_app a {
     color: #0063DC;
     text-decoration: none;
 }

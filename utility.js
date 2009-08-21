@@ -496,6 +496,34 @@ $.fn.insertAtCaret = function (myValue) {
 	});
 };
 
+function getJSON(url, params, onSuccess, onTimeout, millis) {
+    millis = millis || 120000; //default of 2 minute timeout
+    var timedOut = false;
+    var responded = false;
+    function timeout() {
+        if (responded) return;
+        warn("timed out");
+        timedOut = true;
+        if (onTimeout) onTimeout();
+    }
+    var timer = setTimeout(timeout, millis);
+    function responseHandler(response) {
+        if (timedOut) {
+            warn("got response after timeout")
+            return;
+        }
+        info("got response before timeout")
+        responded = true;
+        clearTimeout(timer);
+        onSuccess(response);
+    }
+
+    if (location.host === "data.labs.freebase.com")
+        $.post(url, params, responseHandler, "jsonp")
+    else 
+        $.getJSON(url, params, responseHandler);
+}
+
 /*
 ** create debugging tools if they're not available
 */
