@@ -145,7 +145,8 @@ function parseJSON(json, onComplete) {
             if (!isValueProperty(prop))
                 entity[prop] = $.map(entity[prop], objectToEntity);
         })
-        $.each(entity['/type/object/type'], function(_,type){typesSeen.add(type)});
+        if (entity['/type/object/type'])
+            $.each(entity['/type/object/type'], function(_,type){typesSeen.add(type)});
         return entity;
     }
     
