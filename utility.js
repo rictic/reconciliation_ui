@@ -450,7 +450,11 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
         clearTimeout(timer);
         onSuccess(response);
     }
-    $.getJSON(url, params, responseHandler);
+
+    if (location.host === "data.labs.freebase.com")
+        $.post(url, params, responseHandler, "jsonp")
+    else 
+        $.getJSON(url, params, responseHandler);
 }
 
 /*
