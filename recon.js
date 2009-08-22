@@ -298,11 +298,11 @@ function fillInMQLProps(entity, mqlResult) {
     }
 
     var result = mqlResult.result;
-    var entity = $("tr." + idToClass(result.id),context);
+    var row = $("tr." + idToClass(result.id),context);
     
     
     for (var i = 0; i < mqlProps.length; i++) {
-        var cell = $("td." + idToClass(mqlProps[i]), entity).empty();
+        var cell = $("td." + idToClass(mqlProps[i]), row).empty();
         cell.append(displayValue(getChainedProperty(result, mqlProps[i])));
         cell.removeClass("replaceme");
     }
