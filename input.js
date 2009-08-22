@@ -316,7 +316,7 @@ function objectifyRows(onComplete) {
                 var result = new Entity({'/type/object/name':value,
                               '/type/object/type':meta.expected_type.id,
                               '/rec_ui/headers': ['/type/object/name','/type/object/type'],
-                              '/rec_ui/mql_props': [],
+                              '/rec_ui/mql_props': []
                               });
                 if (meta.inverse_property != null){
                     result[meta.inverse_property] = row;
