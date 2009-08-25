@@ -440,7 +440,7 @@
                 $("#initialInput").keypress(capture_tab).keydown(capture_tab);
 
                 var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
-                var harmlessKeys = new Set(37,38,39,40,91,93,20,35,36,33,34,27,18,17,16);
+                var harmlessKeys = new Set(37,38,39,40,91,93,20,35,36,33,34,27,18,17,16,224);
                 var inputFilterer = function(event) {
                     if (harmlessKeys.contains(event.keyCode))
                         return;
@@ -450,7 +450,7 @@
                 $("#initialInput").keyup(inputFilterer).keydown(inputFilterer);
             	//for IE
             	$("#initialInput")[0].onpaste = inputThrottler;
-            	//for most everyone else browsers
+                //for most everyone else's browsers
             	$("#initialInput")[0].oninput = inputThrottler;
                 if ($("#initialInput")[0].value != "") inputThrottler();
             });
