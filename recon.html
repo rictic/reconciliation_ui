@@ -21,8 +21,8 @@
         <div id="spreadsheetInput" class="container">
             <h3>Paste your spreadsheet here:</h3>
             <textarea name="initialInput" id="initialInput" class='spreadsheet' ></textarea><br>
-            <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').change();">Sample Data</button>
-            <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').change();">Complex Sample</button>
+            <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Sample Data</button>
+            <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Complex Sample</button>
             <img src='spinner.gif' class='inputLoading invisible'>
         </div>
         
@@ -439,21 +439,20 @@
                 }
                 $("#initialInput").keypress(capture_tab).keydown(capture_tab);
 
-            	var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
+                var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
                 var harmlessKeys = new Set(37,38,39,40,91,93,20,35,36,33,34,27,18,17,16);
                 var inputFilterer = function(event) {
                     if (harmlessKeys.contains(event.keyCode))
                         return;
-                    log(event.keyCode);
                     inputThrottler(event);
                 }
                 
-            	$("#initialInput").change(inputFilterer).keyup(inputFilterer).keydown(inputFilterer);
+                $("#initialInput").keyup(inputFilterer).keydown(inputFilterer);
             	//for IE
             	$("#initialInput")[0].onpaste = inputThrottler;
             	//for most everyone else browsers
             	$("#initialInput")[0].oninput = inputThrottler;
-            	if ($("#initialInput")[0].value != "") $("#initialInput").change();
+                if ($("#initialInput")[0].value != "") inputThrottler();
             });
 
             function updateUnreconciledCount() {
