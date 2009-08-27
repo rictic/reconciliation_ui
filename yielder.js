@@ -8,7 +8,7 @@ function Yielder() {
         if (time() <= this.startTime + 10)
             return false;
         
-        info("yielding to UI thread");
+//         info("yielding to UI thread");
         this.startTime = time();
         this.nextAction = setTimeout(continueFunction, 10);
         return true;
