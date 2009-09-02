@@ -54,6 +54,9 @@ function areNotEq(a1,a2){
     }
 }
 
+function Yielder() {
+	return {shouldYield: function(){return false;}}
+}
 
 
 TestCase("MetaTest",{
