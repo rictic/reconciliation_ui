@@ -39,7 +39,7 @@ var typesSeen = new Set();
 */
 
 function parseTSV(spreadsheet, onComplete, yielder) {
-
+    yielder = yielder || new Yielder();
     var position = 0;    
     function parseLine() {
         var fields = [];
@@ -133,35 +133,6 @@ function parseTSV(spreadsheet, onComplete, yielder) {
     parseSpreadsheet();
 }
 
-function parseJSON(json, onComplete) {
-    var data = JSON.parse(json);
-    headers = data.headers;
-    mqlProps = getMqlProperties(headers);
-
-    function objectToEntity(object) {
-        if (typeof object === 'string') return object;
-        var entity = new Entity(object);
-        $.each(entity['/rec_ui/mql_props'], function(_,prop) {
-            if (!isValueProperty(prop))
-                entity[prop] = $.map(entity[prop], objectToEntity);
-        })
-        if (entity['/type/object/type'])
-            $.each(entity['/type/object/type'], function(_,type){typesSeen.add(type)});
-        return entity;
-    }
-    
-    freebase.fetchPropertyInfo(data.all_properties, function() {
-        addIdColumns();
-        rows = [];
-        politeEach(data.rows, function(_,row) {
-            rows.push(objectToEntity(row));
-        },
-        function() {
-            freebase.fetchTypeInfo(typesSeen.getAll(), onComplete);
-        });
-    });
-}
-
 function removeBlankLines(rows, onComplete, yielder) {
     var newRows = [];
     politeEach(rows, function(_,row) {
@@ -188,6 +159,7 @@ function buildRowInfo(spreadsheetRows, onComplete) {
         buildRows();
     });
     
+
     function buildRows() {
         rows = [];
         politeEach(spreadsheetRows,function(_,rowArray) {
@@ -435,4 +407,34 @@ function objectifyRows(onComplete) {
             row.id = row.id[0];
         $.each($.makeArray(row['/type/object/type']), function(_,type){if (type) typesSeen.add(type);})
     }, onComplete);
+}
+
+
+function parseJSON(json, onComplete) {
+    var data = JSON.parse(json);
+    headers = data.headers;
+    mqlProps = getMqlProperties(headers);
+
+    function objectToEntity(object) {
+        if (typeof object === 'string') return object;
+        var entity = new Entity(object);
+        $.each(entity['/rec_ui/mql_props'], function(_,prop) {
+            if (!isValueProperty(prop))
+                entity[prop] = $.map(entity[prop], objectToEntity);
+        })
+        if (entity['/type/object/type'])
+            $.each(entity['/type/object/type'], function(_,type){typesSeen.add(type)});
+        return entity;
+    }
+    
+    freebase.fetchPropertyInfo(data.all_properties, function() {
+        addIdColumns();
+        rows = [];
+        politeEach(data.rows, function(_,row) {
+            rows.push(objectToEntity(row));
+        },
+        function() {
+            freebase.fetchTypeInfo(typesSeen.getAll(), onComplete);
+        });
+    });
 }
