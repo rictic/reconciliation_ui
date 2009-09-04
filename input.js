@@ -140,7 +140,7 @@ function removeBlankLines(rows, onComplete, yielder) {
             return;
         newRows.push(row);
     }, 
-    function(){onComplete(newRows);});
+    function(){onComplete(newRows);}, yielder);
 }
 
 function setupHeaderInfo(headers, onComplete, onError) {
