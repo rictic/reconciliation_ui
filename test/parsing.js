@@ -68,19 +68,30 @@ Stevie Wonder\t/people/person\n\
     }
 }
 
-function addCompleteParsingTestCase(name, spreadsheet, expectedParse, collapseRows) {
-    tests["test completely processing a " + name] = function() {
+function addCompleteParsingTestCase(name, spreadsheet, expectedParse, ambiguous, collapseRows) {
+    var testName = "test completely processing ";
+    if (ambiguous){
+        testName += "an ambiguous ";
+        if (collapseRows)
+            testName += "collapsed "; 
+    }
+    else testName += "a "
+    testName += name;
+    tests[testName] = function() {
         expectAsserts(1);
 
         parseTSV(spreadsheet,function(spreadsheetRowsWithBlanks) {
             removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
                 buildRowInfo(spreadsheetRows, function(rows){
-                    if (collapseRows)
+                    if (ambiguous)
                         getAmbiguousRowIndex(undefined,function(){
-                            combineRows(finishProcessing)
-                        }, fail);
+                            if (collapseRows)
+                                combineRows(finishProcessing);
+                            else
+                                finishProcessing();
+                        }, function(){fail("Unexpected unambiguity");});
                     else
-                        getAmbiguousRowIndex(undefined, fail, finishProcessing);
+                        getAmbiguousRowIndex(undefined, function(){fail("Unexpected ambiguity")}, finishProcessing);
                 });
             })
         });
@@ -96,36 +107,36 @@ function addCompleteParsingTestCase(name, spreadsheet, expectedParse, collapseRo
 
 addCompleteParsingTestCase("simple two column, one row sheet",
                            "a\tb\n1\t2",
-                           [{a:"1",b:"2"}]);
+                           [{a:1,b:2}]);
  
-addCompleteParsingTestCase("spreadsheet with missing empty cell",
+addCompleteParsingTestCase("spreadsheet with empty cell",
                            "a\tb\tc\n1\t2\t3\n4\t\t5",
-                           [{a:"1",b:"2",c:"3"},{a:"4",c:"5"}]);
+                           [{a:1,b:2,c:3},{a:4,c:5}]);
 
 addCompleteParsingTestCase("spreadsheet with nested data",
                            "a:b\ta:c\td\n1\t2\t3",
-                           [{a:[{b:[1],c:[2]}],d:[3]}]);
+                           [{a:[{b:1,c:2}],d:3}]);
 
-addCompleteParsingTestCase("ambiguous spreadsheet",
+addCompleteParsingTestCase("spreadsheet",
                            "a\tb\tc\n1\t2\t3\n\t4\t5\n6\t7",
-                           [{a:[1],b:[2],c:[3]},{b:[4],c:[5]},{a:[6],b:[7]}]);
-addCompleteParsingTestCase("ambiguous spreadsheet",
+                           [{a:1,b:2,c:3},{b:4,c:5},{a:6,b:7}], true, false);
+addCompleteParsingTestCase("spreadsheet",
                            "a\tb\tc\n1\t2\t3\n\t4\t5\n6\t7",
-                           [{a:[1],b:[2,4],c:[3,5]},{a:[6],b:[7]}],true);
+                           [{a:1,b:[2,4],c:[3,5]},{a:6,b:7}],true,true);
  
 addCompleteParsingTestCase("ambiguous spreadsheet with nested data across multiple rows",
-                           "a\tb:c\t:b:d\n1\t2\t3\n\t4\t5\n6\t7",
-                           [{a:[1],b:[{c:[2],d:[3]}]},{b:[{c:[4],d:[5]}]},{a:[6],b:[{c:[7]}]}]);
+                           "a\tb:c\tb:d\n1\t2\t3\n\t4\t5\n6\t7",
+                           [{a:1,b:[{c:2,d:3}]},{b:[{c:4,d:5}]},{a:6,b:[{c:7}]}],true);
 addCompleteParsingTestCase("ambiguous spreadsheet with nested data across multiple rows",
-                           "a\tb:c\t:b:d\n1\t2\t3\n\t4\t5\n6\t7",
-                           [{a:[1],b:[{c:[2],d:[3]},{c:[4],d:[5]}]},{a:[6],b:[{c:7}]}],true);
+                           "a\tb:c\tb:d\n1\t2\t3\n\t4\t5\n6\t7",
+                           [{a:1,b:[{c:2,d:3},{c:4,d:5}]},{a:6,b:[{c:7}]}],true,true);
 
 addCompleteParsingTestCase("ambiguous spreadsheet with first column nested",
                            "a:b\ta:c\td\n1\t2\t3\n\t4\t5",
-                           [{a:[{b:[1],c:[2]}],d:[3]},{a:[{c:[4]}],d:[5]}]);
+                           [{a:[{b:[1],c:[2]}],d:[3]},{a:[{c:[4]}],d:[5]}],true);
 addCompleteParsingTestCase("ambiguous spreadsheet with first column nested",
                            "a:b\ta:c\td\n1\t2\t3\n\t4\t5",
-                           [{a:[{b:[1],c:[2]},{c:[2]}],d:[3,5]}],true);
+                           [{a:[{b:1,c:2},{c:4}],d:[3,5]}],true, true);
 
 TestCase("ParsingTest",tests);
 

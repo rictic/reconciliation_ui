@@ -34,7 +34,7 @@ function assertSubsetOf(msg, o1, o2) {
     if (result)
         fail(msg + " " + result);
     else
-        return pass();
+        pass();
 }
 
 function isNotSubsetOf(o1,o2) {
