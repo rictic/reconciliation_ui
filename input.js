@@ -336,7 +336,7 @@ function objectifyRows(onComplete) {
                 slot = row[firstPart][i];
                 $.each(parts.slice(1,parts.length-1), function(_,part) {
                     if (!(part in slot))
-                        slot[part] = cvtEntity(mqlMetadata[part], slot);
+                        slot[part] = cvtEntity(freebase.getPropMetadata(part), slot);
                     if (slot['/rec_ui/is_cvt'])
                         slot['/rec_ui/cvt_props'].push(part)
                     slot['/rec_ui/mql_props'].push(part);
