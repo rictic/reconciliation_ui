@@ -10,7 +10,6 @@ function assertEq(msg, a1, a2) {
         a1 = msg;
         msg = "";
     }
-        
     var message = areNotEq(a1,a2);
     if (message)
         fail(msg + " " + message);
@@ -18,7 +17,40 @@ function assertEq(msg, a1, a2) {
         pass();
 }
 
-function areNotEq(a1,a2){
+function isObject(val) {
+    if ($.isArray(val)) return false;
+    if (typeof val != "object") return false;
+    return true;
+}
+
+
+function assertSubsetOf(msg, o1, o2) {
+    if (arguments.length == 2){
+        o2 = a1;
+        o1 = msg;
+        msg = "";
+    }
+    var result = isNotSubsetOf(o1,o2);
+    if (result)
+        fail(msg + " " + result);
+    else
+        pass();
+}
+
+function isNotSubsetOf(o1,o2) {
+    if (!isObject(o2))
+        return areNotEq(o1,o2,isNotSubsetOf);
+    
+    for (var prop in o2){
+        var message = areNotEq(o1[prop],o2[prop],isNotSubsetOf);
+        if (message)
+            return o1 + " and " + o2 + " differ in prop `" + prop + "': " + message;
+    }
+}
+
+
+function areNotEq(a1,a2, cmpFunc){
+    cmpFunc = cmpFunc || areNotEq;
     if (a1 == a2) return;
     if ($.isArray(a1) || $.isArray(a2)){
         if (!($.isArray(a1) && $.isArray(a2)))
@@ -26,7 +58,7 @@ function areNotEq(a1,a2){
 
         if (a1.length != a2.length) return "lengths of arrays were different: " + a1 + " " + a2;
         for (var i = 0; i < a1.length; i++){
-            var message = areNotEq(a1[i], a2[i]);
+            var message = cmpFunc(a1[i], a2[i]);
             if (message)
                 return i + "th value different in arrays: " + message;
         }
@@ -43,17 +75,20 @@ function areNotEq(a1,a2){
             return "Expected " + a1 + " but got " + a2;
     
     for (var prop in a1){
-        var message = areNotEq(a1[prop],a2[prop]);
+        var message = cmpFunc(a1[prop],a2[prop]);
         if (message)
             return a1 + " and " + a2 + " differ in prop `" + prop + "': " + message;
     }
     for (var prop in a2){
-        var message = areNotEq(a1[prop],a2[prop]);
+        var message = cmpFunc(a1[prop],a2[prop]);
         if (message)
             return a1 + " and " + a2 + " differ in prop `" + prop + "': " + message;
     }
 }
 
+function Yielder() {
+	return {shouldYield: function(){return false;}}
+}
 
 
 TestCase("MetaTest",{
