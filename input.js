@@ -346,8 +346,10 @@ function objectifyRows(onComplete) {
                 var meta = freebase.getPropMetadata(lastPart);
                 if (meta === undefined && lastPart !== "id")
                     return; //if we don't know what it is, leave it as it is
-                if (lastPart === "id" || isValueProperty(lastPart))
+                if (lastPart === "id" || isValueProperty(lastPart)) {
                     slot[lastPart] = value;
+                    slot['/rec_ui/mql_props'].push(lastPart);
+                }
                 else {
                     var new_entity = new Entity({"/type/object/type":meta.expected_type.id,
                                                 "/type/object/name":value,
@@ -356,7 +358,7 @@ function objectifyRows(onComplete) {
                                                 });
                     if (meta.inverse_property) {
                         new_entity[meta.inverse_property] = slot;
-//                         cvt["/rec_ui/mql_props"].push(meta.inverse_property);
+                        
                         var reversedParts = $.map(parts.slice().reverse(), function(part) {
                             return (freebase.getPropMetadata(part) && freebase.getPropMetadata(part).inverse_property) || false;
                         });

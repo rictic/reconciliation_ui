@@ -186,7 +186,6 @@ function getTriples(rows, callback) {
     politeEach(entities, function(_,subject) {
         if (!subject || !isValidID(subject.id) || subject['/rec_ui/is_cvt'])
             return;
-        $.makeArray(subject['/type/object/type'])
         
         var types = new Set();
         $.each($.makeArray(subject['/type/object/type']), function(_, type){
