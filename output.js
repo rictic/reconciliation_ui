@@ -234,7 +234,6 @@ function getTriples(rows, callback) {
 function checkLogin() {
     $(".uploadLogin").hide();
     $(".uploadForm").hide();
-    var response = $.get("http://data.labs.freebase.com/freeq/spreadsheet/");
     $.ajax({
         url:"http://data.labs.freebase.com/freeq/spreadsheet/",
         type:"GET",
@@ -253,5 +252,5 @@ function checkLogin() {
             }
             else
                 error(response);
-        }})
+        }});
 }

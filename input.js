@@ -234,7 +234,7 @@ function combineRows(onComplete) {
 
 function spreadsheetProcessed(callback) {
     function isUnreconciled(entity) {
-        if (entity["/rec_ui/is_cvt"])
+        if (entity.isCVT())
             return false;
         return contains([undefined,null,"indeterminate",""], entity.id);
     }
@@ -288,8 +288,7 @@ function objectifyRows(onComplete) {
             function objectifyRowProperty(value) {
                 var result = new Entity({'/type/object/name':value,
                               '/type/object/type':meta.expected_type.id,
-                              '/rec_ui/headers': ['/type/object/name','/type/object/type'],
-                              '/rec_ui/mql_props': []
+                              '/rec_ui/headers': ['/type/object/name','/type/object/type']
                               });
                 if (meta.inverse_property != null){
                     result[meta.inverse_property] = row;
@@ -313,43 +312,32 @@ function objectifyRows(onComplete) {
             if (valueArray === undefined) return;
             var parts = complexHeader.split(":");
             var slot;
-            function cvtEntity(meta, parent) {
-                var cvt = new Entity({"/type/object/type":meta.expected_type.id,
-                                     "/rec_ui/is_cvt":isCVTType(meta.expected_type),
-                                     "/rec_ui/parent":parent,
-                                     "/rec_ui/mql_props" :[],
-                                     "/rec_ui/cvt_props":[]});
-                if (meta.inverse_property != null){
-                    cvt[meta.inverse_property] = parent;
-                    cvt["/rec_ui/mql_props"].push(meta.inverse_property);
-                }
-                return cvt;
+            function innerEntity(meta, parent) {
+                var entity = new Entity({"/type/object/type":meta.expected_type.id,
+                                     "/rec_ui/is_cvt":isCVTType(meta.expected_type)});
+                entity.addParent(parent, meta.inverse_property);
+                return entity;
             }
             var firstPart = parts[0];
             $.each(valueArray, function(i,value) {
                 if (value === undefined)
                     return; //read as continue
                 if (!(firstPart in row))
-                    row[firstPart] = [];
+                    row.addProperty(firstPart,[]);
                 if (row[firstPart][i] === undefined)
-                    row[firstPart][i] = cvtEntity(freebase.getPropMetadata(firstPart), row);;
+                    row[firstPart][i] = innerEntity(freebase.getPropMetadata(firstPart), row);;
                 slot = row[firstPart][i];
                 $.each(parts.slice(1,parts.length-1), function(_,part) {
                     if (!(part in slot))
-                        slot[part] = cvtEntity(freebase.getPropMetadata(part), slot);
-                    if (slot['/rec_ui/is_cvt'])
-                        slot['/rec_ui/cvt_props'].push(part)
-                    slot['/rec_ui/mql_props'].push(part);
+                        slot.addProperty(part, innerEntity(freebase.getPropMetadata(part), slot));
                     slot = slot[part];
                 });
                 var lastPart = parts[parts.length-1];
                 var meta = freebase.getPropMetadata(lastPart);
                 if (meta === undefined && lastPart !== "id")
                     return; //if we don't know what it is, leave it as it is
-                if (lastPart === "id" || isValueProperty(lastPart)) {
-                    slot[lastPart] = value;
-                    slot['/rec_ui/mql_props'].push(lastPart);
-                }
+                if (lastPart === "id" || isValueProperty(lastPart))
+                    slot.addProperty(lastPart, value);
                 else {
                     var new_entity = new Entity({"/type/object/type":meta.expected_type.id,
                                                 "/type/object/name":value,
@@ -367,10 +355,8 @@ function objectifyRows(onComplete) {
                             new_entity["/rec_ui/headers"].push(reversedParts.join(":"));
                         }
                     }
-                    slot[lastPart] = new_entity;
+                    slot.addProperty(lastPart, new_entity);
                 }
-                if (slot['/rec_ui/is_cvt'])
-                    slot['/rec_ui/cvt_props'].push(lastPart);
             });
             delete row[complexHeader];
         });

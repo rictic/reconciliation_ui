@@ -10,6 +10,9 @@ resetEntities();
 
 function Entity(initialVals) {
     this["/rec_ui/id"] = internalIDCounter++
+    this["/rec_ui/mql_props"] = [];
+    this["/rec_ui/headers"] = [];
+    this["/rec_ui/cvt_props"] = [];
     entities[this["/rec_ui/id"]] = this;
     for (var key in initialVals)
         this[key] = initialVals[key];
@@ -42,3 +45,25 @@ Entity.prototype.reconcileWith = function(id, automatic) {
     addReviewItem(this);
 }
 
+Entity.prototype.addProperty = function(prop, value) {
+    if (value !== undefined)
+        this[prop] = value;
+
+    if (!contains(this['/rec_ui/headers'], prop))
+        this['/rec_ui/headers'].push(prop);
+    if (isMqlProp(prop) && !isCVTProperty(prop) && !contains(this['/rec_ui/mql_props'], prop))
+        this['/rec_ui/mql_props'].push(prop);
+    if (this.isCVT() && !contains(this['/rec_ui/cvt_props'], prop) && value != this['/rec_ui/parent'])
+        this['/rec_ui/cvt_props'].push(prop);
+        
+}
+
+Entity.prototype.addParent = function(parent, prop) {
+    this['/rec_ui/parent'] = parent;
+    if (prop != undefined)
+        this.addProperty(prop, parent);
+}
+
+Entity.prototype.isCVT = function() {
+    return !!this['/rec_ui/is_cvt'];
+}

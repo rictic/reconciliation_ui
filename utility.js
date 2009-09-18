@@ -30,22 +30,6 @@
 **  Misc utility functions
 */
 
-var entities;
-var internalIDCounter;
-function resetEntities() {
-    entities = [];
-    internalIDCounter = 0;
-}
-resetEntities();
-
-function newEntity(initialVals) {
-    var result = {"/rec_ui/id":internalIDCounter++}
-    entities[result["/rec_ui/id"]] = result;
-    for (var key in initialVals)
-        result[key] = initialVals[key];
-    return result;
-}
-
 //perform a shallow copy of a JS object
 function clone(obj) {
     var copy = {};
@@ -176,7 +160,6 @@ function addColumnRecCases(entity) {
 }
 
 function isValueProperty(propName) {
-    assert(freebase.getPropMetadata(propName), "mqlMetadata of " + propName + " is " + freebase.getPropMetadata(propName));
     if (freebase.getPropMetadata(propName))
         return isValueType(freebase.getPropMetadata(propName).expected_type);
     return undefined;
@@ -184,6 +167,13 @@ function isValueProperty(propName) {
 
 function isValueType(type) {
     return contains(type['extends'], "/type/value");
+}
+
+function isCVTProperty(propName) {
+    var prop = freebase.getPropMetadata(propName);
+    if (freebase.getPropMetadata(propName))
+        return isCVTType(prop.expected_type);
+    return undefined;
 }
 
 function isCVTType(type) {
@@ -301,15 +291,19 @@ function concatMap(array, f) {
     return concat($.map(array,f));
 }
 
-function getMqlProperties(headers) {
-    return filter(getProperties(headers), function(header) {
-        var invalidList = ["/type/object/name","/type/object/type","/type/object/id",/(^|:)id$/];
+var isMqlProp = (function(){
+    var invalidList = ["/type/object/name","/type/object/type","/type/object/id",/(^|:)id$/];
+    return function(prop) {
         for (var i = 0; i<invalidList.length; i++){
-            if (header.match(invalidList[i]))
+            if (prop.match(invalidList[i]))
                 return false;
         }
         return true;
-    });
+    }
+})();
+
+function getMqlProperties(headers) {
+    return filter(getProperties(headers), isMqlProp);
 }
 
 function getProperties(headers) {
