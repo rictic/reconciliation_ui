@@ -148,6 +148,7 @@ function addToManualQueue(entity) {
         manualReconcile();
     else if (wasSingleton)
         renderReconChoices(entity)
+    updateUnreconciledCount();
 }
 
 function manualReconcile() {
