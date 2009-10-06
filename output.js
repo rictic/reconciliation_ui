@@ -110,7 +110,7 @@ function renderSpreadsheet() {
 }
 
 function prepareTriples() {
-    getTriples(rows, function(triples) {
+    getTriples(entities, function(triples) {
         politeMap(triples,function(_,val){return JSON.stringify(val)},
             function(encodedTriples) {
                 var tripleString = encodedTriples.join("\n");
@@ -123,7 +123,7 @@ function prepareTriples() {
 }
 
 var tripleGetterYielder;
-function getTriples(rows, callback) {
+function getTriples(entities, callback) {
     tripleGetterYielder = new Yielder();
     function isValidID(id) {
         if ($.isArray(id))
@@ -184,9 +184,10 @@ function getTriples(rows, callback) {
     
     var triples = [];
     politeEach(entities, function(_,subject) {
-        if (!subject || !isValidID(subject.id) || subject['/rec_ui/is_cvt'])
+        if (!subject || !isValidID(subject.id) || subject.isCVT())
             return;
         
+        /* Assert each type and all included types exactly once */
         var types = new Set();
         $.each($.makeArray(subject['/type/object/type']), function(_, type){
             types.add(type);
@@ -198,6 +199,8 @@ function getTriples(rows, callback) {
             if (type)
                 triples.push({s:getID(subject), p:"/type/object/type",o:type});
         })
+        
+        /* If the subject is new to Freebase, give it a name as well */
         if (subject.id === "None"){
             $.each($.makeArray(subject["/type/object/name"]), function(_, name) {
                 if (name)
@@ -205,6 +208,7 @@ function getTriples(rows, callback) {
             });
         }
         
+        /* Assert each of the properties found in mql_props */
         var mqlProps = unique($.map(subject['/rec_ui/mql_props'], function(val){return val.split(":")[0]}));
         $.each(mqlProps, function(_, predicate) {
             
