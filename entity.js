@@ -53,7 +53,7 @@ Entity.prototype.addProperty = function(prop, value) {
         this['/rec_ui/headers'].push(prop);
     if (isMqlProp(prop) && !isCVTProperty(prop) && !contains(this['/rec_ui/mql_props'], prop))
         this['/rec_ui/mql_props'].push(prop);
-    if (this.isCVT() && !contains(this['/rec_ui/cvt_props'], prop) && value != this['/rec_ui/parent'])
+    if (this.isCVT() && !contains(this['/rec_ui/cvt_props'], prop))
         this['/rec_ui/cvt_props'].push(prop);
         
 }
