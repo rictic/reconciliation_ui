@@ -4,6 +4,15 @@ function pass() {
     assertTrue(true);
 }
 
+function debug(msg) {
+    try {
+        log(msg);
+    }
+    catch(e) {
+        log("a recursive structure");
+    }
+}
+
 function assertEq(msg, a1, a2) {
     if (arguments.length == 2){
         a2 = a1;
@@ -11,8 +20,12 @@ function assertEq(msg, a1, a2) {
         msg = "";
     }
     var message = areNotEq(a1,a2);
-    if (message)
+    if (message){
+        debug(a1);
+        debug("expected, but found");
+        debug(a2);
         fail(msg + " " + message);
+    }
     else
         pass();
 }
@@ -56,7 +69,7 @@ function areNotEq(a1,a2, cmpFunc){
         if (!($.isArray(a1) && $.isArray(a2)))
             return "one is an array, the other isn't: " + a1 + " " + a2;
 
-        if (a1.length != a2.length) return "lengths of arrays were different: " + a1 + " " + a2;
+        if (a1.length != a2.length) return "lengths of arrays were different, expected " + a1.length + " got " + a2.length + ": " + a1 + " " + a2;
         for (var i = 0; i < a1.length; i++){
             var message = cmpFunc(a1[i], a2[i]);
             if (message)
