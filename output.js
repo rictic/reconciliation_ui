@@ -170,6 +170,8 @@ function getTriples(entities, callback) {
                 }
             }
             else {
+                if (value['/rec_ui/toplevel_entity'])
+                    continue;
                 var id = getID(value);
                 if (id){
                     result[outputPredicate] = id;
@@ -208,8 +210,8 @@ function getTriples(entities, callback) {
             });
         }
         
-        /* Assert each of the properties found in mql_props */
-        var mqlProps = unique($.map(subject['/rec_ui/mql_props'], function(val){return val.split(":")[0]}));
+        /* Assert each of the top level mql properties */
+        var mqlProps = unique(filter($.map(subject['/rec_ui/headers'], function(val){return val.split(":")[0]}), isMqlProp));
         $.each(mqlProps, function(_, predicate) {
             
             $.each($.makeArray(subject[predicate]), function(_, object) {
@@ -219,7 +221,7 @@ function getTriples(entities, callback) {
                 }
                 
                 if (object['/rec_ui/is_cvt']){
-                    if (!(object['/rec_ui/parent'] === subject))
+                    if (!(object['/rec_ui/parent']['/rec_ui/id'] === subject['/rec_ui/id']))
                         return; //only create cvt once, from the 'root' of the parent
                     var cvtTripleObject = cvtObject(object);
                     if (cvtTripleObject)
