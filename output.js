@@ -219,7 +219,7 @@ function getTriples(entities, callback) {
                 }
                 
                 if (object['/rec_ui/is_cvt']){
-                    if (!object['/rec_ui/parent'] === subject)
+                    if (!(object['/rec_ui/parent'] === subject))
                         return; //only create cvt once, from the 'root' of the parent
                     var cvtTripleObject = cvtObject(object);
                     if (cvtTripleObject)

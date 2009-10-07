@@ -1,5 +1,5 @@
 TestCase("triples",{
-    testSimple: function() {
+    "test a simple entity with a value property": function() {
         var entity = new Entity({id:"/a"});
         entity.addProperty("b", "c");
         
@@ -8,7 +8,7 @@ TestCase("triples",{
             assertEq([{s:"/a", p:"b", o:"c"}], triples);
         });
     },
-    testSimpleCVT: function() {
+    "test a simple cvt": function() {
         var entity = new Entity({id:"/a"});
         var cvt    = new Entity({"/rec_ui/is_cvt":true, "/rec_ui/parent":entity});
         entity.addProperty("topic",cvt);
@@ -21,6 +21,23 @@ TestCase("triples",{
         expectAsserts(1);
         getTriples([entity, cvt], function(triples) {
             assertEq([{s:"/a", p:"topic", o:{b:"c"}}], triples);
+        });
+    },
+    "test multiple entities pointing into a cvt": function() {
+        var entity = new Entity({id:"/entity"});
+        var cvt    = new Entity({"/rec_ui/is_cvt":true, "/rec_ui/parent":entity});
+        var leaf   = new Entity({id:"/leaf"});
+        entity.addProperty("topic/cvt_prop", cvt);
+        cvt.addProperty("topic/leaf_prop", leaf);
+        leaf.addProperty("topic/reverse_cvt_prop", cvt);
+        
+        cvt["/type/object/type"] = "topic";
+        
+        expectAsserts(1);
+        getTriples([entity, cvt, leaf], function(triples) {
+            assertEq([{s:"/entity",
+                       p:"topic/cvt_prop",
+                       o:{leaf_prop:"/leaf"}}], triples);
         });
     }
 });
