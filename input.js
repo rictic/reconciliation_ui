@@ -30,8 +30,6 @@ var totalRecords = 0;
 var mqlProps;
 var headers;
 var rows;
-var complexHeaders;
-var simpleHeaders;
 var typesSeen = new Set();
 
 /*
