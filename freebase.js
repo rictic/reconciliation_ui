@@ -30,7 +30,7 @@ var freebase = (function() {
         var param = {query:JSON.stringify(envelope)};
         if (!('query' in envelope))
             param = {queries:param.query};
-        $.getJSON(freebase_url + "/api/service/mqlread?callback=?&", param, handler);
+        getJSON(freebase_url + "/api/service/mqlread?callback=?&", param, handler);
     };
     
     /* Given an id and a callback, immediately calls the callback with the freebase name

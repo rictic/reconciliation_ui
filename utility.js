@@ -513,7 +513,7 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
         onSuccess(response);
     }
 
-    if (location.host === "data.labs.freebase.com")
+    if (location.host.match(/freebase.com$/))
         $.post(url, params, responseHandler, "jsonp")
     else 
         $.getJSON(url, params, responseHandler);
