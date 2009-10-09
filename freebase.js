@@ -151,7 +151,11 @@ var freebase = (function() {
     freebase.isBadOrEmptyResult = function(mqlResult) {
         return mqlResult.code != "/api/status/ok" || mqlResult.result === null;
     }
-
+    
+    freebase.beacon = function(info) {
+        var url = "http://www.freebase.com/private/beacon" + (info || "");
+        $("<img src='" + url + "'>").appendTo($("body"));
+    }
     
     return freebase;
 }());
