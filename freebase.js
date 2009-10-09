@@ -153,7 +153,7 @@ var freebase = (function() {
     }
     
     freebase.beacon = function(info) {
-        var url = "http://www.freebase.com/private/beacon" + (info || "");
+        var url = "http://www.freebase.com/private/beacon?c=spreadsheetloader" + (info || "");
         $("<img src='" + url + "'>").appendTo($("body"));
     }
     
