@@ -26,12 +26,78 @@ var freebase = (function() {
         var linkVal = node("a", name, {target:'_blank',href:freebase_url + '/view' + id})
         return miniTopicFloater(linkVal, id);
     };
-    freebase.mqlRead = function(envelope, handler) {
+    
+    // Simple mql read
+    freebase.mqlRead = function mqlRead(envelope, handler) {
+        getJSON(getMqlReadURL(envelope), null, handler);
+    };
+    
+    /* Used below, thus the odd style above */
+    function getMqlReadURL(envelope) {
         var param = {query:JSON.stringify(envelope)};
         if (!('query' in envelope))
             param = {queries:param.query};
-        getJSON(freebase_url + "/api/service/mqlread?callback=?&", param, handler);
-    };
+        return freebase_url + "/api/service/mqlread?callback=?&" + $.param(param);
+    }
+    
+    
+    
+    /* freebase.mqlReads takes a list of pairs of [fb_key, query] and wraps them in a minimal
+       number of HTTP GET requests needed to perform them.  For each query result
+       it calls handler(fb_key, result) if the query is successful, and onError(fb_key, response)
+       if the mql query fails.  After all of the queries have been handled, it calls onComplete()
+    */
+    freebase.mqlReads = function(q_pairs, handler, onComplete, onError) {
+        var keys = $.map(q_pairs, function(q_pair){return q_pair[0]});
+        function dispatcher(result) {
+            assert(keys.length > 0);
+            var i = 0;
+            while(i < keys.length) {
+                var key = keys[i];
+                var value = result[idToQueryName(key)];
+                if (!value) {
+                    i++;
+                    continue;
+                }
+                
+                //We've handled the ith key, remove it from the list of keys
+                keys = removeAt(keys, i);
+                if (freebase.isBadOrEmptyResult(value))
+                    onError(key, value);
+                else
+                    handler(key, value.result);
+            }
+            if (keys.length === 0)
+                onComplete();
+        }
+        var encoded_queries = $.each(q_pairs, function(_,q_pair){q_pair[0] = idToQueryName(q_pair[0]);});
+        multiQuery(encoded_queries, dispatcher);
+    }
+    
+    
+    function idToQueryName(id) {
+        return id.replace(/\//g,'ZZZZ');
+    }
+    
+    /* multiQuery takes a list of pairs of [name, query] and breaks them up so that it
+       each mql query fits in an HTTP GET request, calling handler on each container
+       query result
+    */
+    var maxURLLength = 3998;
+    function multiQuery(queries, handler) {
+        var query = {};
+        $.each(queries, function(_,qparts) {
+            query[qparts[0]] = qparts[1];
+        });
+        if (queries.length > 1 && getMqlReadURL(query).length > maxURLLength) {
+            var splitPoint = queries.length / 2;
+            multiQuery(queries.slice(0, splitPoint), handler);
+            multiQuery(queries.slice(splitPoint),    handler);
+        }
+        else
+            freebase.mqlRead(query, handler);
+    }
+    
     
     /* Given an id and a callback, immediately calls the callback with the freebase name
       if it has been looked up before.
@@ -55,12 +121,8 @@ var freebase = (function() {
         var link = freebase.link(simpleEl, id);
         freebase.getName(id, function(name) {
             simpleEl.html(name);
-        })
+        });
         return link;
-    }
-    
-    function idToQueryName(id) {
-        return id.replace(/\//g,'Z');
     }
     
     var typeMetadata = {};
@@ -112,39 +174,35 @@ var freebase = (function() {
                 "id" : prop
             }
         }
-        var envelope = {};
+        var q_pairs = [];
         $.each(properties, function(i, mqlProp) {
             $.each(mqlProp.split(":"), function(i, simpleProp) {
                 if (simpleProp == "id") return;
-                envelope[idToQueryName(simpleProp)] = {"query": getQuery(simpleProp)};
+                q_pairs.push([simpleProp, {"query": getQuery(simpleProp)}]);
             })
         })
-        function handler(results) {
-            var errorProps = handlePropertyInfo(results, properties);
-            if (errorProps.length > 0)
-                return onError(errorProps);
-            onComplete();
-        }
-        freebase.mqlRead(envelope, handler);
-    }
-    function handlePropertyInfo(results, properties) {
-        assert(results.code == "/api/status/ok", results);
+        
         var errorProps = [];
-        $.each(properties, function(_,complexProp){
-            $.each(complexProp.split(":"), function(_, mqlProp) {
-                if (mqlProp == "id") return;
-                var result = results[idToQueryName(mqlProp)];
-                if (freebase.isBadOrEmptyResult(result)){
-                    errorProps.push(mqlProp)
-                    return
-                }
-                result = result.result;
-                if (result.expected_type.id) typesSeen.add(result.expected_type.id)
-                result.inverse_property = result.reverse_property || result.master_property;
-                propMetadata[mqlProp] = result;
-            });
-        });
-        return errorProps;
+        freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
+        
+        function handler(mqlProp, result){
+            if (result.expected_type.id) 
+                typesSeen.add(result.expected_type.id)
+            result.inverse_property = result.reverse_property || result.master_property;
+            propMetadata[mqlProp] = result;
+        }
+        
+        function onErrorHandler(key, response) { 
+            errorProps.push(key); 
+        }
+        
+        function onCompleteHandler() {
+            if (errorProps.length > 0)
+                onError(errorProps);
+            else
+                onComplete();
+        }
+        
     }
     freebase.getPropMetadata = function(prop) {return propMetadata[prop];}
 

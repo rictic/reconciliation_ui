@@ -78,7 +78,13 @@ function union(a, b) {
     return result;
 }
 
-//Uniquely maps MQL ids to valid CSS class names
+function removeAt(a, i) {
+    assert(i >= 0);
+    assert(i <= a.length);
+    return a.slice(0,i).concat(a.slice(i+1));
+}
+
+//Maps MQL ids to valid CSS class names
 function idToClass(idName) {
     return idName.replace(/\//g,"_").replace(":","___");
 }
