@@ -29,7 +29,7 @@ var freebase = (function() {
     
     // Simple mql read
     freebase.mqlRead = function mqlRead(envelope, handler) {
-        getJSON(getMqlReadURL(envelope), null, handler);
+        $.getJSON(getMqlReadURL(envelope), null, handler);
     };
     
     /* Used below, thus the odd style above */
