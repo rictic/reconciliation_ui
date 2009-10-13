@@ -48,6 +48,10 @@ var freebase = (function() {
        if the mql query fails.  After all of the queries have been handled, it calls onComplete()
     */
     freebase.mqlReads = function(q_pairs, handler, onComplete, onError) {
+        if (q_pairs.length === 0){
+            onComplete();
+            return;
+        }
         var keys = $.map(q_pairs, function(q_pair){return q_pair[0]});
         function dispatcher(result) {
             assert(keys.length > 0);
@@ -62,8 +66,12 @@ var freebase = (function() {
                 
                 //We've handled the ith key, remove it from the list of keys
                 keys = removeAt(keys, i);
-                if (freebase.isBadOrEmptyResult(value))
-                    onError(key, value);
+                if (freebase.isBadOrEmptyResult(value)){
+                    if (onError)
+                        onError(key, value);
+                    else
+                        error(value);
+                }
                 else
                     handler(key, value.result);
             }
@@ -127,6 +135,16 @@ var freebase = (function() {
     
     var typeMetadata = {};
     freebase.fetchTypeInfo = function(types, onComplete, onError) {
+        var q_pairs = [];
+        $.each(types, function(_,type) {
+            if (!freebase.getTypeMetadata(type))
+                return;
+            q_pairs.push([type, {query:getQuery(type)}]);
+        })
+        
+        var errorTypes = [];
+        freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
+        
         function getQuery(type) {
             return {
                 id:type,
@@ -134,32 +152,39 @@ var freebase = (function() {
                 "/freebase/type_hints/included_types":[]
             }
         }
-        var envelope = {};
-        $.each(types, function(_,type) {
-            envelope[idToQueryName(type)] = {query:getQuery(type)};
-        })
-        function handler(results) {
-            var errorTypes = [];
-            $.each(types, function(_,type) {
-                var result = results[idToQueryName(type)];
-                if (freebase.isBadOrEmptyResult(result)){
-                    errorTypes.push(result);
-                    return;
-                }
-                typeMetadata[type] = result.result;
-            });
+        
+        function handler(type, result) {
+            typeMetadata[type] = result;
+        }
+        
+        function onErrorHandler(type, response) {
+            errorTypes.push(type);
+        }
+        
+        function onCompleteHandler() {
             if (errorTypes.length > 0 && onError){
                 onError(errorTypes);
                 return;
             }
             onComplete();
         }
-        freebase.mqlRead(envelope, handler);
     }
     freebase.getTypeMetadata = function(type) {return typeMetadata[type];}
     
     var propMetadata = {};
     freebase.fetchPropertyInfo = function(properties, onComplete, onError) {
+        var q_pairs = [];
+        $.each(properties, function(i, mqlProp) {
+            $.each(mqlProp.split(":"), function(i, simpleProp) {
+                if (simpleProp == "id" || freebase.getPropMetadata(simpleProp))
+                    return;
+                q_pairs.push([simpleProp, {query: getQuery(simpleProp)}]);
+            })
+        })
+        
+        var errorProps = [];
+        freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
+        
         function getQuery(prop) {
             return {
                 "expected_type" : {
@@ -174,17 +199,7 @@ var freebase = (function() {
                 "id" : prop
             }
         }
-        var q_pairs = [];
-        $.each(properties, function(i, mqlProp) {
-            $.each(mqlProp.split(":"), function(i, simpleProp) {
-                if (simpleProp == "id") return;
-                q_pairs.push([simpleProp, {"query": getQuery(simpleProp)}]);
-            })
-        })
-        
-        var errorProps = [];
-        freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
-        
+
         function handler(mqlProp, result){
             if (result.expected_type.id) 
                 typesSeen.add(result.expected_type.id)
