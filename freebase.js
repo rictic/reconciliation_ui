@@ -41,71 +41,76 @@ var freebase = (function() {
         return freebase_url + "/api/service/mqlread?callback=?&" + $.param(param);
     }
     
-    
+    /* Maps a freebase ID into a valid MQL query id */
+    function idToQueryName(id) {
+        return id.replace(/\//g,'ZZZZ');
+    }
     
     /* freebase.mqlReads takes a list of pairs of [fb_key, query] and wraps them in a minimal
        number of HTTP GET requests needed to perform them.  For each query result
        it calls handler(fb_key, result) if the query is successful, and onError(fb_key, response)
        if the mql query fails.  After all of the queries have been handled, it calls onComplete()
     */
-    freebase.mqlReads = function(q_pairs, handler, onComplete, onError) {
+    var maxURLLength = 2048;
+    freebase.mqlReads = function(q_pairs, handler, onComplete, errorHandler) {
         if (q_pairs.length === 0){
             onComplete();
             return;
         }
         var keys = $.map(q_pairs, function(q_pair){return q_pair[0]});
-        function dispatcher(result) {
+        var encoded_queries = $.each(q_pairs, function(_,q_pair){q_pair[0] = idToQueryName(q_pair[0]);});
+        multiQuery(encoded_queries);
+        
+        /* multiQuery takes a list of pairs of [name, query] and breaks them up so that it
+           each mql query fits in an HTTP GET request, calling handler on each container
+           query result
+        */
+        function multiQuery(queries) {
+            var query = {};
+            $.each(queries, function(_,qparts) {
+                query[qparts[0]] = qparts[1];
+            });
+            if (queries.length > 1 && getMqlReadURL(query).length > maxURLLength) {
+                var splitPoint = queries.length / 2;
+                multiQuery(queries.slice(0, splitPoint));
+                multiQuery(queries.slice(splitPoint));
+            }
+            else
+                freebase.mqlRead(query, dispatcher);
+        }
+        
+        /* Takes the result of multiple mql queries all wrapped up together
+           and dispatches them to handler if they succeeded, errorHandler
+           if they failed, and calls onComplete if all of the keys have
+           been handled. */
+        function dispatcher(responseGroup) {
             assert(keys.length > 0);
+            log(responseGroup);
             var i = 0;
             while(i < keys.length) {
                 var key = keys[i];
-                var value = result[idToQueryName(key)];
-                if (!value) {
+                var response = responseGroup[idToQueryName(key)];
+                if (!response) {
                     i++;
                     continue;
                 }
                 
                 //We've handled the ith key, remove it from the list of keys
                 keys = removeAt(keys, i);
-                if (freebase.isBadOrEmptyResult(value)){
-                    if (onError)
-                        onError(key, value);
+                if (freebase.isBadOrEmptyResult(response)) {
+                    if (errorHandler)
+                        errorHandler(key, response);
                     else
                         error(value);
                 }
                 else
-                    handler(key, value.result);
+                    handler(key, response.result);
             }
             if (keys.length === 0)
                 onComplete();
         }
-        var encoded_queries = $.each(q_pairs, function(_,q_pair){q_pair[0] = idToQueryName(q_pair[0]);});
-        multiQuery(encoded_queries, dispatcher);
     }
     
-    
-    function idToQueryName(id) {
-        return id.replace(/\//g,'ZZZZ');
-    }
-    
-    /* multiQuery takes a list of pairs of [name, query] and breaks them up so that it
-       each mql query fits in an HTTP GET request, calling handler on each container
-       query result
-    */
-    var maxURLLength = 3998;
-    function multiQuery(queries, handler) {
-        var query = {};
-        $.each(queries, function(_,qparts) {
-            query[qparts[0]] = qparts[1];
-        });
-        if (queries.length > 1 && getMqlReadURL(query).length > maxURLLength) {
-            var splitPoint = queries.length / 2;
-            multiQuery(queries.slice(0, splitPoint), handler);
-            multiQuery(queries.slice(splitPoint),    handler);
-        }
-        else
-            freebase.mqlRead(query, handler);
-    }
     
     
     /* Given an id and a callback, immediately calls the callback with the freebase name
@@ -233,4 +238,3 @@ var freebase = (function() {
     
     return freebase;
 }());
-
