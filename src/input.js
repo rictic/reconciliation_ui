@@ -153,7 +153,7 @@ function buildRowInfo(spreadsheetRows, onComplete) {
     setupHeaderInfo(headers, buildRows, function(errorProps) {
         error("Can't find these mqlProps:")
         error(errorProps);
-        mqlProps = arrayDifference(mqlProps, errorProps);
+        mqlProps = Arr.difference(mqlProps, errorProps);
         buildRows();
     });
     
@@ -234,11 +234,11 @@ function spreadsheetProcessed(callback) {
     function isUnreconciled(entity) {
         if (entity.isCVT())
             return false;
-        return contains([undefined,null,"indeterminate",""], entity.id);
+        return Arr.contains([undefined,null,"indeterminate",""], entity.id);
     }
     addIdColumns();
     totalRecords = rows.length;
-    var rec_partition = partition(rows,isUnreconciled);
+    var rec_partition = Arr.partition(rows,isUnreconciled);
     automaticQueue = rec_partition[0];
     politeEach(rec_partition[1],function(_,reconciled_row){
         addColumnRecCases(reconciled_row);
@@ -253,7 +253,7 @@ function spreadsheetProcessed(callback) {
 
 
 function addIdColumns() {
-    if (!contains(headers, "id"))
+    if (!Arr.contains(headers, "id"))
         headers.push("id");
     $.each(getProperties(headers), function(_,complexProp) {
         var partsSoFar = [];
@@ -267,7 +267,7 @@ function addIdColumns() {
             //if it's a value then it doesn't get an id
             if (isValueProperty(mqlProp)) return;
             //if there already is an id column for it, then don't create a new one
-            if (contains(headers,idColumn)) return;
+            if (Arr.contains(headers,idColumn)) return;
             //if the property is /type/objec/type then we treat it as an id automatically, no id column needed
             if (mqlProp == "/type/object/type") return;
             //if it's a CVT then we won't do reconciliation of it ourselves (that's triplewriter's job)
@@ -305,7 +305,7 @@ function objectifyRows(onComplete) {
                     newProp[i] = objectifyRowProperty(row[prop][i])
             row[prop] = newProp
         }
-        $.each(filter(headers, function(h){return charIn(h,":");}), function(_,complexHeader) {
+        $.each(Arr.filter(headers, function(h){return charIn(h,":");}), function(_,complexHeader) {
             var valueArray = row[complexHeader];
             if (valueArray === undefined) return;
             var parts = complexHeader.split(":");
@@ -348,7 +348,7 @@ function objectifyRows(onComplete) {
                         var reversedParts = $.map(parts.slice().reverse(), function(part) {
                             return (freebase.getPropMetadata(part) && freebase.getPropMetadata(part).inverse_property) || false;
                         });
-                        if (all(reversedParts)){
+                        if (Arr.all(reversedParts)){
                             new_entity["/rec_ui/mql_props"].push(reversedParts.join(":"));
                             new_entity["/rec_ui/headers"].push(reversedParts.join(":"));
                         }
@@ -374,7 +374,7 @@ function objectifyRows(onComplete) {
                 return obj; //we've seen this object before
             
             if ($.isArray(obj)) {
-                var arr = filter(obj, function(val){return val !== undefined});
+                var arr = Arr.filter(obj, function(val){return val !== undefined});
                 if (arr.length === 1)
                     return cleanup(arr[0], closed);
                 else

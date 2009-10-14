@@ -49,11 +49,11 @@ Entity.prototype.addProperty = function(prop, value) {
     if (value !== undefined)
         this[prop] = value;
 
-    if (!contains(this['/rec_ui/headers'], prop))
+    if (!Arr.contains(this['/rec_ui/headers'], prop))
         this['/rec_ui/headers'].push(prop);
-    if (isMqlProp(prop) && !isCVTProperty(prop) && !contains(this['/rec_ui/mql_props'], prop))
+    if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop))
         this['/rec_ui/mql_props'].push(prop);
-    if (this.isCVT() && !contains(this['/rec_ui/cvt_props'], prop))
+    if (this.isCVT() && !Arr.contains(this['/rec_ui/cvt_props'], prop))
         this['/rec_ui/cvt_props'].push(prop);
         
 }

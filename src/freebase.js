@@ -96,7 +96,7 @@ var freebase = (function() {
                 }
                 
                 //We've handled the ith key, remove it from the list of keys
-                keys = removeAt(keys, i);
+                keys = Arr.removeAt(keys, i);
                 if (freebase.isBadOrEmptyResult(response)) {
                     if (errorHandler)
                         errorHandler(key, response);

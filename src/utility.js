@@ -58,40 +58,10 @@ function node(kind) {
     return node;
 }
 
-function arrayDifference(source, toRemove) {
-    source = $.makeArray(source); toRemove = $.makeArray(toRemove);
-    var result = [];
-    $.each(source, function(_,val){
-        if (!contains(toRemove,val))
-            result.push(val);
-    })
-    return result;
-}
-
-function union(a, b) {
-    a = $.makeArray(a); b = $.makeArray(b);
-    var result = [];
-    $.each(a, function(_,val) {
-        if (contains(b,val))
-            result.push(val);
-    });
-    return result;
-}
-
-function removeAt(a, i) {
-    assert(i >= 0);
-    assert(i <= a.length);
-    return a.slice(0,i).concat(a.slice(i+1));
-}
 
 //Maps MQL ids to valid CSS class names
 function idToClass(idName) {
     return idName.replace(/\//g,"_").replace(":","___");
-}
-
-//Is value in array?
-function contains(array, value) {
-    return $.inArray(value, array) !== -1;
 }
 
 function charIn(string, chr) {
@@ -172,7 +142,7 @@ function isValueProperty(propName) {
 }
 
 function isValueType(type) {
-    return contains(type['extends'], "/type/value");
+    return Arr.contains(type['extends'], "/type/value");
 }
 
 function isCVTProperty(propName) {
@@ -217,46 +187,6 @@ function numProperties(obj) {
     return i;
 }
 
-/* Returns a copy of the array with those elements of that
-  don't satisfy the predicate filtered out*/
-function filter(array, predicate) {
-    return $.grep(array, predicate);
-}
-
-/* Returns two new arrays, the first with those elements that satisfy the 
-  predicate, the second with those that don't */
-function partition(array, predicate) {
-    var good = [];
-    var bad = [];
-    $.each(array, function(i, val) {
-        if (predicate(val))
-            good.push(val);
-        else
-            bad.push(val);
-    });
-    return [good,bad];
-}
-
-function all(array, predicate) {
-    if (!predicate) predicate = identity;
-    for (var i = 0; i < array.length; i++)
-        if (!predicate(array[i]))
-            return false;
-    return true;
-}
-
-function any(array, predicate) {
-    if (!predicate) predicate = identity;
-    for (var i = 0; i < array.length; i++)
-        if (predicate(array[i]))
-            return true;
-    return false;
-}
-
-function none(array, predicate) {
-    return !any(array,predicate);
-}
-
 function identity(value) {return value;}
 
 function getChainedProperty(entity, prop) {
@@ -272,31 +202,6 @@ function getChainedProperty(entity, prop) {
     return slots;
 }
 
-function unique(array) {
-    var lookup = {};
-    var result = [];
-    for (var i = 0; i < array.length; i++) {
-        var val = array[i];
-        if (lookup[val])
-            continue;
-        lookup[val] = true;
-        result.push(val);
-    }
-    return result;
-}
-
-function concat(arrays) {
-    var result = [];
-    $.each(arrays, function(_,array) {
-        result = result.concat(array);
-    });
-    return result;
-}
-
-function concatMap(array, f) {
-    return concat($.map(array,f));
-}
-
 var isMqlProp = (function(){
     var invalidList = ["/type/object/name","/type/object/type","/type/object/id",/(^|:)id$/];
     return function(prop) {
@@ -309,11 +214,11 @@ var isMqlProp = (function(){
 })();
 
 function getMqlProperties(headers) {
-    return filter(getProperties(headers), isMqlProp);
+    return Arr.filter(getProperties(headers), isMqlProp);
 }
 
 function getProperties(headers) {
-    return filter(headers, function(header) {
+    return Arr.filter(headers, function(header) {
         return header.charAt(0) == "/"
     })
 }
@@ -342,7 +247,7 @@ function groupProperties(complexProps) {
     }
     $.each(complexProps, function(_,complexProp){groupProp(complexProp,groupedProps)});
     groupedProps.getPropsForRows = function() {
-        return union(this.getComplexProperties(), complexProps);
+        return Arr.union(this.getComplexProperties(), complexProps);
     }
     return groupedProps;
 }
@@ -428,7 +333,7 @@ function OrderedMap() {
     //assumes OrderedMap<String,OrderedMap>
     this.getComplexProperties = function() {
         var self = this;
-        return concatMap(properties, function(prop) {
+        return Arr.concatMap(properties, function(prop) {
             var innerProps = self.get(prop).getComplexProperties();
             return [prop].concat($.map(innerProps,function(innerProp){return prop + ":" + innerProp}));
         });

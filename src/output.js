@@ -137,7 +137,7 @@ function getTriples(entities, callback) {
     }
     function getValue(property, stringValue) {
         var expectedType = freebase.getPropMetadata(property).expected_type.id;
-        if (contains(["/type/int","/type/float"], expectedType))
+        if (Arr.contains(["/type/int","/type/float"], expectedType))
             return Number($.trim(stringValue));
         if (expectedType === "/type/boolean"){
             var lowerValue = $.trim(stringValue.toLowerCase());
@@ -211,7 +211,7 @@ function getTriples(entities, callback) {
         }
         
         /* Assert each of the top level mql properties */
-        var mqlProps = unique(filter($.map(subject['/rec_ui/headers'], function(val){return val.split(":")[0]}), isMqlProp));
+        var mqlProps = Arr.unique(Arr.filter($.map(subject['/rec_ui/headers'], function(val){return val.split(":")[0]}), isMqlProp));
         $.each(mqlProps, function(_, predicate) {
             
             $.each($.makeArray(subject[predicate]), function(_, object) {
