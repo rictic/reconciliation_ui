@@ -418,7 +418,6 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
             warn("got response after timeout")
             return;
         }
-        info("got response before timeout")
         responded = true;
         clearTimeout(timer);
         onSuccess(response);
