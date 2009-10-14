@@ -85,7 +85,6 @@ var freebase = (function() {
            been handled. */
         function dispatcher(responseGroup) {
             assert(keys.length > 0);
-            log(responseGroup);
             var i = 0;
             while(i < keys.length) {
                 var key = keys[i];

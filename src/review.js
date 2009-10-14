@@ -1,8 +1,6 @@
-function onDisplayRenderScreen() {
-}
+function onDisplayRenderScreen() {}
 
-function onHideRenderScreen() {
-}
+function onHideRenderScreen() {}
 
 function addReviewItem(entity) {
     var container = $('.reconciliationsToReview');
