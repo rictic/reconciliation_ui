@@ -30,7 +30,7 @@ var totalRecords = 0;
 var mqlProps;
 var headers;
 var rows;
-var typesSeen = new Set();
+var typesSeen;
 
 /*
 ** Parsing and munging the input
@@ -142,6 +142,7 @@ function removeBlankLines(rows, onComplete, yielder) {
 }
 
 function setupHeaderInfo(headers, onComplete, onError) {
+    typesSeen = new Set();
     mqlProps = getMqlProperties(headers);
     freebase.fetchPropertyInfo(getProperties(headers), onComplete, onError);
 }
