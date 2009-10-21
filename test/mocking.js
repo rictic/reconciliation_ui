@@ -24,7 +24,7 @@ var topic_prop = {
 };
 
 var mocked_properties = {
-  "/film/film/director": {
+  "/film/film/directed_by": {
         "expected_type": {
             "/freebase/type_hints/mediator": null,
             "extends":       [],

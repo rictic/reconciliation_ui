@@ -401,10 +401,21 @@ function objectifyRows(onComplete) {
 */
 function treeToEntity(tree, parent, onAddProperty) {
     var entity = new Entity({'/rec_ui/toplevel_entity': !parent});
+    if (parent)
+        entity['/rec_ui/parent'] = [parent];
     for (var prop in tree){
         var value = tree[prop];
         if (getType($.makeArray(value)[0]) === "object") {
-            value = treeToEntity(value, entity);
+            var propMeta = freebase.getPropMetadata(prop);
+            
+            value = $.map($.makeArray(value), function(innerTree) {
+                var innerEntity = treeToEntity(innerTree, entity);
+                if (!("/type/object/type" in innerEntity)) {
+                    innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
+                }
+                innerEntity.addProperty(propMeta.inverse_property, entity);
+                return innerEntity;
+            });
         }
         entity.addProperty(prop, value);
         if (onAddProperty)
@@ -414,6 +425,7 @@ function treeToEntity(tree, parent, onAddProperty) {
     return entity;
 }
 
+/* untested and unused as of yet */
 function findAllProperties(trees) {
     var propsSeen = new Set();
     $.map(trees, findProps);

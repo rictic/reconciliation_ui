@@ -46,11 +46,11 @@ Entity.prototype.reconcileWith = function(id, automatic) {
 }
 
 Entity.prototype.addProperty = function(prop, value) {
-    if (value !== undefined)
+    if (prop === "id")
         this[prop] = value;
-
-    if (startsWith(prop, "/rec_ui/"))
-        return;
+    else
+        this[prop] = $.makeArray(value);
+    
     if (!Arr.contains(this['/rec_ui/headers'], prop))
         this['/rec_ui/headers'].push(prop);
     if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop))

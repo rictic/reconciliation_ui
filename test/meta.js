@@ -49,18 +49,19 @@ function assertSubsetOf(msg, o1, o2) {
 
 function isNotSubsetOf(o1,o2) {
     if (!isObject(o2))
-        return areNotEq(o1,o2,isNotSubsetOf);
+        return areNotEq(o1,o2,isNotSubsetOf, isNotSubsetOf);
     
     for (var prop in o2){
-        var message = areNotEq(o1[prop],o2[prop],isNotSubsetOf);
+        var message = areNotEq(o1[prop],o2[prop],isNotSubsetOf, isNotSubsetOf);
         if (message)
             return o1 + " and " + o2 + " differ in prop `" + prop + "': " + message;
     }
 }
 
 
-function areNotEq(a1,a2, cmpFunc){
+function areNotEq(a1,a2, cmpFunc, objCompFunc){
     cmpFunc = cmpFunc || areNotEq;
+    objCompFunc = objCompFunc || objComp;
     if (a1 == a2) return;
     if ($.isArray(a1) || $.isArray(a2)){
         if (!($.isArray(a1) && $.isArray(a2)))
@@ -68,7 +69,7 @@ function areNotEq(a1,a2, cmpFunc){
 
         if (a1.length != a2.length) return "lengths of arrays were different, expected " + a1.length + " got " + a2.length + ": " + a1 + " " + a2;
         for (var i = 0; i < a1.length; i++){
-            var message = cmpFunc(a1[i], a2[i]);
+            var message = cmpFunc(a1[i], a2[i], cmpFunc, objCompFunc);
             if (message)
                 return i + "th value different in arrays: " + message;
         }
@@ -78,19 +79,23 @@ function areNotEq(a1,a2, cmpFunc){
     if (typeof a1 != "object")
         return "Expected " + a1 + " but got " + a2;
     
+    return objCompFunc(a1, a2, cmpFunc, objCompFunc);
+}
+
+function objComp(a1, a2, cmpFunc, objCompFunc) {
     if ("equals" in a1)
         if (a1.equals(a2))
             return;
         else
             return "Expected " + a1 + " but got " + a2;
-    
+
     for (var prop in a1){
-        var message = cmpFunc(a1[prop],a2[prop]);
+        var message = cmpFunc(a1[prop],a2[prop], cmpFunc, objCompFunc);
         if (message)
             return a1 + " and " + a2 + " differ in prop `" + prop + "': " + message;
     }
     for (var prop in a2){
-        var message = cmpFunc(a1[prop],a2[prop]);
+        var message = cmpFunc(a1[prop],a2[prop], cmpFunc, objCompFunc);
         if (message)
             return a1 + " and " + a2 + " differ in prop `" + prop + "': " + message;
     }

@@ -31,21 +31,21 @@ var json_examples = [
      "/film/film/directed_by": {"/type/object/name": "Ridley Scott"}},
     {"/type/object/name": "Blade Runner",
      "/type/object/type": "/film/film",
-     "/film/film/directed_by": 
+     "/film/film/directed_by": [
         {
             "/type/object/name"  : "Ridley Scott",
-            "/type/object/type"  : "/film/director",
+            "/type/object/type"  : ["/film/director"],
             /* This is, in effect, testing that it points back to its parent object.
                The subset testing method that's used here will confirm it, and this way
                we don't have to worry about cyclical data structures.
             */
-            "/film/director/film"    : {"/type/object/name": "Blade Runner"},
-            "/rec_ui/parent"         : {"/type/object/name": "Blade Runner"},
+            "/film/director/film"    : [{"/type/object/name": "Blade Runner"}],
+            "/rec_ui/parent"         : [{"/type/object/name": "Blade Runner"}],
             "/rec_ui/headers"        : ["/type/object/name", "/type/object/type", "/film/director/film"],
             "/rec_ui/mql_props"      : ["/film/director/film"],
             "/rec_ui/cvt_props"      : [],
             "/rec_ui/toplevel_entity": false
-        },
+        }],
       "/rec_ui/headers": ["/type/object/name", "/type/object/type", "/film/film/directed_by"],
       "/rec_ui/mql_props": ["/film/film/directed_by"],
       "/rec_ui/cvt_props": [],
