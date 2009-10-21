@@ -239,7 +239,14 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
 */
 function logger(log_level) {
     if (console[log_level])
-        return function(message) {return console[log_level](message);};
+        return function(message) {
+          try {
+            return console[log_level](message);
+          }
+          catch(e) {
+            return console[log_level](JsObjDump.annotate(message));
+          }
+        };
     return function(message){/*node("div",JSON.stringify(message)).appendTo("#" + log_level + "Log");*/ return message;}
 }
 

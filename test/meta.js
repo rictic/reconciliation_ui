@@ -1,16 +1,9 @@
 //define and test our testing helpers
 
+console.options = {SKIP_FUNCTIONS: true, SKIP_INHERITED: true};
+
 function pass() {
     assertTrue(true);
-}
-
-function debug(msg) {
-    try {
-        log(msg);
-    }
-    catch(e) {
-        log("a recursive structure");
-    }
 }
 
 function assertEq(msg, a1, a2) {
@@ -21,9 +14,9 @@ function assertEq(msg, a1, a2) {
     }
     var message = areNotEq(a1,a2);
     if (message){
-        debug(a1);
-        debug("expected, but found");
-        debug(a2);
+        log(a1);
+        log("expected, but found");
+        log(a2);
         fail(msg + " " + message);
     }
     else
@@ -39,13 +32,17 @@ function isObject(val) {
 
 function assertSubsetOf(msg, o1, o2) {
     if (arguments.length == 2){
-        o2 = a1;
+        o2 = o1;
         o1 = msg;
         msg = "";
     }
     var result = isNotSubsetOf(o1,o2);
-    if (result)
+    if (result){
+        log(o1);
+        log("is not a subset of");
+        log(o2);
         fail(msg + " " + result);
+    }
     else
         pass();
 }
