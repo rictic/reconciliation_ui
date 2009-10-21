@@ -9,7 +9,7 @@ var value_prop = {
     "type" : "/type/property",
     "name":null,
     "id" : null
-}
+};
 var topic_prop = {
     "expected_type" : {
         "extends" : [],
@@ -21,12 +21,28 @@ var topic_prop = {
     "type" : "/type/property",
     "name":null,
     "id" : null
-}
-freebase.fetchPropertyInfo = function(props,onComplete,onError){onComplete();},
+};
 
+var mocked_properties = {
+  "/film/film/director": {
+        "expected_type": {
+            "/freebase/type_hints/mediator": null,
+            "extends":       [],
+            "id":            "/film/director"
+        },
+        "id":            "/film/film/directed_by",
+        "master_property": null,
+        "name":          "Directed by",
+        "reverse_property": "/film/director/film",
+        "inverse_property": "/film/director/film",
+        "type":          "/type/property"
+    }
+};
+freebase.fetchPropertyInfo = function(props,onComplete,onError){onComplete();},
 freebase.getPropMetadata = function(prop){
-    if (prop.substr(0,8) == "/rec_ui/") return undefined;
-    if (prop.substr(0,5) == "topic") return topic_prop;
+    if (prop in mocked_properties) return mocked_properties[prop];
+    if (startsWith("/rec_ui/", prop)) return undefined;
+    if (startsWith("topic", prop)) return topic_prop;
     return value_prop;
 }
 freebase.fetchTypeInfo = function(types, onComplete, onError) {onComplete();}

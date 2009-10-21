@@ -49,6 +49,8 @@ Entity.prototype.addProperty = function(prop, value) {
     if (value !== undefined)
         this[prop] = value;
 
+    if (startsWith(prop, "/rec_ui/"))
+        return;
     if (!Arr.contains(this['/rec_ui/headers'], prop))
         this['/rec_ui/headers'].push(prop);
     if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop))

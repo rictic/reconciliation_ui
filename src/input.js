@@ -396,12 +396,43 @@ function objectifyRows(onComplete) {
     }, onComplete);
 }
 
+/* Assumes that the metadata for all properties encountered
+   already exists.  See findAllProperties() and freebase.fetchPropertyInfo
+*/
+function treeToEntity(tree, parent, onAddProperty) {
+    var entity = new Entity({'/rec_ui/toplevel_entity': !parent});
+    for (var prop in tree){
+        var value = tree[prop];
+        if (getType($.makeArray(value)[0]) === "object") {
+            value = treeToEntity(value, entity);
+        }
+        entity.addProperty(prop, value);
+        if (onAddProperty)
+          onAddProperty(prop);
+    }
+    
+    return entity;
+}
+
+function findAllProperties(trees) {
+    var propsSeen = new Set();
+    $.map(trees, findProps);
+    return propsSeen;
+    
+    function findProps(obj) {
+        if (getType(obj) !== "object") return;
+        for (var key in obj) {
+            if (isMqlProp(key)) {
+                propsSeen.add(key);
+                findProps(obj[key]);
+            }
+        }
+    }
+}
 
 function parseJSON(json, onComplete) {
     var data = JSON.parse(json);
-    headers = data.headers;
-    mqlProps = getMqlProperties(headers);
-
+    
     function objectToEntity(object) {
         if (typeof object === 'string') return object;
         var entity = new Entity(object);

@@ -64,6 +64,12 @@ function idToClass(idName) {
     return idName.replace(/\//g,"_").replace(":","___");
 }
 
+function startsWith(needle, haystack) {
+    if (needle.substr(0,haystack.length) == haystack)
+        return true;
+    return false;
+}
+
 function charIn(string, chr) {
     return string.indexOf(chr) !== -1;
 }
@@ -206,6 +212,18 @@ var Set = function() {
     this.getAll = function() {var all = []; for (var val in set) all.push(val); return all;};
     this.addAll(arguments);
 }
+
+function getType(v) {
+    if (typeof v !== "object") return typeof v;
+    if ($.isArray(v)) return "array";
+    if (v === null) return "null";
+    if (v instanceof Date) return "date";
+    if (v instanceof RegExp) return "regexp";
+    return "object";
+}
+
+//This set implementation preserves order, but just in case
+var OrderedSet = Set; 
 
 function getJSON(url, params, onSuccess, onTimeout, millis) {
     millis = millis || 120000; //default of 2 minute timeout
