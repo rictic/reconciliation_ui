@@ -23,6 +23,24 @@ function assertEq(msg, a1, a2) {
         pass();
 }
 
+function assertNotEq(msg, a1, a2) {
+    if (arguments.length == 2){
+        a2 = a1;
+        a1 = msg;
+        msg = "";
+    }
+    var message = areNotEq(a1,a2);
+    if (message) {
+        pass();
+    }
+    else {
+        log(a1);
+        log("should not be equal to");
+        log(a2);
+        fail();
+    }
+}
+
 function isObject(val) {
     if ($.isArray(val)) return false;
     if (typeof val != "object") return false;
@@ -62,7 +80,6 @@ function isNotSubsetOf(o1,o2) {
 function areNotEq(a1,a2, cmpFunc, objCompFunc){
     cmpFunc = cmpFunc || areNotEq;
     objCompFunc = objCompFunc || objComp;
-    if (a1 == a2) return;
     if ($.isArray(a1) || $.isArray(a2)){
         if (!($.isArray(a1) && $.isArray(a2)))
             return "one is an array, the other isn't: " + a1 + " " + a2;
@@ -75,6 +92,7 @@ function areNotEq(a1,a2, cmpFunc, objCompFunc){
         }
         return;
     }
+    if (a1 == a2) return;
     if (typeof a1 != typeof a2) return "differently typed: " + a1 + " " + a2;
     if (typeof a1 != "object")
         return "Expected " + a1 + " but got " + a2;
@@ -125,6 +143,9 @@ TestCase("MetaTest",{
         assertEq("{} is {}",{},{});
         assertEq("{a:1} is {a:1}",{a:1},{a:1});
         assertEq("{a:[1,2,3]} is {a:[1,2,3]}",{a:[1,2,3]},{a:[1,2,3]});
+    },
+    testObjNotEq:function() {
+        assertNotEq("[1] is not 1",[1],1);  
     }
 });
 

@@ -81,7 +81,7 @@ addCompleteParsingTestCase("spreadsheet with empty cell",
 
 addCompleteParsingTestCase("spreadsheet with nested data",
                            "a:b\ta:c\td\n1\t2\t3",
-                           [{a:[{b:1,c:2}],d:3}]);
+                           [{a:[{b:[1],c:[2]}],d:3}]);
 
 addCompleteParsingTestCase("spreadsheet",
                            "a\tb\tc\n1\t2\t3\n\t4\t5\n6\t7",
@@ -90,19 +90,19 @@ addCompleteParsingTestCase("spreadsheet",
                            "a\tb\tc\n1\t2\t3\n\t4\t5\n6\t7",
                            [{a:1,b:[2,4],c:[3,5]},{a:6,b:7}],true,true);
  
-addCompleteParsingTestCase("ambiguous spreadsheet with nested data across multiple rows",
+addCompleteParsingTestCase("spreadsheet with nested data across multiple rows",
                            "a\tb:c\tb:d\n1\t2\t3\n\t4\t5\n6\t7",
-                           [{a:1,b:[{c:2,d:3}]},{b:[{c:4,d:5}]},{a:6,b:[{c:7}]}],true);
-addCompleteParsingTestCase("ambiguous spreadsheet with nested data across multiple rows",
+                           [{a:1,b:[{c:[2],d:[3]}]},{b:[{c:[4],d:[5]}]},{a:6,b:[{c:[7]}]}],true);
+addCompleteParsingTestCase("spreadsheet with nested data across multiple rows",
                            "a\tb:c\tb:d\n1\t2\t3\n\t4\t5\n6\t7",
-                           [{a:1,b:[{c:2,d:3},{c:4,d:5}]},{a:6,b:[{c:7}]}],true,true);
+                           [{a:1,b:[{c:[2],d:[3]},{c:[4],d:[5]}]},{a:6,b:[{c:[7]}]}],true,true);
 
-addCompleteParsingTestCase("ambiguous spreadsheet with first column nested",
+addCompleteParsingTestCase("spreadsheet with first column nested",
                            "a:b\ta:c\td\n1\t2\t3\n\t4\t5",
-                           [{a:[{b:[1],c:[2]}],d:[3]},{a:[{c:[4]}],d:[5]}],true);
-addCompleteParsingTestCase("ambiguous spreadsheet with first column nested",
+                           [{a:[{b:[1],c:[2]}],d:3},{a:[{c:[4]}],d:5}],true);
+addCompleteParsingTestCase("spreadsheet with first column nested",
                            "a:b\ta:c\td\n1\t2\t3\n\t4\t5",
-                           [{a:[{b:1,c:2},{c:4}],d:[3,5]}],true, true);
+                           [{a:[{b:[1],c:[2]},{c:[4]}],d:[3,5]}],true, true);
 
 TestCase("ParsingTest",tests);
 
