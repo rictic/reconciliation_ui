@@ -2,33 +2,60 @@
 var tests = {};
 
 var json_examples = [
-  /* each of these examples is a triple [name, input, expected_parse]*/
+  /* each of these examples is a triple [name, input, expected_parse, all props]*/
   [ "a name and a type",
+    
     { "/type/object/name": "Joshua Norton",
       "/type/object/type": "/people/person"},
+    
     { "/type/object/name"      : ["Joshua Norton"],
       "/type/object/type"      : ["/people/person"],
       "/rec_ui/headers"        : ["/type/object/name","/type/object/type"],
       "/rec_ui/mql_props"      : [],
       "/rec_ui/cvt_props"      : [],
-      "/rec_ui/toplevel_entity": true}
+      "/rec_ui/toplevel_entity": true},
+      
+    []
   ]
  ,[ "a name, type, and a value mql property",
+    
     {"/type/object/name": "Joshua Norton",
      "/type/object/type": "/people/person",
      "/people/person/date_of_birth": "1819"},
+    
     {"/type/object/name"           : ["Joshua Norton"],
      "/type/object/type"           : ["/people/person"],
      "/people/person/date_of_birth": ["1819"],
      "/rec_ui/headers"             : ["/type/object/name","/type/object/type","/people/person/date_of_birth"],
      "/rec_ui/mql_props"           : ["/people/person/date_of_birth"],
      "/rec_ui/cvt_props"           : [],
-     "/rec_ui/toplevel_entity"     : true}
+     "/rec_ui/toplevel_entity"     : true},
+     
+    ["/people/person/date_of_birth"]
+  ]
+ ,[ "a name, type, and id (ensures id isn't put into an array)",
+
+      {"/type/object/name": "Joshua Norton",
+       "/type/object/type": "/people/person",
+       "id": "/en/joshua_norton"},
+
+      {"/type/object/name"           : ["Joshua Norton"],
+       "/type/object/type"           : ["/people/person"],
+       "id"                          : "/en/joshua_norton",
+       "/rec_ui/headers"             : ["/type/object/name","/type/object/type","id"],
+       "/rec_ui/mql_props"           : [],
+       "/rec_ui/cvt_props"           : [],
+       "/rec_ui/toplevel_entity"     : true},
+       
+      []
   ]
  ,[ "a film and its director (direct topic property)",
+    
     {"/type/object/name": "Blade Runner",
      "/type/object/type": "/film/film",
-     "/film/film/directed_by": {"/type/object/name": "Ridley Scott"}},
+     "/film/film/directed_by": {"/type/object/name": "Ridley Scott",
+                                "":""}},
+    
     {"/type/object/name": ["Blade Runner"],
      "/type/object/type": ["/film/film"],
      "/film/film/directed_by": [
@@ -50,7 +77,9 @@ var json_examples = [
       "/rec_ui/mql_props": ["/film/film/directed_by"],
       "/rec_ui/cvt_props": [],
       "/rec_ui/toplevel_entity": true
-    }
+    },
+    
+    ["/film/film/directed_by"]
   ]
 ]
 
@@ -61,6 +90,6 @@ $.each(json_examples, function(_,example) {
         var entity = treeToEntity(tree);
         assertSubsetOf(entity, expected);
     }
-})    
+})
 
 TestCase("json parsing", tests);

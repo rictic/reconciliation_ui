@@ -38,6 +38,6 @@ function politeMap(array, f, onComplete, yielder) {
     yielder = yielder || new Yielder();
     var result = [];
     politeEach(array, function(index, value) {
-        result[index] = f(index,value);
+        result[index] = f(value);
     }, function() {onComplete(result);}, yielder);
 }

@@ -58,10 +58,16 @@ function autoReconcile() {
 function constructReconciliationQuery(entity, typeless) {
     function constructQueryPart(value) {
         if (value.id != undefined && value.id != "" && value.id != "None")
-            return {"id":value.id, "name":value["/type/object/name"]}
+            return {"id":value.id, "name":singletonToValue(value["/type/object/name"])}
         if (value['/rec_ui/id'] !== undefined)
-            return $.makeArray(value["/type/object/name"])[0];
-        return value;
+            return singletonToValue($.makeArray(value["/type/object/name"]));
+        return singletonToValue(value);
+        
+        function singletonToValue(x) {
+            if (!$.isArray(x) || x.length !== 1)
+                return x;
+            return x[0];
+        }
     }
     var query = {}
     var headers = entity["/rec_ui/headers"];

@@ -30,7 +30,7 @@ var totalRecords = 0;
 var mqlProps;
 var headers;
 var rows;
-var typesSeen;
+var typesSeen = new Set();
 
 /*
 ** Parsing and munging the input
@@ -396,10 +396,39 @@ function objectifyRows(onComplete) {
     }, onComplete);
 }
 
+/* untested and unused as of yet */
+function findAllProperties(trees, onComplete) {
+    var propsSeen = new Set();
+    politeEach(trees, findProps, function() {
+        onComplete(propsSeen.getAll());
+    });
+    
+    function findProps(_,obj) {
+        switch(getType(obj)) {
+        case "array":
+            $.map(obj, findProps); 
+            break;
+        case "object":
+            for (var key in obj) {
+                if (isMqlProp(key)) {
+                    propsSeen.add(key);
+                    findProps(null,obj[key]);
+                }
+            }
+            break;
+        }
+    }
+}
+
+function recordsToEntities(records, onComplete) {
+    politeMap(records, recordToEntity, onComplete);
+}
+
 /* Assumes that the metadata for all properties encountered
    already exists.  See findAllProperties() and freebase.fetchPropertyInfo
 */
-function treeToEntity(tree, parent, onAddProperty) {
+function recordToEntity(tree, parent, onAddProperty) {
+    log(tree);
     var entity = new Entity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity['/rec_ui/parent'] = [parent];
@@ -409,7 +438,7 @@ function treeToEntity(tree, parent, onAddProperty) {
             var propMeta = freebase.getPropMetadata(prop);
             
             value = $.map($.makeArray(value), function(innerTree) {
-                var innerEntity = treeToEntity(innerTree, entity);
+                var innerEntity = recordToEntity(innerTree, entity);
                 if (!("/type/object/type" in innerEntity)) {
                     innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
                 }
@@ -425,46 +454,20 @@ function treeToEntity(tree, parent, onAddProperty) {
     return entity;
 }
 
-/* untested and unused as of yet */
-function findAllProperties(trees) {
-    var propsSeen = new Set();
-    $.map(trees, findProps);
-    return propsSeen;
-    
-    function findProps(obj) {
-        if (getType(obj) !== "object") return;
-        for (var key in obj) {
-            if (isMqlProp(key)) {
-                propsSeen.add(key);
-                findProps(obj[key]);
-            }
-        }
-    }
-}
-
 function parseJSON(json, onComplete) {
-    var data = JSON.parse(json);
-    
-    function objectToEntity(object) {
-        if (typeof object === 'string') return object;
-        var entity = new Entity(object);
-        $.each(entity['/rec_ui/mql_props'], function(_,prop) {
-            if (!isValueProperty(prop))
-                entity[prop] = $.map(entity[prop], objectToEntity);
-        })
-        if (entity['/type/object/type'])
-            $.each(entity['/type/object/type'], function(_,type){typesSeen.add(type)});
-        return entity;
-    }
-    
-    freebase.fetchPropertyInfo(data.all_properties, function() {
-        addIdColumns();
-        rows = [];
-        politeEach(data.rows, function(_,row) {
-            rows.push(objectToEntity(row));
-        },
-        function() {
-            freebase.fetchTypeInfo(typesSeen.getAll(), onComplete);
+    var records = JSON.parse(json);
+    findAllProperties(records, function(props) {
+        log("properties found:");
+        log(props);
+        freebase.fetchPropertyInfo(props, function() {
+            log(records);
+            recordsToEntities(records, function(entities) {
+                rows = entities;
+                headers = rows[0]['/rec_ui/headers'];
+                mqlProps = rows[0]['/rec_ui/mql_props'];
+                addIdColumns();
+                freebase.fetchTypeInfo(typesSeen.getAll(), onComplete);
+            })
         });
     });
 }

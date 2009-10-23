@@ -268,7 +268,7 @@
 
             function handleInput(callback) {
                 var input = $('#initialInput')[0].value;
-                if (input.charAt(0) === "{") {
+                if (input.charAt(0) === "[") {
                     parseJSON(input, function() {
                         initializeTabs();
                         spreadsheetProcessed(beginAutoReconciliation);

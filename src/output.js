@@ -111,7 +111,7 @@ function renderSpreadsheet() {
 
 function prepareTriples() {
     getTriples(entities, function(triples) {
-        politeMap(triples,function(_,val){return JSON.stringify(val)},
+        politeMap(triples,function(val){return JSON.stringify(val)},
             function(encodedTriples) {
                 var tripleString = encodedTriples.join("\n");
                 $(".triplesDisplay").html(tripleString);

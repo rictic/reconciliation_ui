@@ -51,6 +51,9 @@ Entity.prototype.addProperty = function(prop, value) {
     else
         this[prop] = $.makeArray(value);
     
+    if (prop === "/type/object/type") {
+        typesSeen.addAll(this[prop]);
+    }
     if (!Arr.contains(this['/rec_ui/headers'], prop))
         this['/rec_ui/headers'].push(prop);
     if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop))
