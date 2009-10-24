@@ -36,6 +36,35 @@ var typesSeen = new Set();
 ** Parsing and munging the input
 */
 
+function parseInput(input, ambiguityResolver, onComplete, yielder) {
+    yielder = yielder || new Yielder();
+
+    if (input.charAt(0) === "[") {
+        parseJSON(input, function() {
+            onComplete();
+        }, yielder);
+        return;
+    }
+    
+    function handleAmbiguity(shouldCombineRows) {
+        if (shouldCombineRows)
+            combineRows(onComplete);
+        else
+            onComplete();
+    }
+
+    parseTSV(input,function(spreadsheetRowsWithBlanks) {
+        removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
+            buildRowInfo(spreadsheetRows, function(rows){
+                getAmbiguousRowIndex(undefined,
+                                     function curry(startingRowIdx){ambiguityResolver(startingRowIdx,handleAmbiguity);}, 
+                                     onComplete, yielder);
+            }, yielder);
+        }, yielder)
+    }, yielder);
+}
+
+
 function parseTSV(spreadsheet, onComplete, yielder) {
     yielder = yielder || new Yielder();
     var position = 0;    
@@ -231,28 +260,6 @@ function combineRows(onComplete) {
     doCombineRows();
 }
 
-function spreadsheetProcessed(callback) {
-    function isUnreconciled(entity) {
-        if (entity.isCVT())
-            return false;
-        return Arr.contains([undefined,null,"indeterminate",""], entity.id);
-    }
-    addIdColumns();
-    totalRecords = rows.length;
-    var rec_partition = Arr.partition(rows,isUnreconciled);
-    automaticQueue = rec_partition[0];
-    politeEach(rec_partition[1],function(_,reconciled_row){
-        addColumnRecCases(reconciled_row);
-    }, function() {
-        freebase.fetchTypeInfo(typesSeen.getAll(), function() {
-            $(".initialLoadingMessage").hide();
-            callback();
-        })
-    });
-}
-
-
-
 function addIdColumns() {
     if (!Arr.contains(headers, "id"))
         headers.push("id");
@@ -397,11 +404,11 @@ function objectifyRows(onComplete) {
 }
 
 /* untested and unused as of yet */
-function findAllProperties(trees, onComplete) {
+function findAllProperties(trees, onComplete, yielder) {
     var propsSeen = new Set();
     politeEach(trees, findProps, function() {
         onComplete(propsSeen.getAll());
-    });
+    }, yielder);
     
     function findProps(_,obj) {
         switch(getType(obj)) {
@@ -420,8 +427,8 @@ function findAllProperties(trees, onComplete) {
     }
 }
 
-function recordsToEntities(records, onComplete) {
-    politeMap(records, recordToEntity, onComplete);
+function recordsToEntities(records, onComplete, yielder) {
+    politeMap(records, recordToEntity, onComplete, yielder);
 }
 
 /* Assumes that the metadata for all properties encountered
@@ -454,11 +461,10 @@ function recordToEntity(tree, parent, onAddProperty) {
     return entity;
 }
 
-function parseJSON(json, onComplete) {
+function parseJSON(json, onComplete, yielder) {
+    yielder = yielder || new Yielder();
     var records = JSON.parse(json);
     findAllProperties(records, function(props) {
-        log("properties found:");
-        log(props);
         freebase.fetchPropertyInfo(props, function() {
             log(records);
             recordsToEntities(records, function(entities) {
@@ -467,7 +473,7 @@ function parseJSON(json, onComplete) {
                 mqlProps = rows[0]['/rec_ui/mql_props'];
                 addIdColumns();
                 freebase.fetchTypeInfo(typesSeen.getAll(), onComplete);
-            })
+            }, yielder);
         });
-    });
+    }, yielder);
 }

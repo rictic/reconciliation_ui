@@ -35,41 +35,54 @@ Stevie Wonder\t/people/person\n\
 }
 
 function addCompleteParsingTestCase(name, spreadsheet, expectedParse, ambiguous, collapseRows) {
-    var testName = "test completely processing ";
-    if (ambiguous){
-        testName += "an ambiguous ";
-        if (collapseRows)
-            testName += "collapsed "; 
+    function parseCompletely(parseComplete) {
+        var ambiguityFound = false;
+        parseInput(spreadsheet, 
+            function onAmbiguity(startingIdx, ambiguityHandler) {
+                ambiguityFound = true;
+                if (ambiguous)
+                    ambiguityHandler(collapseRows);
+                else
+                    fail("Unexpected ambiguity");
+            },
+            function onComplete() {
+                if (ambiguityFound && !ambiguous)
+                    fail("Expected ambiguity, but was parsed as unambiguous");
+                objectifyRows(function() {
+                    parseComplete();
+                })
+            }
+        );
     }
-    else testName += "a "
-    testName += name;
-    tests[testName] = function() {
+    
+    var description = "";
+    if (ambiguous){
+        description += "an ambiguous ";
+        if (collapseRows)
+            description += "collapsed "; 
+    }
+    else description += "a "
+    description += name;
+    
+    tests["test completely parsing " + description] = function theParsingTest() {
         expectAsserts(1);
 
-        parseTSV(spreadsheet,function(spreadsheetRowsWithBlanks) {
-            removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
-                buildRowInfo(spreadsheetRows, function(rows){
-                    if (ambiguous)
-                        getAmbiguousRowIndex(undefined,function(){
-                            if (collapseRows)
-                                combineRows(finishProcessing);
-                            else
-                                finishProcessing();
-                        }, function(){fail("Unexpected unambiguity");});
-                    else
-                        getAmbiguousRowIndex(undefined, function(){fail("Unexpected ambiguity")}, finishProcessing);
-                });
-            })
-        });
-        function finishProcessing() {
-            objectifyRows(function() {
-                spreadsheetProcessed(function() {
-                    assertSubsetOf("parsed input", rows, expectedParse);
-                })
-            })
-        }
+        parseCompletely(function() {
+            assertSubsetOf("parsed input", rows, expectedParse);
+        })
+    }
+    
+    tests["test re-rendering " + description] = function theSpreadsheetOutputTest() {
+        expectAsserts(1);
+        parseCompletely(function() {
+            //rebuild the spreadsheet and confirm it's identical to the original
+            renderSpreadsheet(function(outputSpreadsheet) {
+                assertEquals(spreadsheet, $.trim(outputSpreadsheet));
+            });
+        });        
     }
 }
+
 
 addCompleteParsingTestCase("simple two column, one row sheet",
                            "a\tb\n1\t2",

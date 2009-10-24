@@ -1,3 +1,23 @@
+function initializeReconciliation(callback) {
+    function isUnreconciled(entity) {
+        if (entity.isCVT())
+            return false;
+        return Arr.contains([undefined,null,"indeterminate",""], entity.id);
+    }
+
+    totalRecords = rows.length;
+    var rec_partition = Arr.partition(rows,isUnreconciled);
+    automaticQueue = rec_partition[0];
+    politeEach(rec_partition[1],function(_,reconciled_row){
+        addColumnRecCases(reconciled_row);
+    }, function() {
+        freebase.fetchTypeInfo(typesSeen.getAll(), function() {
+            $(".initialLoadingMessage").hide();
+            callback();
+        });
+    });
+}
+
 function handleReconChoice(entity,freebaseId) {
     delete manualQueue[entity["/rec_ui/id"]];
     $("#manualReconcile" + entity['/rec_ui/id']).remove();

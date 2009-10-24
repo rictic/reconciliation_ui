@@ -33,7 +33,7 @@
 
 function onDisplayOutputScreen() {
     setTimeout(checkLogin,0);
-    setTimeout(renderSpreadsheet,0);
+    setTimeout(displaySpreadsheet,0);
     setTimeout(prepareTriples,0);
 }
 function onHideOutputScreen() {
@@ -94,20 +94,27 @@ function encodeRow(row) {
     return $.map(lines,encodeLine);
 }
 
-var spreadsheetRendererYielder;
-function renderSpreadsheet() {
-    spreadsheetRendererYielder = new Yielder();
-    var lines = [];
-    lines.push(encodeLine(headers));
+function displaySpreadsheet() {
     $("#outputSpreadSheet")[0].value = "One moment, rendering...";
     
+    renderSpreadsheet(function(spreadsheet) {
+        $("#outputSpreadSheet")[0].value = spreadsheet;
+    })
+}
+
+var spreadsheetRendererYielder;
+function renderSpreadsheet(onComplete) {
+    var lines = [];
+    lines.push(encodeLine(headers));
+    spreadsheetRendererYielder = new Yielder();
     politeEach(rows, function(idx, row) {
         lines = lines.concat(encodeRow(row));
     },
     function() {
-        $("#outputSpreadSheet")[0].value = lines.join("\n");
+        onComplete(lines.join("\n"));
     }, spreadsheetRendererYielder);
 }
+
 
 function prepareTriples() {
     getTriples(entities, function(triples) {

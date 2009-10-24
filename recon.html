@@ -33,10 +33,10 @@
             <div id="formatDisambiguation" class="container invisible screen">
                 <h3>Are these <span class='numThings'>several</span> rows about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'></span>"?</h3>
 
-                <button onclick='$("#formatDisambiguation").hide(); showConfirmationSpreadsheet();'>
+                <button class='dontCombine'>
                     This is about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s. 
                 </button>
-                <button onclick='doCombineRows();'>
+                <button class='doCombine'>
                     These rows are all about "<span class='thingName'>one thing</span>"
                 </button>
 
@@ -268,34 +268,27 @@
 
             function handleInput(callback) {
                 var input = $('#initialInput')[0].value;
-                if (input.charAt(0) === "[") {
-                    parseJSON(input, function() {
-                        initializeTabs();
-                        spreadsheetProcessed(beginAutoReconciliation);
-                    });
-                    return;
+                function onProgressMade() {
+                    $("#inputWindow .screen").hide();
+                    $(".inputLoading").hide();
+                    $("#inputWindow").removeClass("disabled");
+                    $("#inputWindow button").removeAttr("disabled");
                 }
-                
-                parseTSV(input,function(spreadsheetRowsWithBlanks) {
-                    removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
-                        buildRowInfo(spreadsheetRows, function(rows){
-                            function afterwards(f){
-                                return function(a) {
-                                    $("#inputWindow .screen").hide();
-                                    f(a);
-                                    if (callback) callback();
-                                }
-                            }
-                            getAmbiguousRowIndex(undefined, afterwards(showAmbiguousRowPrompt), afterwards(showConfirmationSpreadsheet), inputProcessingYielder);
-                        }, inputProcessingYielder);
-                    }, inputProcessingYielder)
-                }, inputProcessingYielder);
+                function onAmbiguity(ambiguousRowIdx, handleAmbiguity) {
+                    onProgressMade();
+                    showAmbiguousRowPrompt(ambiguousRowIdx, handleAmbiguity);
+                }
+                function onComplete() {
+                    onProgressMade();
+                    showConfirmationSpreadsheet();
+                }
+                parseInput(input, onAmbiguity, onComplete, inputProcessingYielder);
             }
             function cancelInputProcessing() {
                 $(".inputLoading").hide()
                 inputProcessingYielder.cancel();
             }
-            function showAmbiguousRowPrompt(startingRowIdx) {
+            function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
                 var groupedHeaders = groupProperties(headers);
                 var context = $("#formatDisambiguation");
                 $("table thead",context).replaceWith(buildTableHeaders(groupedHeaders));
@@ -334,8 +327,14 @@
                     });
                 }
                 $(".numThings", context).html(numThings);
-
-
+                
+                function ambiguityWrapper(shouldCombine) {
+                    $("button", context).attr("disabled","disabled");
+                    handleAmbiguity(shouldCombine);
+                }
+                $(".doCombine", context).click(function() {ambiguityWrapper(true);});
+                $(".dontCombine", context).click(function() {ambiguityWrapper(false);});
+                
                 $('table tbody tr:odd', context).addClass('odd');
                 $('table tbody tr:even', context).addClass('even');
                 context.show();
@@ -360,13 +359,13 @@
                         if (val == undefined)
                             val = "";
                         else if ($.isArray(val)){
-                            var arr = Arr.filter(val, function(elem) {return elem !== undefined;});
+                            var arr = filter(val, function(elem) {return elem !== undefined;});
                             if (arr.length === 0)
                                 val = "";
                             else if (arr.length === 1)
-                                val = "" + arr[0];
+                                val = "" + textValue(arr[0]);
                             else
-                                val = "[" + arr.join(", ") + "]";
+                                val = textValue(val);
                         }
 
                         row[j] = val;
@@ -405,8 +404,9 @@
             function continueToReconciliation() {
                 $("#gettingInput").remove();
                 initializeTabs();
+                addIdColumns();
                 objectifyRows(function() {
-                    spreadsheetProcessed(beginAutoReconciliation);
+                    initializeReconciliation(beginAutoReconciliation);
                 });
             }
             var reconciliationBegun = false;
