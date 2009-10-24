@@ -217,6 +217,7 @@ function getType(v) {
     if (typeof v !== "object") return typeof v;
     if ($.isArray(v)) return "array";
     if (v === null) return "null";
+    if (v === undefined) return "undefined";
     if (v instanceof Date) return "date";
     if (v instanceof RegExp) return "regexp";
     return "object";

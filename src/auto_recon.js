@@ -56,19 +56,6 @@ function autoReconcile() {
 }
 
 function constructReconciliationQuery(entity, typeless) {
-    function constructQueryPart(value) {
-        if (value.id != undefined && value.id != "" && value.id != "None")
-            return {"id":value.id, "name":singletonToValue(value["/type/object/name"])}
-        if (value['/rec_ui/id'] !== undefined)
-            return singletonToValue($.makeArray(value["/type/object/name"]));
-        return singletonToValue(value);
-        
-        function singletonToValue(x) {
-            if (!$.isArray(x) || x.length !== 1)
-                return x;
-            return x[0];
-        }
-    }
     var query = {}
     var headers = entity["/rec_ui/headers"];
     for (var i = 0; i < headers.length; i++) {
@@ -97,8 +84,46 @@ function constructReconciliationQuery(entity, typeless) {
     }
     if (typeless || !query['/type/object/type'])
         query['/type/object/type'] = ['/common/topic'];
-    entity['/rec_ui/recon_query'] = query;
+    entity['/rec_ui/recon_query'] = cleanup(query);
     return query;
+    
+    function constructQueryPart(value) {
+        if (value.id != undefined && value.id != "" && value.id != "None")
+            return {"id":value.id, "name":value["/type/object/name"]}
+        if (value['/rec_ui/id'] !== undefined)
+            return $.makeArray(value["/type/object/name"])[0];
+        return value;
+    }
+    
+    /* Removes undefined values, nulls, empty lists, empty objects,
+       and collapses singleton arrays down to their single values
+       to better feed the reconciliation service.  */
+    function cleanup(value) {
+        switch(getType(value)){
+        case "array": 
+            value = $.map(value, function(v) {
+                return cleanup(v);
+            });
+            if (value.length === 0)
+                return null;
+            if (value.length === 1)
+                return value[0];
+            return value;
+        case "object":
+            var clone = {};
+            for (var key in value) {
+                var v = cleanup(value[key]);
+                if (v === null || v === undefined)
+                    continue;
+                clone[key] = v;
+            }
+            if (isObjectEmpty(clone))
+                return null;
+            return clone;
+        default:
+            return value;
+        }
+    }
 }
 
 function getCandidates(entity, callback, onError,typeless) {
