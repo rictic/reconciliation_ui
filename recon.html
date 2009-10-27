@@ -359,7 +359,7 @@
                         if (val == undefined)
                             val = "";
                         else if ($.isArray(val)){
-                            var arr = filter(val, function(elem) {return elem !== undefined;});
+                            var arr = Arr.filter(val, function(elem) {return elem !== undefined;});
                             if (arr.length === 0)
                                 val = "";
                             else if (arr.length === 1)
