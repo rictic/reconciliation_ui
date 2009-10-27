@@ -84,7 +84,8 @@ function constructReconciliationQuery(entity, typeless) {
     }
     if (typeless || !query['/type/object/type'])
         query['/type/object/type'] = ['/common/topic'];
-    entity['/rec_ui/recon_query'] = cleanup(query);
+    query = cleanup(query);
+    entity['/rec_ui/recon_query'] = query;
     return query;
     
     function constructQueryPart(value) {
