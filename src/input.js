@@ -342,7 +342,7 @@ function objectifyRows(onComplete) {
                 var meta = freebase.getPropMetadata(lastPart);
                 if (meta === undefined && lastPart !== "id")
                     return; //if we don't know what it is, leave it as it is
-                if (lastPart === "id" || isValueProperty(lastPart))
+                if (lastPart === "id" || lastPart == "/type/object/type" || isValueProperty(lastPart))
                     slot.addProperty(lastPart, value);
                 else {
                     var new_entity = new Entity({"/type/object/type":meta.expected_type.id,
