@@ -47,9 +47,11 @@ Entity.prototype.reconcileWith = function(id, automatic) {
 
 Entity.prototype.addProperty = function(prop, value) {
     if (prop === "id")
+        this[prop] = $.makeArray(value)[0];
+    else {
+        value = Arr.filter($.makeArray(value), function(v) {return v !== undefined;})
         this[prop] = value;
-    else
-        this[prop] = $.makeArray(value);
+    }
     
     if (prop === "/type/object/type") {
         typesSeen.addAll(this[prop]);
