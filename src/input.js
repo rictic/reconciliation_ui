@@ -336,7 +336,7 @@ function objectifyRows(onComplete) {
                 $.each(parts.slice(1,parts.length-1), function(_,part) {
                     if (!(part in slot))
                         slot.addProperty(part, innerEntity(freebase.getPropMetadata(part), slot));
-                    slot = slot[part];
+                    slot = slot[part][0];
                 });
                 var lastPart = parts[parts.length-1];
                 var meta = freebase.getPropMetadata(lastPart);
@@ -368,8 +368,7 @@ function objectifyRows(onComplete) {
         });
         
         /* Recursively removes undefined objects from arrays anywhere in an object.
-            Also, collapses singleton lists to single objects, to work around a bug in
-            the reconciliation service.
+            Also, collapses singleton arrays to the object inside
             Supports self referential objects (though not self referential arrays)*/
         function cleanup(obj, closed) {
             //Only interested in Arrays and objects
