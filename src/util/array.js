@@ -22,8 +22,8 @@ var Arr = (function() {
     }
 
     Arr.removeAt = function(a, i) {
-        assert(i >= 0);
-        assert(i <= a.length);
+        assert(i >= 0, "Arr.removeAt i>=0");
+        assert(i <= a.length, "Arr.removeAt i<=a.length");
         return a.slice(0,i).concat(a.slice(i+1));
     }
 

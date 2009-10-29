@@ -84,7 +84,8 @@ var freebase = (function() {
            if they failed, and calls onComplete if all of the keys have
            been handled. */
         function dispatcher(responseGroup) {
-            assert(keys.length > 0);
+            //FIXME: need to run unique over the query key set
+            assert(keys.length > 0, "freebase.mqlReads.dispatcher: keys.length should be >0, found: " + keys.length);
             var i = 0;
             while(i < keys.length) {
                 var key = keys[i];
