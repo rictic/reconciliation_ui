@@ -142,7 +142,13 @@ function getTriples(entities, callback) {
             return "$entity" + entity['/rec_ui/id'];
         return entity.id;
     }
-    function getValue(property, stringValue) {
+    function getValue(property, value) {
+        if (getType(value) === "array") {
+            if (value.length === 1)
+                return getValue(property, value[0]);
+            return $.map(value, function(val){return getValue(property, val)});
+        }
+        var stringValue = value;
         var expectedType = freebase.getPropMetadata(property).expected_type.id;
         if (Arr.contains(["/type/int","/type/float"], expectedType))
             return Number($.trim(stringValue));
