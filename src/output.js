@@ -183,13 +183,15 @@ function getTriples(entities, callback) {
                 }
             }
             else {
-                if (value['/rec_ui/toplevel_entity'])
+                var value = $.makeArray(value);
+                value = Arr.filter(value, function(val){return !val['/rec_ui/toplevel_entity']});
+                ids = $.map(value, getID);
+                if (ids.length === 0)
                     continue;
-                var id = getID(value);
-                if (id){
-                    result[outputPredicate] = id;
-                    empty = false;
-                }
+                if (ids.length === 1)
+                    ids = ids[0];
+                result[outputPredicate] = ids;
+                empty = false;
             }
         }
         if (empty)
