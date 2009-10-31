@@ -143,7 +143,7 @@ var freebase = (function() {
     freebase.fetchTypeInfo = function(types, onComplete, onError) {
         var q_pairs = [];
         $.each(types, function(_,type) {
-            if (!freebase.getTypeMetadata(type))
+            if (freebase.getTypeMetadata(type))
                 return;
             q_pairs.push([type, {query:getQuery(type)}]);
         })
