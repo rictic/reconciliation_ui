@@ -46,6 +46,8 @@ Entity.prototype.reconcileWith = function(id, automatic) {
 }
 
 Entity.prototype.addProperty = function(prop, value) {
+    if (getType(prop) !== "string")
+        return warn("called Entity.property.addProperty with prop not string");
     if (prop === "id")
         this[prop] = $.makeArray(value)[0];
     else {
