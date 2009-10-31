@@ -471,7 +471,7 @@ function parseJSON(json, onComplete, yielder) {
                 headers = rows[0]['/rec_ui/headers'];
                 mqlProps = rows[0]['/rec_ui/mql_props'];
                 addIdColumns();
-                freebase.fetchTypeInfo(typesSeen.getAll(), onComplete);
+                onComplete()
             }, yielder);
         });
     }, yielder);
