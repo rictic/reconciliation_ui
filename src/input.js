@@ -31,7 +31,7 @@ var mqlProps;
 var headers;
 var rows;
 var typesSeen = new Set();
-
+var inputType;
 /*
 ** Parsing and munging the input
 */
@@ -40,12 +40,12 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
     yielder = yielder || new Yielder();
 
     if (input.charAt(0) === "[") {
-        parseJSON(input, function() {
-            onComplete();
-        }, yielder);
+        inputType = "JSON";
+        parseJSON(input, onComplete, yielder);
         return;
     }
     
+    inputType = "TSV";
     function handleAmbiguity(shouldCombineRows) {
         if (shouldCombineRows)
             combineRows(onComplete);
@@ -290,7 +290,7 @@ function addIdColumns() {
 
 function objectifyRows(onComplete) {
     politeEach(rows, function(_,row) {
-        if (row instanceof Entity) //if JSON input
+        if (inputType === "JSON")
             return;
         for (var prop in row) {
             function objectifyRowProperty(value) {
