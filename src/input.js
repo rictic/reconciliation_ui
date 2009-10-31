@@ -290,6 +290,8 @@ function addIdColumns() {
 
 function objectifyRows(onComplete) {
     politeEach(rows, function(_,row) {
+        if (row instanceof Entity) //if JSON input
+            return;
         for (var prop in row) {
             function objectifyRowProperty(value) {
                 var result = new Entity({'/type/object/name':value,
@@ -470,8 +472,7 @@ function parseJSON(json, onComplete, yielder) {
                 rows = entities;
                 headers = rows[0]['/rec_ui/headers'];
                 mqlProps = rows[0]['/rec_ui/mql_props'];
-                addIdColumns();
-                onComplete()
+                onComplete();
             }, yielder);
         });
     }, yielder);
