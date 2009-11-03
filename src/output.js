@@ -230,6 +230,9 @@ function getTriples(entities, callback) {
         $.each(mqlProps, function(_, predicate) {
             
             $.each($.makeArray(subject[predicate]), function(_, object) {
+                if (object === undefined || object === null)
+                    return;
+                
                 if (isValueProperty(predicate)) {
                     triples.push({s:getID(subject), p:predicate, o:getValue(predicate, object)});
                     return;
