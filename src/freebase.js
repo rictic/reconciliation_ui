@@ -179,14 +179,20 @@ var freebase = (function() {
     
     var propMetadata = {};
     freebase.fetchPropertyInfo = function(properties, onComplete, onError) {
-        var q_pairs = [];
-        $.each(properties, function(i, mqlProp) {
+        var simpleProps = [];
+        $.each(properties, function(_, mqlProp) {
             $.each(mqlProp.split(":"), function(i, simpleProp) {
                 if (simpleProp == "id" || freebase.getPropMetadata(simpleProp))
                     return;
-                q_pairs.push([simpleProp, {query: getQuery(simpleProp)}]);
-            })
-        })
+                simpleProps.push(simpleProp);
+            });
+        });
+        simpleProps = Arr.unique(simpleProps);
+
+        var q_pairs = [];
+        $.each(simpleProps, function(_,simpleProp) {
+            q_pairs.push([simpleProp, {query: getQuery(simpleProp)}]);
+        });
         
         var errorProps = [];
         freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);

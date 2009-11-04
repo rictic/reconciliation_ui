@@ -141,6 +141,12 @@ function getPropName(complexProp) {
         return complexProp;
     var props = complexProp.split(":");
     var prop = props[props.length-1];
+    if (prop === "id" && props.length > 1) {
+        var earlierName = getPropName(props[props.length-2]);
+        if (earlierName !== props[props.length-2])
+            return "id of " + earlierName;
+    }
+
     if (freebase.getPropMetadata(prop) && freebase.getPropMetadata(prop).name)
         return freebase.getPropMetadata(prop).name;
     return complexProp;
