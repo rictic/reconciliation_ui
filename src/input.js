@@ -176,7 +176,8 @@ function setupHeaderInfo(headers, onComplete, onError) {
     freebase.fetchPropertyInfo(getProperties(headers), onComplete, onError);
 }
 
-function buildRowInfo(spreadsheetRows, onComplete) {
+function buildRowInfo(spreadsheetRows, onComplete, yielder) {
+    yielder = yielder || new Yielder();
     resetEntities();
     if (spreadsheetRows.length === 0) return;
     headers = $.map(spreadsheetRows.shift(), function(header){return $.trim(header)});
@@ -189,8 +190,7 @@ function buildRowInfo(spreadsheetRows, onComplete) {
     
 
     function buildRows() {
-        rows = [];
-        politeEach(spreadsheetRows,function(_,rowArray) {
+        politeMap(spreadsheetRows,function(rowArray) {
             var rowHeaders  = headers.slice();
             var rowMqlProps = mqlProps.slice();
             var entity = new Entity({"/rec_ui/headers": rowHeaders,
@@ -202,8 +202,12 @@ function buildRowInfo(spreadsheetRows, onComplete) {
                     val = undefined;
                 entity[headers[i]] = [val];
             }
-            rows.push(entity);
-        },function() {onComplete(rows);});
+            return entity;
+        },function(newRows) {
+            rows = newRows;
+            onComplete(rows);
+        },
+        yielder);
     }
 }
 
