@@ -31,7 +31,7 @@ class index:
         return self.handle(filename, web.input())
         
 
-
+web.config.debug = False
 urls = ('/(.*)', 'index')
 app = web.application(urls, globals())
 if __name__ == "__main__":
