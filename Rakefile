@@ -5,7 +5,20 @@ task :run_tests do
   sh "testjstd"
 end
 
-task :compile do
+task :clean do
+  sh "rm -rf build"
+end
+
+task :copy do
+  sh "mkdir -p build"
+  #copy static resources
+  sh "cp COPYRIGHT *.css *.gif build/"
+  #make sure our other css and images make it
+  sh "cp -r lib build/"
+  sh "cp -r examples build/"
+end
+
+task :compile => :copy do
   source = File.read("recon.html")
   region_regex = /<!--\s*Begin scripts to compile\s*-->(.*?)<!--\s*End scripts to compile\s*-->/m
   scripts_region = region_regex.match(source)[1]
@@ -15,10 +28,15 @@ task :compile do
   js_files.map! {|f| "--js #{f}"}
   opts = js_files.join(" ")
   compiled_name = "compiled.js"
-  sh "compilejs #{opts} --js_output_file #{compiled_name}"
+  sh "compilejs #{opts} --js_output_file build/#{compiled_name}" # --compilation_level ADVANCED_OPTIMIZATIONS
   new_source = source.sub(region_regex, "<script language=\"javascript\" charset=\"utf-8\" src=\"#{compiled_name}\"></script>")
-  File.open("recon-compiled.html", 'w') {|f| f.write(new_source)}
-  
-  
-#   sh "compilejs #{opts} --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file compiled-advanced.js "
+  File.open("build/recon.html", 'w') {|f| f.write(new_source)}
 end
+
+task :version do
+  version = `git log | head -n 1`.match(/commit (.{40})/)[1]
+  File.open("build/version",'w'){|f| f.puts(version)}
+  File.open("build/version.js",'w'){|f| f.puts("SL_VERSION='#{version}';")}
+end
+
+task :build => [:clean, :copy, :compile, :version];
