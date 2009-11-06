@@ -1,3 +1,4 @@
+*.pyc
 todo
 version.js
 build

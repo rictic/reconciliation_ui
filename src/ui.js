@@ -172,8 +172,6 @@ var defaultMDOName = "Spreadsheet Upload about (kind of data)"
 $(document).ready(function() {
     jQuery.ajaxSettings.cache = true; //keeps jquery from inserting cache-busting timecodes into json requests
 
-    setReconciliationURL();
-
     //handle the options panel
     $("#optionsPanel input").each(function(idx, input) {
       $(input).change(function(){
@@ -259,13 +257,10 @@ function updateMdoInfo() {
 }
 
 var freebase_url = "http://www.freebase.com/";
-var reconciliation_url = "";
-function setReconciliationURL() {
-    if (window.location.href.substring(0,4) == "file") {
-        reconciliation_url = "http://data.labs.freebase.com/recon/";
-        return;
-    }
-    var url_parts = window.location.href.split("/");
-    url_parts.pop();
-    reconciliation_url = url_parts.join("/") + "/";
+var reconciliation_url = "http://data.labs.freebase.com/recon/";
+
+/* Takes a string and populates the initialInput textarea. */
+function handlePOSTdata(data) {
+    $('#initialInput')[0].value = data;
+    initialInputUpdated();
 }

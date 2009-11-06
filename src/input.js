@@ -64,7 +64,6 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
     }, yielder);
 }
 
-
 function parseTSV(spreadsheet, onComplete, yielder) {
     yielder = yielder || new Yielder();
     var position = 0;    

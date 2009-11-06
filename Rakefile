@@ -42,5 +42,5 @@ end
 task :build => [:clean, :copy, :compile, :version]
 
 task :deploy => [:build] do
-  sh "scp -q -r build/* data.labs.freebase.com:/mw/loader/public"
+  sh "scp -q -r server.py build data.labs.freebase.com:/mw/loader/"
 end
