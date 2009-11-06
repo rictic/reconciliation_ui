@@ -1,4 +1,7 @@
 task :default => [:run_tests ]
+task :build => [:clean, :copy, :compile, :version]
+task :deploy => [:build, :push]
+
 
 task :run_tests do
   sh "jstdServer && sleep 3" unless `nc -z localhost 4224` =~ /succeeded!/
@@ -39,8 +42,7 @@ task :version do
   File.open("build/version.js",'w'){|f| f.puts("LOADER_VERSION='#{version}';")}
 end
 
-task :build => [:clean, :copy, :compile, :version]
-
-task :deploy => [:build] do
+task :push do
   sh "scp -q -r server.py build data.labs.freebase.com:/mw/loader/"
 end
+
