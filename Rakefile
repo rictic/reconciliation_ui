@@ -36,7 +36,11 @@ end
 task :version do
   version = `git log | head -n 1`.match(/commit (.{40})/)[1]
   File.open("build/version",'w'){|f| f.puts(version)}
-  File.open("build/version.js",'w'){|f| f.puts("SL_VERSION='#{version}';")}
+  File.open("build/version.js",'w'){|f| f.puts("LOADER_VERSION='#{version}';")}
 end
 
-task :build => [:clean, :copy, :compile, :version];
+task :build => [:clean, :copy, :compile, :version]
+
+task :deploy => [:build] do
+  sh "scp -q -r build/* data.labs.freebase.com:/mw/loader/public"
+end
