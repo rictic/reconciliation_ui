@@ -35,4 +35,4 @@ web.config.debug = False
 urls = ('/(.*)', 'index')
 app = web.application(urls, globals())
 if __name__ == "__main__":
-    app.run()
+    web.httpserver.runsimple(app.wsgifunc(), ("localhost",9777))
