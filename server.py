@@ -18,6 +18,7 @@ class index:
     def handle(self, filename, i):
         if (filename == ""):
             filename = "recon.html"
+            web.header('Content-type','text/html')
         contents = getFile(filename)
         if ("data" in i):
             data = i.data.replace("'", "\\'")
