@@ -408,7 +408,8 @@ function objectifyRows(onComplete) {
     }, onComplete);
 }
 
-/* untested and unused as of yet */
+//Takes a list of trees and returns a list of all mql properties found anywhere
+//in any of the trees
 function findAllProperties(trees, onComplete, yielder) {
     var propsSeen = new Set();
     politeEach(trees, findProps, function() {
