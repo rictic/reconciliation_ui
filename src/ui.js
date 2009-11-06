@@ -200,9 +200,10 @@ $(document).ready(function() {
             warning.hide();
     });
 	$(".triplesDisplayButton").click(function(){$(".triplesDisplay").slideToggle()})
-	if ("SPREADSHEET_LOADER_VERSION" in window) {
-	    //$(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + SPREADSHEET_LOADER_VERSION);
-	    var bugReportDetails = "&description=" + escape("Found in version: " + SPREADSHEET_LOADER_VERSION + "\r\n\r\n");
+	if ("LOADER_VERSION" in window) {
+	    var version = window['LOADER_VERSION'];
+	    $(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + version);
+	    var bugReportDetails = "&description=" + escape("Found in version: " + version + "\r\n\r\n");
 	    $(".bugReportLink").attr("href", $(".bugReportLink").attr("href") + bugReportDetails);
 	    freebase.beacon();
 	}
