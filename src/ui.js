@@ -21,6 +21,10 @@ function initialInputUpdated() {
         $("#inputWindow button").removeAttr("disabled");
     });
 }
+function cancelInputProcessing() {
+    $(".inputLoading").hide()
+    inputProcessingYielder.cancel();
+}
 
 function handleInput(callback) {
     var input = $('#initialInput')[0].value;
@@ -40,10 +44,8 @@ function handleInput(callback) {
     }
     parseInput(input, onAmbiguity, onComplete, inputProcessingYielder);
 }
-function cancelInputProcessing() {
-    $(".inputLoading").hide()
-    inputProcessingYielder.cancel();
-}
+
+
 function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
     var groupedHeaders = groupProperties(headers);
     var context = $("#formatDisambiguation");
