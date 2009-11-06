@@ -1,7 +1,8 @@
 task :default => [:run_tests ]
 task :build => [:clean, :copy, :compile, :version]
+task :build_debug => [:clean, :copy_all, :version]
 task :deploy => [:build, :push]
-
+task :deploy_debug => [:build_debug, :push]
 
 task :run_tests do
   sh "jstdServer && sleep 3" unless `nc -z localhost 4224` =~ /succeeded!/
@@ -21,6 +22,11 @@ task :copy do
   sh "cp -r examples build/"
 end
 
+task :copy_all => :copy do
+  sh "cp -r src build/"
+  sh "cp recon.html build/"
+end
+
 task :compile => :copy do
   source = File.read("recon.html")
   region_regex = /<!--\s*Begin scripts to compile\s*-->(.*?)<!--\s*End scripts to compile\s*-->/m
@@ -31,7 +37,7 @@ task :compile => :copy do
   js_files.map! {|f| "--js #{f}"}
   opts = js_files.join(" ")
   compiled_name = "compiled.js"
-  sh "compilejs #{opts} --js_output_file build/#{compiled_name}" # --compilation_level ADVANCED_OPTIMIZATIONS
+  sh "compilejs #{opts} --js_output_file build/#{compiled_name} --compilation_level WHITESPACE_ONLY"
   new_source = source.sub(region_regex, "<script language=\"javascript\" charset=\"utf-8\" src=\"#{compiled_name}\"></script>")
   File.open("build/recon.html", 'w') {|f| f.write(new_source)}
 end
