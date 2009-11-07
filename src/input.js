@@ -422,7 +422,7 @@ function findAllProperties(trees, onComplete, yielder) {
             break;
         case "object":
             for (var key in obj) {
-                if (isMqlProp(key)) {
+                if (key.charAt(0) === "/") {
                     propsSeen.add(key);
                     findProps(null,obj[key]);
                 }
