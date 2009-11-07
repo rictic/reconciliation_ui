@@ -16,10 +16,11 @@ end
 task :copy do
   sh "mkdir -p build"
   #copy static resources
-  sh "cp COPYRIGHT *.css *.gif build/"
+  sh "cp COPYRIGHT *.css build/"
   #make sure our other css and images make it
   sh "cp -r lib build/"
   sh "cp -r examples build/"
+  sh "cp -r resources build/"
 end
 
 task :copy_all => :copy do
