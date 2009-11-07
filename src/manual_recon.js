@@ -121,7 +121,7 @@ function renderCandidate(result, mqlProps, entity) {
     mqlProps = groupProperties(mqlProps).getPropsForRows();
     for(var j = 0; j < mqlProps.length; j++)
         tableRow.append(
-            node("td", node("img",{src:"spinner.gif"}),
+            node("td", node("img",{src:"resources/spinner.gif"}),
                  {"class":"replaceme "+idToClass(mqlProps[j])})
         );
     tableRow.append(node("td",result["score"]));

@@ -37,6 +37,7 @@ var inputType;
 */
 
 function parseInput(input, ambiguityResolver, onComplete, yielder) {
+    clearInputWarnings();
     yielder = yielder || new Yielder();
 
     if (input.charAt(0) === "[") {
@@ -181,8 +182,7 @@ function buildRowInfo(spreadsheetRows, onComplete, yielder) {
     if (spreadsheetRows.length === 0) return;
     headers = $.map(spreadsheetRows.shift(), function(header){return $.trim(header)});
     setupHeaderInfo(headers, buildRows, function(errorProps) {
-        error("Can't find these mqlProps:")
-        error(errorProps);
+        $.each(errorProps, warnUnknownProp);
         mqlProps = Arr.difference(mqlProps, errorProps);
         buildRows();
     });
@@ -451,10 +451,11 @@ function recordToEntity(tree, parent, onAddProperty) {
             
             value = $.map($.makeArray(value), function(innerTree) {
                 var innerEntity = recordToEntity(innerTree, entity);
-                if (!("/type/object/type" in innerEntity)) {
-                    innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
+                if (propMeta) {
+                    if (propMeta.expected_type && !("/type/object/type" in innerEntity))
+                        innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
+                    innerEntity.addProperty(propMeta.inverse_property, entity);
                 }
-                innerEntity.addProperty(propMeta.inverse_property, entity);
                 return innerEntity;
             });
         }
@@ -468,16 +469,33 @@ function recordToEntity(tree, parent, onAddProperty) {
 
 function parseJSON(json, onComplete, yielder) {
     yielder = yielder || new Yielder();
-    var records = JSON.parse(json);
+    try {
+        var records = JSON.parse(json);
+    }
+    catch(e) {
+        inputError("JSON error: " + e);
+        return;
+    }
+    
     findAllProperties(records, function(props) {
-        freebase.fetchPropertyInfo(props, function() {
-            log(records);
+        freebase.fetchPropertyInfo(props, afterPropertiesFetched, 
+            function onError(errorProps) {
+                $.each(errorProps, warnUnknownProp);
+                afterPropertiesFetched();
+            }
+        );
+        
+        function afterPropertiesFetched() {
             recordsToEntities(records, function(entities) {
                 rows = entities;
                 headers = rows[0]['/rec_ui/headers'];
                 mqlProps = rows[0]['/rec_ui/mql_props'];
                 onComplete();
             }, yielder);
-        });
+        }
     }, yielder);
+}
+
+function warnUnknownProp(_, errorProp) {
+    addInputWarning("Cannot find property '" + errorProp + "'");
 }

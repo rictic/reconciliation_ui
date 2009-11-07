@@ -25,10 +25,16 @@
             <textarea name="initialInput" id="initialInput" class='spreadsheet' ></textarea><br>
             <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Sample Data</button>
             <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Complex Sample</button>
-            <img src='spinner.gif' class='inputLoading invisible'>
+            <img src='resources/spinner.gif' class='inputLoading invisible'>
         </div>
         
+        
         <div id='inputWindow'>
+            <div class="inputWarnings invisible">
+                <ul>
+                </ul>
+            </div>
+            
             <!--    If the spreadsheet is ambiguous, ask for clarification     -->
             <div id="formatDisambiguation" class="container invisible screen">
                 <h3>Are these <span class='numThings'>several</span> rows about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'></span>"?</h3>
@@ -102,7 +108,7 @@
                     <thead><tr><th></th></tr></thead>
                     <tbody><tr><td></td></tr></tbody>
                   </table>
-                  <button class="moreButton">More candidates &darr;</button><img src="spinner.gif" class="invisible loadingMoreCandidates">
+                  <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
                   <h4>Or:</h4>
                   <button class="skipButton otherSelection" name="">Skip This Item</button>
                   <button class="newButton otherSelection" name="None">Not in Freebase</button>

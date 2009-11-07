@@ -21,6 +21,13 @@ function initialInputUpdated() {
         $("#inputWindow button").removeAttr("disabled");
     });
 }
+function inputError(text) {
+    addInputWarning(text);
+    $(".inputLoading").hide();
+    $("#inputWindow").removeClass("disabled");
+    $("#inputWindow button").removeAttr("disabled");
+    $("#inputWindow .screen").hide();
+}
 function cancelInputProcessing() {
     $(".inputLoading").hide()
     inputProcessingYielder.cancel();
@@ -263,4 +270,14 @@ var reconciliation_url = "http://data.labs.freebase.com/recon/";
 function handlePOSTdata(data) {
     $('#initialInput')[0].value = data;
     initialInputUpdated();
+}
+
+function addInputWarning(text) {
+    $(".inputWarnings").show()
+    $(".inputWarnings ul").append(node("li", text));
+}
+
+function clearInputWarnings() {
+    $(".inputWarnings").hide()
+    $(".inputWarnings ul").empty();
 }

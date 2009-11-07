@@ -272,3 +272,14 @@ td {
     cursor: default;
     background-color: #fff;
 }
+
+.inputWarnings {
+    background-color: #F84;
+    left: 12.5%;
+    padding: 4px;
+    position: relative;
+    width: 75%;
+}
+
+.inputWarnings li {
+}
