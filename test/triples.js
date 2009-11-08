@@ -1,6 +1,6 @@
 TestCase("triples",{
     "test a simple entity with a value property": function() {
-        var entity = new Entity({id:"/a"});
+        var entity = new tEntity({id:"/a"});
         entity.addProperty("b", "c");
         
         expectAsserts(1);
@@ -9,8 +9,8 @@ TestCase("triples",{
         });
     }
    ,"test a simple cvt": function() {
-        var entity = new Entity({id:"/a"});
-        var cvt    = new Entity({"/rec_ui/is_cvt":true, "/rec_ui/parent":entity});
+        var entity = new tEntity({id:"/a"});
+        var cvt    = new tEntity({"/rec_ui/is_cvt":true, "/rec_ui/parent":entity});
         entity.addProperty("topic",cvt);
         
         /* CVT properties have to begin with the CVT's type, 
@@ -24,9 +24,9 @@ TestCase("triples",{
         });
     }
 //    ,"test multiple entities pointing into a cvt": function() {
-//         var entity = new Entity({id:"/entity", "/rec_ui/toplevel_entity":true});
-//         var cvt    = new Entity({"/rec_ui/is_cvt":true, "/rec_ui/parent":entity});
-//         var leaf   = new Entity({id:"/leaf"});
+//         var entity = new tEntity({id:"/entity", "/rec_ui/toplevel_entity":true});
+//         var cvt    = new tEntity({"/rec_ui/is_cvt":true, "/rec_ui/parent":entity});
+//         var leaf   = new tEntity({id:"/leaf"});
 //         entity.addProperty("topic/cvt_prop", cvt);
 //         cvt.addProperty("topic/leaf_prop", leaf);
 //         cvt.addProperty("topic/toplevel_prop", entity);

@@ -192,7 +192,7 @@ function buildRowInfo(spreadsheetRows, onComplete, yielder) {
         politeMap(spreadsheetRows,function(rowArray) {
             var rowHeaders  = headers.slice();
             var rowMqlProps = mqlProps.slice();
-            var entity = new Entity({"/rec_ui/headers": rowHeaders,
+            var entity = new tEntity({"/rec_ui/headers": rowHeaders,
                                     "/rec_ui/mql_props": rowMqlProps,
                                     "/rec_ui/toplevel_entity": true});
             for (var i=0; i < headers.length; i++){
@@ -297,7 +297,7 @@ function objectifyRows(onComplete) {
             return;
         for (var prop in row) {
             function objectifyRowProperty(value) {
-                var result = new Entity({'/type/object/name':value,
+                var result = new tEntity({'/type/object/name':value,
                               '/type/object/type':meta.expected_type.id,
                               '/rec_ui/headers': ['/type/object/name','/type/object/type']
                               });
@@ -324,7 +324,7 @@ function objectifyRows(onComplete) {
             var parts = complexHeader.split(":");
             var slot;
             function innerEntity(meta, parent) {
-                var entity = new Entity({"/type/object/type":meta.expected_type.id,
+                var entity = new tEntity({"/type/object/type":meta.expected_type.id,
                                      "/rec_ui/is_cvt":isCVTType(meta.expected_type)});
                 entity.addParent(parent, meta.inverse_property);
                 return entity;
@@ -350,7 +350,7 @@ function objectifyRows(onComplete) {
                 if (lastPart === "id" || lastPart == "/type/object/type" || isValueProperty(lastPart))
                     slot.addProperty(lastPart, value);
                 else {
-                    var new_entity = new Entity({"/type/object/type":meta.expected_type.id,
+                    var new_entity = new tEntity({"/type/object/type":meta.expected_type.id,
                                                 "/type/object/name":value,
                                                 '/rec_ui/headers': ['/type/object/name','/type/object/type'],
                                                 '/rec_ui/mql_props': []
@@ -441,7 +441,7 @@ function recordsToEntities(records, onComplete, yielder) {
 */
 function recordToEntity(tree, parent, onAddProperty) {
     log(tree);
-    var entity = new Entity({'/rec_ui/toplevel_entity': !parent});
+    var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity['/rec_ui/parent'] = [parent];
     for (var prop in tree){

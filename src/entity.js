@@ -8,7 +8,7 @@ function resetEntities() {
 }
 resetEntities();
 
-function Entity(initialVals) {
+function tEntity(initialVals) {
     this["/rec_ui/id"] = internalIDCounter++
     this["/rec_ui/mql_props"] = [];
     this["/rec_ui/headers"] = [];
@@ -18,22 +18,22 @@ function Entity(initialVals) {
         this[key] = initialVals[key];
 }
 
-Entity.prototype.getChainedProperty = function(prop) {
+tEntity.prototype.getChainedProperty = function(prop) {
     return getChainedProperty(this,prop);
 }
 
-Entity.prototype.freebaseLink = function(linkText) {
+tEntity.prototype.freebaseLink = function(linkText) {
     linkText = linkText || this.name || this.id;
     return freebase.link(linkText,this.id);
 }
 
-Entity.prototype.displayValue = function() {
+tEntity.prototype.displayValue = function() {
     if (!this.id)
         return displayValue(this['/type/object/name'] || this.id);
     return this.freebaseLink();
 };
 
-Entity.prototype.reconcileWith = function(id, automatic) {
+tEntity.prototype.reconcileWith = function(id, automatic) {
     this.id = id;
     var feedback = {
         query:this['/rec_ui/recon_query'],
@@ -45,9 +45,9 @@ Entity.prototype.reconcileWith = function(id, automatic) {
     addReviewItem(this);
 }
 
-Entity.prototype.addProperty = function(prop, value) {
+tEntity.prototype.addProperty = function(prop, value) {
     if (getType(prop) !== "string")
-        return warn("called Entity.property.addProperty with prop not string");
+        return warn("called tEntity.property.addProperty with prop not string");
     if (prop === "id")
         this[prop] = $.makeArray(value)[0];
     else {
@@ -67,12 +67,12 @@ Entity.prototype.addProperty = function(prop, value) {
         
 }
 
-Entity.prototype.addParent = function(parent, prop) {
+tEntity.prototype.addParent = function(parent, prop) {
     this['/rec_ui/parent'] = parent;
     if (prop != undefined)
         this.addProperty(prop, parent);
 }
 
-Entity.prototype.isCVT = function() {
+tEntity.prototype.isCVT = function() {
     return !!this['/rec_ui/is_cvt'];
 }
