@@ -36,9 +36,13 @@ task :compile => :copy do
   js_files = scripts_region.scan(script_matcher).compact
   
   js_files.map! {|f| "--js #{f}"}
-  opts = js_files.join(" ")
+
   compiled_name = "compiled.js"
-  sh "compilejs #{opts} --js_output_file build/#{compiled_name} --compilation_level WHITESPACE_ONLY"
+  libs, src = js_files.partition {|f| f.start_with? "--js lib/"}
+  sh "compilejs #{libs.join " "} --summary_detail_level 0 --third_party true --js_output_file build/libs_compiled.js" #--warning_level QUIET
+  sh "compilejs #{src.join " "} --summary_detail_level 3 --js_output_file build/src_compiled.js" #--warning_level VERBOSE
+  sh "compilejs --js build/libs_compiled.js --js build/src_compiled.js --js_output_file build/#{compiled_name}"# --compilation_level WHITESPACE_ONLY"
+
   new_source = source.sub(region_regex, "<script language=\"javascript\" charset=\"utf-8\" src=\"#{compiled_name}\"></script>")
   File.open("build/recon.html", 'w') {|f| f.write(new_source)}
 end
