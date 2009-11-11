@@ -243,6 +243,9 @@ $(document).ready(function() {
     //for most everyone else's browsers
 	$("#initialInput")[0].oninput = inputThrottler;
     if ($("#initialInput")[0].value != "") inputThrottler();
+    
+    $("#spreadsheetPreview button.continue").click(continueToReconciliation);
+    $(".uploadLogin button.checkLogin").click(checkLogin);
 });
 
 function updateUnreconciledCount() {
