@@ -56,7 +56,7 @@ file "build/libs_compiled.js" => libs do
   sh "compilejs #{l} --summary_detail_level 0 --warning_level QUIET  --compilation_level WHITESPACE_ONLY --js_output_file build/libs_compiled.js"
 end
 
-file "build/src_compiled.js" => src do
+file "build/src_compiled.js" => src + ["src/externs.js"] do
   s = format_for_compilejs(src)
   sh "compilejs #{s} --externs src/externs.js --summary_detail_level 3 --warning_level VERBOSE --js_output_file build/src_compiled.js"
 end
