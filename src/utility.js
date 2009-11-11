@@ -38,8 +38,10 @@ function clone(obj) {
     return copy;
 }
 
-//constructs a DOM node
-function node(kind) {
+/**constructs a DOM node
+  * @param {!string} kind The tag of the created node
+  */
+function node(kind, var_args) {
     var node = $(document.createElement(arguments[0]));
     var options = arguments[arguments.length-1]
     var len = arguments.length - 1;
@@ -59,7 +61,9 @@ function node(kind) {
 }
 
 
-//Maps MQL ids to valid CSS class names
+/** Maps MQL ids to valid CSS class names
+  * @param {!string} idName the MQL id
+ */
 function idToClass(idName) {
     return idName.replace(/\//g,"_").replace(":","___");
 }
@@ -202,7 +206,7 @@ function OrderedMap() {
 }
 
 /** @constructor */
-var Set = function() {
+var Set = function(var_args) {
     var set = {};
     this.add = function(val) {set[val] = true;};
     this.addAll = function(array) {
@@ -228,6 +232,13 @@ function getType(v) {
 //This set implementation preserves order, but just in case
 var OrderedSet = Set; 
 
+/**
+ * @param {string} url
+ * @param {Object} params
+ * @param {function(Object)} onSuccess
+ * @param {function()} onTimeout
+ * @param {number=} millis milliseconds until query times out
+ */
 function getJSON(url, params, onSuccess, onTimeout, millis) {
     millis = millis || 120000; //default of 2 minute timeout
     var timedOut = false;

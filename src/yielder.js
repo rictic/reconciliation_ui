@@ -20,6 +20,11 @@ function Yielder() {
     };
 }
 
+/** @param {Array} array
+    @param {function(number, *)} f
+    @param {function()} onComplete
+    @param {Yielder=} yielder
+*/
 function politeEach(array, f, onComplete, yielder) {
     yielder = yielder || new Yielder();
     var index = 0;
@@ -34,7 +39,11 @@ function politeEach(array, f, onComplete, yielder) {
     }
     iterate();
 }
-
+/** @param {Array} array
+    @param {function(*)} f
+    @param {function(Array)} onComplete
+    @param {Yielder=} yielder
+*/
 function politeMap(array, f, onComplete, yielder) {
     yielder = yielder || new Yielder();
     var result = [];

@@ -234,7 +234,7 @@ $(document).ready(function() {
         //ctrl-a or cmd-a
         if ((event.metaKey || event.ctrlKey) && event.keyCode === 65)
             return;
-        inputThrottler(event);
+        inputThrottler();
     }
     
     $("#initialInput").keyup(inputFilterer).keydown(inputFilterer);

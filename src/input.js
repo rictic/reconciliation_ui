@@ -372,9 +372,15 @@ function objectifyRows(onComplete) {
             delete row[complexHeader];
         });
         
-        /* Recursively removes undefined objects from arrays anywhere in an object.
-            Also, collapses singleton arrays to the object inside
-            Supports self referential objects (though not self referential arrays)*/
+        /** Recursively removes undefined objects from arrays anywhere in an object.
+          * Also, collapses singleton arrays to the object inside
+          * Supports self referential objects (though not self referential arrays)
+          * 
+          * Broken and a bad idea, will be scrapped (eventually)
+          *
+          * @param {Object} obj
+          * @param {Object=} closed
+        */
         function cleanup(obj, closed) {
             //Only interested in Arrays and objects
             if (typeof(obj) != "object")
@@ -433,11 +439,14 @@ function findAllProperties(trees, onComplete, yielder) {
 }
 
 function recordsToEntities(records, onComplete, yielder) {
-    politeMap(records, recordToEntity, onComplete, yielder);
+    politeMap(records, function(record){return recordToEntity(record)}, onComplete, yielder);
 }
 
-/* Assumes that the metadata for all properties encountered
-   already exists.  See findAllProperties() and freebase.fetchPropertyInfo
+/** Assumes that the metadata for all properties encountered
+  * already exists.  See findAllProperties() and freebase.fetchPropertyInfo
+  * @param {!Object} tree
+  * @param {Object=} parent
+  * @param {function(Object)=} onAddProperty
 */
 function recordToEntity(tree, parent, onAddProperty) {
     log(tree);

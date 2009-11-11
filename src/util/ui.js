@@ -1,8 +1,15 @@
 /* A collection of utilities for assorted bits of UI functionality*/
 
-//Useful for handling events on rapidly changing input elements,
-/* Returns a function that calls `every()` each time it is called,
+//
+/** Returns a function that calls `every()` each time it is called,
    but only calls `rarely()` at most once per `timeout` milliseconds. 
+   
+   Useful for handling events on rapidly changing input elements,
+   
+   @param {function()} every
+   @param {function()} rarely
+   @param {number=} timeout
+   @return {function()}
 */
 function throttler(every, rarely, timeout) {
     timeout = timeout || 250;
@@ -160,9 +167,10 @@ function textValue(value) {
     return value;
 }
 
-/* `elementArray` is an array of html nodes which are wrapped in a single
-    div, of which at most about `cutoff` are initially visible, and
-    a control is rendered to enable the user to expand the list out. 
+/** @param {Array} elementArray an array of html nodes which are wrapped in a single
+                                div, of which at most about cutoff are initially visible, and
+                                a control is rendered to enable the user to expand the list out. 
+    @param {number=} cutoff
 */
 function wrapForOverflow(elementArray, cutoff) {
     var result = node("div")

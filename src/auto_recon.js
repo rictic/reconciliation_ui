@@ -127,6 +127,12 @@ function constructReconciliationQuery(entity, typeless) {
     }
 }
 
+/**
+ *  @param {tEntity} entity
+ *  @param {function(tEntity)} callback
+ *  @param {function(...)} onError
+ *  @param {boolean=} typeless
+ */
 function getCandidates(entity, callback, onError,typeless) {
     function handler(results) {
         entity.reconResults = results;

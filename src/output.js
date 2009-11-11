@@ -183,7 +183,7 @@ function getTriples(entities, callback) {
                 }
             }
             else {
-                var value = $.makeArray(value);
+                value = $.makeArray(value);
                 value = Arr.filter(value, function(val){return !val['/rec_ui/toplevel_entity']});
                 var ids = $.map(value, getID);
                 if (ids.length === 0)

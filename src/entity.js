@@ -1,6 +1,6 @@
 
 /**  An index all entities.  entity === entities[entity['/rec_ui/id']]
- *   @type {Array.<?tEntity>}
+ *   @type {Array.<(!tEntity|undefined)>}
 */
 var entities;
 /** @type {Number}*/
@@ -23,10 +23,12 @@ function tEntity(initialVals) {
         this[key] = initialVals[key];
 }
 
+/** @param {string} prop */
 tEntity.prototype.getChainedProperty = function(prop) {
     return getChainedProperty(this,prop);
 }
 
+/** @param {string=} linkText */
 tEntity.prototype.freebaseLink = function(linkText) {
     linkText = linkText || this.name || this.id;
     return freebase.link(linkText,this.id);
