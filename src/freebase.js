@@ -101,7 +101,7 @@ var freebase = (function() {
                     if (errorHandler)
                         errorHandler(key, response);
                     else
-                        error(value);
+                        error(response);
                 }
                 else
                     handler(key, response.result);

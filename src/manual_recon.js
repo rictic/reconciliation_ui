@@ -63,6 +63,7 @@ function renderReconChoices(entity) {
         fetchMqlProps(entity.reconResults[i], entity);
     }
 
+    var numCandidates;
     function updateCandidates() {
         $('.reconciliationCandidates table tbody tr:odd', template).addClass('odd');
         $('.reconciliationCandidates table tbody tr:even', template).addClass('even');

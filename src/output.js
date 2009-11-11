@@ -185,7 +185,7 @@ function getTriples(entities, callback) {
             else {
                 var value = $.makeArray(value);
                 value = Arr.filter(value, function(val){return !val['/rec_ui/toplevel_entity']});
-                ids = $.map(value, getID);
+                var ids = $.map(value, getID);
                 if (ids.length === 0)
                     continue;
                 if (ids.length === 1)
