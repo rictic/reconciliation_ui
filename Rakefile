@@ -4,7 +4,7 @@ task :build_debug => [:clean, :copy_all, :version]
 task :deploy => [:build, :push]
 task :deploy_debug => [:build_debug, :push]
 
-task :run_tests do
+task :run_tests => [:compile] do
   sh "jstdServer && sleep 3" unless `nc -z localhost 4224` =~ /succeeded!/
   sh "testjstd"
 end
