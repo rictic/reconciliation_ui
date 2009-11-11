@@ -2,6 +2,7 @@ function time() {
     return new Date().valueOf();
 }
 
+/** @constructor */
 function Yielder() {
     this.startTime = time();
     this.shouldYield = function(continueFunction){

@@ -166,6 +166,7 @@ function getProperties(headers) {
     })
 }
 
+/** @constructor */
 function OrderedMap() {
     var properties = [];
     var map = {};
@@ -200,6 +201,7 @@ function OrderedMap() {
     }
 }
 
+/** @constructor */
 var Set = function() {
     var set = {};
     this.add = function(val) {set[val] = true;};

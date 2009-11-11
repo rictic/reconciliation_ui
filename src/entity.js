@@ -1,13 +1,18 @@
 
-/* A simple database of all entities */
+/**  An index all entities.  entity === entities[entity['/rec_ui/id']]
+ *   @type {Array.<?tEntity>}
+*/
 var entities;
+/** @type {Number}*/
 var internalIDCounter;
+
 function resetEntities() {
     entities = [];
     internalIDCounter = 0;
 }
 resetEntities();
 
+/** @constructor */
 function tEntity(initialVals) {
     this["/rec_ui/id"] = internalIDCounter++
     this["/rec_ui/mql_props"] = [];
