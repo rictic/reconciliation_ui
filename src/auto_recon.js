@@ -55,6 +55,9 @@ function autoReconcile() {
     getCandidates(automaticQueue[0], autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
 }
 
+/** @param {!tEntity} entity
+    @param {boolean=} typeless
+*/
 function constructReconciliationQuery(entity, typeless) {
     var query = {}
     var headers = entity["/rec_ui/headers"];
@@ -150,6 +153,7 @@ function getCandidates(entity, callback, onError,typeless) {
     getJSON(reconciliation_url + "query?jsonp=?", {q:JSON.stringify(query), limit:limit}, handler, onError);
 }
 
+/** @param {tEntity} entity */
 function autoReconcileResults(entity) {
     automaticQueue.shift();
     // no results, set to None:

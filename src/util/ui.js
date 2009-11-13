@@ -1,6 +1,5 @@
 /* A collection of utilities for assorted bits of UI functionality*/
 
-//
 /** Returns a function that calls `every()` each time it is called,
    but only calls `rarely()` at most once per `timeout` milliseconds. 
    
@@ -112,8 +111,10 @@ function buildTableHeaders(groupedProps) {
     return tableHeader;
 }
 
-/* Given a complex property, return the human name of its last segment
-    if known, or the property itself if not
+/** Given a complex property, return the human name of its last segment
+    if known, or the property itself if not.
+   @param {!string} complexProp
+   @return {!string}
 */
 function getPropName(complexProp) {
     if (complexProp.charAt(0) !== "/")
@@ -153,18 +154,21 @@ function displayValue(value) {
     return textValue(value);
 }
 
-/* Returns the best string representation of `value` it can.*/
+/** Returns the best string representation of `value` it can.
+  *
+  * @return {string}
+  */
 function textValue(value) {
     if ($.isArray(value))
         return "[" + $.map(value, textValue).join(", ") + "]";
     if (value == undefined || value == null)
         return "";
-    if (typeof value === "object"){
+    if (getType(value) === "object") {
         var result = value['/type/object/name'];
         if ($.isArray(result)) result = result[0];
         return textValue(result);
     }
-    return value;
+    return "" + value;
 }
 
 /** @param {Array} elementArray an array of html nodes which are wrapped in a single

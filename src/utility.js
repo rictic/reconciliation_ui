@@ -219,6 +219,10 @@ var Set = function(var_args) {
     this.addAll(arguments);
 }
 
+/**
+  
+  @return {string} 
+*/
 function getType(v) {
     if (typeof v !== "object") return typeof v;
     if ($.isArray(v)) return "array";
