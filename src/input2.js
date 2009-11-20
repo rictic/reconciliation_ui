@@ -97,7 +97,8 @@ function splitTSV(tsv)
  * [["1", "2", "3"], ["a", "b", "c"]] returns false
  * [["1", "2", "3"], ["", "b", "c"]] returns true
  *
- * @param rows
+ * @param {Array.<Array.<string>>} rows
+ * @return {boolean}
  */
 function isMultilineFormat(rows)
 {
@@ -113,7 +114,8 @@ function isMultilineFormat(rows)
  *
  * [["1", "2", "3"], ["", "b", "c"], ["d", "e", "f"]] returns [ [["1", "2", "3"], ["", "b", "c"]], [["d", "e", "f"]] ]
  *
- * @param rows
+ * @param {Array.<Array.<string>>} rows
+ * @return {Array.<Array.<Array.<string>>>}
  */
 function parseMultilineRecords(rows)
 {
@@ -139,7 +141,8 @@ function parseMultilineRecords(rows)
  *
  * [["1", "2", "3"], ["a", "b", "c"]] returns [[["1", "2", "3"]], [["a", "b", "c"]]]
  *
- * @param rows
+ * @param {Array.<Array.<string>>} rows
+ * @return {Array.<Array.<Array.<string>>>}
  */
 function parseSinglelineRecords(rows)
 {
@@ -160,7 +163,8 @@ function parseSinglelineRecords(rows)
  *     {"prop":"/baz/asdf", "index":1},
  *     {"prop":"/fdsa", "index":2} ]
  *
- * @param path
+ * @param {string} path
+ * @return {Array.<Object>}
  */
 function parseHeaderPath(path)
 {
@@ -200,7 +204,7 @@ function parseHeaderPath(path)
  * and a target record and value, and inserts the value into the
  * record.
  *
- * @param paths
+ * @param {Array.<Array.<Object>>} paths
  * @param topindex
  * @param record
  * @param value
