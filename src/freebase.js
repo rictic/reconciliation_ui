@@ -242,5 +242,12 @@ var freebase = (function() {
         $("<img src='" + url + "'>").appendTo($("body"));
     }
     
+    /** @param {string} s
+        @return {boolean}
+     */
+    freebase.isMqlDatetime = function(s) {
+        return !isNaN(mjt.freebase.date_from_iso(s));
+    }
+    
     return freebase;
 }());
