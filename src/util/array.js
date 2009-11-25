@@ -1,9 +1,9 @@
 /* Convenient functions for handling arrays */
 var Arr = {};
 
-/** @param {Array} source
-    @param {Array} toRemove
-    @return {Array}
+/** @param {!Array} source
+    @param {!Array} toRemove
+    @return {!Array}
 */
 Arr.difference = function(source, toRemove) {
     source = $.makeArray(source); toRemove = $.makeArray(toRemove);
@@ -15,9 +15,9 @@ Arr.difference = function(source, toRemove) {
     return result;
 }
 
-/** @param {Array} a
-    @param {Array} b
-    @return {Array}
+/** @param {!Array} a
+    @param {!Array} b
+    @return {!Array}
 */
 Arr.union = function(a, b) {
     a = $.makeArray(a); b = $.makeArray(b);
@@ -63,7 +63,7 @@ Arr.filter = function(array, predicate) {
   * 
   * @param {!Array} array
   * @param {!function(*):boolean} predicate
-  * @return {!Array.<Array>}
+  * @return {!Array.<!Array>}
 */
 Arr.partition = function(array, predicate) {
     var good = [];
