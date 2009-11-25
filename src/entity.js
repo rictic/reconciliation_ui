@@ -40,6 +40,9 @@ tEntity.prototype.displayValue = function() {
     return this.freebaseLink();
 };
 
+/** @param {!string} id
+  * @param {!boolean} automatic
+  */
 tEntity.prototype.reconcileWith = function(id, automatic) {
     this.id = id;
     var feedback = {
@@ -52,9 +55,15 @@ tEntity.prototype.reconcileWith = function(id, automatic) {
     addReviewItem(this);
 }
 
+/** @param {!string} prop
+  * @param {*} value
+  */
 tEntity.prototype.addProperty = function(prop, value) {
-    if (getType(prop) !== "string")
-        return warn("called tEntity.property.addProperty with prop not string");
+    if (getType(prop) !== "string"){
+        warn("called tEntity.property.addProperty with prop of type `" + getType(prop) + "`, expected string.  The value was: " + JSON.stringify(JsObjDump.annotate(value)));
+        return;
+    }
+
     if (prop === "id")
         this[prop] = $.makeArray(value)[0];
     else {
@@ -74,12 +83,16 @@ tEntity.prototype.addProperty = function(prop, value) {
         
 }
 
+/** @param {tEntity} parent
+  * @param {string=} prop
+  */
 tEntity.prototype.addParent = function(parent, prop) {
     this['/rec_ui/parent'] = parent;
     if (prop != undefined)
         this.addProperty(prop, parent);
 }
 
+/** @return {boolean} */
 tEntity.prototype.isCVT = function() {
     return !!this['/rec_ui/is_cvt'];
 }
