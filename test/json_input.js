@@ -86,7 +86,7 @@ var json_examples = [
 $.each(json_examples, function(_,example) {
     var name = example[0]; var tree = example[1]; var expected = example[2];
     tests["test " + name] = function() {
-        var entity = recordToEntity(tree);
+        var entity = treeToEntity(tree);
         assertSubsetOf(entity, expected);
     }
 })

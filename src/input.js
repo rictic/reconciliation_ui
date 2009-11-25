@@ -438,8 +438,8 @@ function findAllProperties(trees, onComplete, yielder) {
     }
 }
 
-function recordsToEntities(records, onComplete, yielder) {
-    politeMap(records, function(record){return recordToEntity(record)}, onComplete, yielder);
+function treesToEntities(trees, onComplete, yielder) {
+    politeMap(trees, function(record){return treeToEntity(record)}, onComplete, yielder);
 }
 
 /** Assumes that the metadata for all properties encountered
@@ -448,7 +448,7 @@ function recordsToEntities(records, onComplete, yielder) {
   * @param {Object=} parent
   * @param {function(Object)=} onAddProperty
 */
-function recordToEntity(tree, parent, onAddProperty) {
+function treeToEntity(tree, parent, onAddProperty) {
     log(tree);
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
@@ -459,7 +459,7 @@ function recordToEntity(tree, parent, onAddProperty) {
             var propMeta = freebase.getPropMetadata(prop);
             
             value = $.map($.makeArray(value), function(innerTree) {
-                var innerEntity = recordToEntity(innerTree, entity);
+                var innerEntity = treeToEntity(innerTree, entity);
                 if (propMeta) {
                     if (propMeta.expected_type && !("/type/object/type" in innerEntity))
                         innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
@@ -495,7 +495,7 @@ function parseJSON(json, onComplete, yielder) {
         );
         
         function afterPropertiesFetched() {
-            recordsToEntities(records, function(entities) {
+            treesToEntities(records, function(entities) {
                 rows = entities;
                 headers = rows[0]['/rec_ui/headers'];
                 mqlProps = rows[0]['/rec_ui/mql_props'];
