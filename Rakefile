@@ -58,7 +58,12 @@ end
 
 file "build/src_compiled.js" => src + ["src/externs.js"] do
   s = format_for_compilejs(src)
-  sh "compilejs #{s} --externs src/externs.js --summary_detail_level 3 --jscomp_warning=visibility --warning_level VERBOSE --js_output_file build/src_compiled.js"
+  begin
+    sh "compilejs #{s} --externs src/externs.js --summary_detail_level 3 --jscomp_warning=visibility --warning_level VERBOSE --js_output_file build/src_compiled.js"
+  rescue Exception => err
+    sh "rm build/src_compiled.js" # be sure to remove the output if the compiler fails
+    throw err
+  end
 end
 
 task :version do
