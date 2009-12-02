@@ -141,8 +141,14 @@ function fetchMqlProps(reconResult, entity) {
         var lastPart = parts[parts.length-1];
         if (isValueProperty(lastPart))
             slot[lastPart] = [];
-        else
-            slot[lastPart] = [{"name":null,"id":null,"optional":true}];
+        else {
+            slot[lastPart] = slot[lastPart] || [{}];
+            var queryObj = slot[lastPart][0];
+            queryObj['name'] = null;
+            queryObj['id'] = null;
+            queryObj['optional'] = true;
+        }
+            
     })
     var envelope = {query:query};
     function handler(results) {
