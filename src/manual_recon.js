@@ -69,6 +69,8 @@ function renderReconChoices(entity) {
         numCandidates = entity.reconResults.length;
     }
     updateCandidates();
+
+    $(".find_topic")[0].value = entity['/type/object/name'];
     $(".find_topic", template)
         .suggest({type:entity['/type/object/type'],
                   type_strict:"should",
@@ -77,6 +79,7 @@ function renderReconChoices(entity) {
           entity['/rec_ui/freebase_name'] = $.makeArray(data.name);
           handleReconChoice(entity, data.id);
         });
+
     $(".otherSelection", template).click(function() {handleReconChoice(entity, this.name)});
     
     $(".moreButton",template).click(function() {
