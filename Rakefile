@@ -16,7 +16,7 @@ task :clean do
   sh "rm -rf build"
 end
 
-task :copy => "build" do
+task :copy do
   #copy static resources
   sh "cp COPYRIGHT *.css build/"
   #make sure our other css and images make it
