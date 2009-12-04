@@ -170,9 +170,7 @@ function continueToReconciliation() {
     $("#gettingInput").remove();
     initializeTabs();
     addIdColumns();
-    objectifyRows(function() {
-        initializeReconciliation(beginAutoReconciliation);
-    });
+    initializeReconciliation(beginAutoReconciliation);
 }
 var reconciliationBegun = false;
 var defaultMDOName = "Spreadsheet Upload about (kind of data)"

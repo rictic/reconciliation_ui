@@ -26,16 +26,72 @@
 // DAMAGE.
 // ========================================================================
 
+/* 
+    Parsing a spreadsheet into a tree.
+    
+    Our pipeline goes something like this:
+    TSV Text -> [Row] -> [Record] -> [Tree]-> [Entity]
+    
+    OR
+    
+    JSON Array (as text) -> [Tree] -> [Entity]
+    
+    TSV text is a string representing a spreadsheet-like structure,
+    tabs delimit the cells, and newlines delimit the rows.  Quoting
+    is done usind double-quotes, and quotes are escaped with two adjacent
+    double-quotes.  We support an extension of the TSV format where a row 
+    with a blank first cell may be an extension of the row above.  This
+    format is ambiguous with normal TSV files, so the user is prompted as
+    to which was intended.
+    
+    Row: an array of unescaped strings.
+    
+    Record: an array of Rows.  At this point in the processing, the user
+    has either chosen to keep every row of their TSV separate, in which case
+    every Record will contain a single Row, or they may have chosen to collapse
+    Rows missing the first cell, in which case the Records may consist of 
+    several Rows.
+    
+    A Tree is a javascript object, the keys are headers from the TSV text
+    and values are arrays of either strings or, when the key is a MQL property
+    that is expected to point to a Topic in Freebase, a reified object.
+    
+*/
+
+//A namespace for types
+var loader = {row:null, record:null, tree:null, pathsegment:null, path:null};
+
+/** @typedef {!Array.<!string>}*/
+loader.row;
+/** @typedef {!Array.<!Array.<!string>>} */
+loader.record;
+/** @typedef {!Object.<!string,(!string,!loader.tree)>} */
+loader.tree;
+/** @typedef {{prop: !string, index: !number}} */
+loader.pathsegment;
+/** @typedef {Array.<loader.pathsegment>} */
+loader.path;
+
+
+//Some globals that various components poke into
 var totalRecords = 0;
 var mqlProps;
 var headers;
 var rows;
 var typesSeen = new Set();
 var inputType;
+
+
 /*
 ** Parsing and munging the input
 */
 
+
+/** @param {!string} input Either a tsv or a json array of trees
+  * @param {!function(number, function(boolean))} ambiguityResolver
+  * @param {!function()} onComplete
+  * @param {Yielder=} yielder
+  */
 function parseInput(input, ambiguityResolver, onComplete, yielder) {
     clearInputWarnings();
     yielder = yielder || new Yielder();
@@ -65,6 +121,16 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
     }, yielder);
 }
 
+
+/**
+ * Splits a tsv into an array of arrays of strings.
+ *
+ * "1\t2\t3\t4\na\tb\tc\n" becomes [["1", "2", "3"], ["a", "b", "c"]]
+ *
+ * @param {string} spreadsheet
+ * @param {function(Array.<loader.row>)} onComplete
+ * @param {Yielder=} yielder
+ */
 function parseTSV(spreadsheet, onComplete, yielder) {
     yielder = yielder || new Yielder();
     var position = 0;    
@@ -160,6 +226,10 @@ function parseTSV(spreadsheet, onComplete, yielder) {
     parseSpreadsheet();
 }
 
+/** @param {!Array.<loader.row>} rows
+    @param {!function(Array.<loader.row>)} onComplete
+    @param {Yielder=} yielder
+*/
 function removeBlankLines(rows, onComplete, yielder) {
     var newRows = [];
     politeEach(rows, function(_,row) {
@@ -171,49 +241,98 @@ function removeBlankLines(rows, onComplete, yielder) {
 }
 
 function setupHeaderInfo(headers, onComplete, onError) {
-    typesSeen = new Set();
     mqlProps = getMqlProperties(headers);
     freebase.fetchPropertyInfo(getProperties(headers), onComplete, onError);
 }
 
+
+
+
+// function parseSpreadsheet(spreadsheet, multiline)
+// {
+//     if(multiline)
+//     {
+//         
+//     }
+//     else
+//     {
+//         var records = parseSinglelineRecords(rows.slice(1))
+//     }
+//     
+// 
+//     return {"headers":headerData, "headerPaths":headerPaths, "entities":entities}
+// }
+
+
 function buildRowInfo(spreadsheetRows, onComplete, yielder) {
-    yielder = yielder || new Yielder();
-    resetEntities();
+    //keeps us from crashing on blank input
     if (spreadsheetRows.length === 0) return;
-    headers = $.map(spreadsheetRows.shift(), function(header){return $.trim(header)});
-    setupHeaderInfo(headers, buildRows, function(errorProps) {
-        $.each(errorProps, warnUnknownProp);
-        mqlProps = Arr.difference(mqlProps, errorProps);
-        buildRows();
+
+    yielder = yielder || new Yielder();
+
+    // parse headers:
+    headers = spreadsheetRows.shift();
+    var headerPaths = [];
+    $.each(headers, function(_, rawHeader) {
+        headerPaths.push(parseHeaderPath($.trim(rawHeader)));
+    })
+
+    var records = parseMultilineRecords(spreadsheetRows);
+    var trees = []
+    $.each(records, function(i,record) {
+        var tree = {}
+        $.each(record, function(j, row) {
+            for(var k in row)
+            {
+                var value = row[k]
+                if(value != null && value.length > 0)
+                {
+                    pathPut(headerPaths[k], j, tree, value)
+                }
+            }
+        });
+        trees.push(tree)        
     });
     
-
-    function buildRows() {
-        politeMap(spreadsheetRows,function(rowArray) {
-            var rowHeaders  = headers.slice();
-            var rowMqlProps = mqlProps.slice();
-            var entity = new tEntity({"/rec_ui/headers": rowHeaders,
-                                    "/rec_ui/mql_props": rowMqlProps,
-                                    "/rec_ui/toplevel_entity": true});
-            for (var i=0; i < headers.length; i++){
-                var val = rowArray[i];
-                if (rowArray[i] === "")
-                    val = undefined;
-                entity[headers[i]] = [val];
-            }
-            return entity;
-        },function(newRows) {
-            rows = newRows;
-            onComplete(rows);
-        },
-        yielder);
-    }
+    resetEntities();
+    typesSeen = new Set();
+    
+    parseTrees(trees, function(entities) {
+        rows = entities;
+        mqlProps = rows[0]['/rec_ui/mql_props'];
+        onComplete();
+      }, yielder);
 }
 
-/*
+/** @param {!Array.<!loader.tree>} trees
+  * @param {!function(!Array.<!tEntity>)} onComplete
+  * @param {Yielder=} yielder
+  */
+function parseTrees(trees, onComplete, yielder) {
+    yielder = yielder || new Yielder();
+    findAllProperties(trees, function(props) {
+        freebase.fetchPropertyInfo(props, afterPropertiesFetched, 
+            function onError(errorProps) {
+                $.each(errorProps, warnUnknownProp);
+                afterPropertiesFetched();
+            }
+        );
+        
+        function afterPropertiesFetched() {
+            treesToEntities(trees, onComplete, yielder);
+        }
+    }, yielder);
+}
+
+/**
 *  Starting at `from+1`, look for the first row that has an entry in the
 *  first column which is followed by a row without an entry in the first
 *  column.
+* 
+* @param {(number|undefined|null)} from
+* @param {function(number)} onFound
+* @param {function()} noneLeft
+* @param {Yielder=} yielder
 */
 function getAmbiguousRowIndex(from, onFound, noneLeft, yielder) {
     if (from == undefined)
@@ -234,6 +353,198 @@ function getAmbiguousRowIndex(from, onFound, noneLeft, yielder) {
         noneLeft();
     }
     searchForAmbiguity();
+}
+
+/**
+ * Returns true if an array of rows contains a multiline record (the first column in any row is empty).
+ *
+ * [["1", "2", "3"], ["a", "b", "c"]] returns false
+ * [["1", "2", "3"], ["", "b", "c"]] returns true
+ *
+ * @param {Array.<loader.row>} rows
+ * @return {boolean}
+ */
+function isMultilineFormat(rows)
+{
+    for(var i in rows)
+    {
+        if(rows[i][0].length == 0) return true;
+    }
+    return false;
+}
+
+/**
+ * Parses a set of multi-line records.
+ *
+ * [["1", "2", "3"], ["", "b", "c"], ["d", "e", "f"]] returns [ [["1", "2", "3"], ["", "b", "c"]], [["d", "e", "f"]] ]
+ *
+ * @param {Array.<loader.row>} rows
+ * @return {Array.<loader.record>}
+ */
+function parseMultilineRecords(rows)
+{
+    var records = []
+    var currentRecord = []
+    for(var i in rows)
+    {
+        var currentRow = rows[i]
+        // start new record if the first column is non-empty and the current record is non-empty:
+        if(currentRow[0].length > 0 && currentRecord.length > 0)
+        {
+            records.push(currentRecord)
+            currentRecord = []
+        }
+        currentRecord.push(currentRow)
+    }
+    if(currentRecord.length > 0) records.push(currentRecord)
+    return records
+}
+
+/**
+ * Parses a set of single-line records.
+ *
+ * [["1", "2", "3"], ["a", "b", "c"]] returns [[["1", "2", "3"]], [["a", "b", "c"]]]
+ *
+ * @param {Array.<loader.row>} rows
+ * @return {Array.<loader.record>}
+ */
+function parseSinglelineRecords(rows)
+{
+    var records = []
+    for(var i in rows)
+    {
+        records.push([rows[i]])
+    }
+    return records
+}
+
+
+/**
+ * Parses a header into a path object.
+ *
+ * "/foo/bar:/baz/asdf[1]:/fdsa[2]" returns
+ *   [ {"prop":"/foo/bar", "index":0},
+ *     {"prop":"/baz/asdf", "index":1},
+ *     {"prop":"/fdsa", "index":2} ]
+ *
+ * @param {string} path
+ * @return loader.path
+ */
+function parseHeaderPath(path)
+{
+    /**
+     * Returns the index or 0.
+     */
+    function parseIndex(part)
+    {
+        var numsearch = part.match(/\[(\d+)\]/)
+        if(numsearch == null || numsearch.length != 2) return 0
+        else return parseInt(numsearch[1], 10)
+    }
+
+    /**
+     * Returns the property without the index.
+     */
+    function parseProp(part)
+    {
+        var propsearch = part.match(/(.+)\[\d+\]/)
+        if(propsearch == null || propsearch.length != 2) return part
+        else return propsearch[1]
+    }
+    var paths = []
+    var parts = path.split(/[:.]/)
+    for(var i in parts)
+    {
+        path = {"index":parseIndex(parts[i]), "prop":parseProp(parts[i])}
+        paths.push(path)
+    }
+    return paths
+}
+
+/**
+ * Takes a list of path objects, an index for the first path,
+ * and a target record and value, and inserts the value into the
+ * record.
+ *
+ * @param {loader.path} paths
+ * @param {number} topindex
+ * @param {loader.tree} record
+ * @value {string} value
+ *
+ */
+function pathPut(paths, topindex, record, value)
+{
+    function putValue(currentRecord, pathIndex)
+    {
+        var currentPath = paths[pathIndex]
+        var lastPath = pathIndex + 1 >= paths.length
+
+        // if we're at the last path:
+        if(lastPath)
+        {
+            // special case for ids:
+            if(currentPath.prop == "id") currentRecord["id"] = value
+            else
+            {
+                // place the value:
+                if(!(currentPath.prop in currentRecord)) currentRecord[currentPath.prop] = []
+                currentRecord[currentPath.prop][currentPath.index] = value
+            }
+        }
+
+        // otherwise recurse:
+        else
+        {
+            if(!(currentPath.prop in currentRecord)) currentRecord[currentPath.prop] = []
+            var currentList = currentRecord[currentPath.prop]
+            if(currentList.length <= currentPath.index ||
+               currentList[currentPath.index] == null)
+                currentList[currentPath.index] = {}
+            putValue(currentList[currentPath.index], pathIndex + 1)
+        }
+    }
+    paths[0].index = topindex
+    putValue(record, 0)
+}
+
+/**
+ * Takes a list of path objects, an index for the first path,
+ * and a target record gets the value from the record.
+ *
+ * @param {loader.path} paths
+ * @param {number} topindex
+ * @param {loader.tree} record
+ */
+function pathGet(paths, topindex, record)
+{
+    function getValue(currentRecord, pathIndex)
+    {
+        var currentPath = paths[pathIndex]
+        if(!(currentPath.prop in currentRecord))
+        {
+            return null
+        }
+        var currentList = currentRecord[currentPath.prop]
+
+        // no more paths, get the value:
+        if(pathIndex + 1 >= paths.length)
+        {
+            // special case for ids - no lists:
+            if(currentPath.prop == "id") return currentList
+            else return currentList[currentPath.index]
+        }
+        // recurse to the next path:
+        else
+        {
+            if(currentList.length <= currentPath.index)
+            {
+                return null
+            }
+            getValue(currentList[currentPath.index], pathIndex + 1)
+        }
+    }
+    paths[0].index = topindex
+    getValue(record, 0)
 }
 
 
@@ -279,7 +590,7 @@ function addIdColumns() {
             if (isValueProperty(mqlProp)) return;
             //if there already is an id column for it, then don't create a new one
             if (Arr.contains(headers,idColumn)) return;
-            //if the property is /type/objec/type then we treat it as an id automatically, no id column needed
+            //if the property is /type/object/type then we treat it as an id automatically, no id column needed
             if (mqlProp == "/type/object/type") return;
             //if it's a CVT then we won't do reconciliation of it ourselves (that's triplewriter's job)
             //so no id column
@@ -289,128 +600,6 @@ function addIdColumns() {
             headers.push(idColumn);
         });
     });
-}
-
-function objectifyRows(onComplete) {
-    politeEach(rows, function(_,row) {
-        if (inputType === "JSON")
-            return;
-        for (var prop in row) {
-            function objectifyRowProperty(value) {
-                var result = new tEntity({'/type/object/name':value,
-                              '/type/object/type':meta.expected_type.id,
-                              '/rec_ui/headers': ['/type/object/name','/type/object/type']
-                              });
-                if (meta.inverse_property != null){
-                    result[meta.inverse_property] = row;
-                    result['/rec_ui/headers'].push(meta.inverse_property);
-                    result['/rec_ui/mql_props'].push(meta.inverse_property);
-                }
-                return result;
-            }
-            
-            var meta = freebase.getPropMetadata(prop);
-            if (meta == undefined || isValueType(meta.expected_type) || prop == "/type/object/type")
-                continue;
-            var newProp = [];
-            for (var i = 0; i < row[prop].length; i++)
-                if (row[prop][i])
-                    newProp[i] = objectifyRowProperty(row[prop][i])
-            row[prop] = newProp
-        }
-        $.each(Arr.filter(headers, function(h){return charIn(h,":");}), function(_,complexHeader) {
-            var valueArray = row[complexHeader];
-            if (valueArray === undefined) return;
-            var parts = complexHeader.split(":");
-            var slot;
-            function innerEntity(meta, parent) {
-                var entity = new tEntity({"/type/object/type":meta.expected_type.id,
-                                     "/rec_ui/is_cvt":isCVTType(meta.expected_type)});
-                entity.addParent(parent, meta.inverse_property);
-                return entity;
-            }
-            var firstPart = parts[0];
-            $.each(valueArray, function(i,value) {
-                if (value === undefined)
-                    return; //read as continue
-                if (!(firstPart in row))
-                    row.addProperty(firstPart,[]);
-                if (row[firstPart][i] === undefined)
-                    row[firstPart][i] = innerEntity(freebase.getPropMetadata(firstPart), row);;
-                slot = row[firstPart][i];
-                $.each(parts.slice(1,parts.length-1), function(_,part) {
-                    if (!(part in slot))
-                        slot.addProperty(part, innerEntity(freebase.getPropMetadata(part), slot));
-                    slot = slot[part][0];
-                });
-                var lastPart = parts[parts.length-1];
-                var meta = freebase.getPropMetadata(lastPart);
-                if (meta === undefined && lastPart !== "id")
-                    return; //if we don't know what it is, leave it as it is
-                if (lastPart === "id" || lastPart == "/type/object/type" || isValueProperty(lastPart))
-                    slot.addProperty(lastPart, value);
-                else {
-                    var new_entity = new tEntity({"/type/object/type":meta.expected_type.id,
-                                                "/type/object/name":value,
-                                                '/rec_ui/headers': ['/type/object/name','/type/object/type'],
-                                                '/rec_ui/mql_props': []
-                                                });
-                    if (meta.inverse_property) {
-                        new_entity[meta.inverse_property] = slot;
-                        
-                        var reversedParts = $.map(parts.slice().reverse(), function(part) {
-                            return (freebase.getPropMetadata(part) && freebase.getPropMetadata(part).inverse_property) || false;
-                        });
-                        if (Arr.all(reversedParts)){
-                            new_entity["/rec_ui/mql_props"].push(reversedParts.join(":"));
-                            new_entity["/rec_ui/headers"].push(reversedParts.join(":"));
-                        }
-                    }
-                    slot.addProperty(lastPart, new_entity);
-                }
-            });
-            delete row[complexHeader];
-        });
-        
-        /** Recursively removes undefined objects from arrays anywhere in an object.
-          * Also, collapses singleton arrays to the object inside
-          * Supports self referential objects (though not self referential arrays)
-          * 
-          * Broken and a bad idea, will be scrapped (eventually)
-          *
-          * @param {Object} obj
-          * @param {Object=} closed
-        */
-        function cleanup(obj, closed) {
-            //Only interested in Arrays and objects
-            if (typeof(obj) != "object")
-                return obj;
-            
-            //setup a closed list to handle mutually recursive data structures
-            if (closed === undefined) closed = {};
-            if (closed[obj])
-                return obj; //we've seen this object before
-            
-            if ($.isArray(obj)) {
-                var arr = Arr.filter(obj, function(val){return val !== undefined});
-                if (arr.length === 1)
-                    return cleanup(arr[0], closed);
-                else
-                    return $.map(arr, function (val) {return cleanup(val,closed);});
-            }
-            
-            closed[obj] = true;
-            for (var key in obj){
-                if (key.match(/^\/rec_ui\//)) continue; //don't touch our own internal properties
-                obj[key] = cleanup(obj[key], closed);
-            }
-            return obj
-        }
-        cleanup(row);
-        if ($.isArray(row.id))
-            row.id = row.id[0];
-        $.each($.makeArray(row['/type/object/type']), function(_,type){if (type) typesSeen.add(type);})
-    }, onComplete);
 }
 
 //Takes a list of trees and returns a list of all mql properties found anywhere
@@ -449,7 +638,6 @@ function treesToEntities(trees, onComplete, yielder) {
   * @param {function(Object)=} onAddProperty
 */
 function treeToEntity(tree, parent, onAddProperty) {
-    log(tree);
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity['/rec_ui/parent'] = [parent];
@@ -476,32 +664,25 @@ function treeToEntity(tree, parent, onAddProperty) {
     return entity;
 }
 
+/** @param {!string} json
+  * @param {!function()} onComplete
+  * @param {Yielder=} yielder
+ */
 function parseJSON(json, onComplete, yielder) {
     yielder = yielder || new Yielder();
     try {
-        var records = JSON.parse(json);
+        var trees = JSON.parse(json);
     }
     catch(e) {
         inputError("JSON error: " + e);
         return;
     }
     
-    findAllProperties(records, function(props) {
-        freebase.fetchPropertyInfo(props, afterPropertiesFetched, 
-            function onError(errorProps) {
-                $.each(errorProps, warnUnknownProp);
-                afterPropertiesFetched();
-            }
-        );
-        
-        function afterPropertiesFetched() {
-            treesToEntities(records, function(entities) {
-                rows = entities;
-                headers = rows[0]['/rec_ui/headers'];
-                mqlProps = rows[0]['/rec_ui/mql_props'];
-                onComplete();
-            }, yielder);
-        }
+    parseTrees(trees, function(entities) {
+        rows = entities;
+        headers = rows[0]['/rec_ui/headers'];
+        mqlProps = rows[0]['/rec_ui/mql_props'];
+        onComplete();
     }, yielder);
 }
 
