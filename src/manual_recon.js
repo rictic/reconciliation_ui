@@ -70,7 +70,7 @@ function renderReconChoices(entity) {
     }
     updateCandidates();
 
-    $(".find_topic")[0].value = entity['/type/object/name'];
+    $(".find_topic", template)[0].value = entity['/type/object/name'];
     $(".find_topic", template)
         .suggest({type:entity['/type/object/type'],
                   type_strict:"should",
