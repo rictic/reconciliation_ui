@@ -6,6 +6,10 @@ function pass() {
     assertTrue(true);
 }
 
+/** @param {*} msg
+  * @param {*} a1
+  * @param {*=} a2
+  */
 function assertEq(msg, a1, a2) {
     if (arguments.length == 2){
         a2 = a1;
@@ -23,6 +27,10 @@ function assertEq(msg, a1, a2) {
         pass();
 }
 
+/** @param {*} msg
+  * @param {*} a1
+  * @param {*=} a2
+  */
 function assertNotEq(msg, a1, a2) {
     if (arguments.length == 2){
         a2 = a1;
@@ -47,7 +55,10 @@ function isObject(val) {
     return true;
 }
 
-
+/** @param {*} msg
+  * @param {*} o1
+  * @param {*=} o2
+  */
 function assertSubsetOf(msg, o1, o2) {
     if (arguments.length == 2){
         o2 = o1;
@@ -76,7 +87,11 @@ function isNotSubsetOf(o1,o2) {
     }
 }
 
-
+/** @param {*} a1
+  * @param {*} a2
+  * @param {function(*,*):string=} cmpFunc
+  * @param {function(*,*):string=} objCompFunc
+  */
 function areNotEq(a1,a2, cmpFunc, objCompFunc){
     cmpFunc = cmpFunc || areNotEq;
     objCompFunc = objCompFunc || objComp;
@@ -118,11 +133,6 @@ function objComp(a1, a2, cmpFunc, objCompFunc) {
             return a1 + " and " + a2 + " differ in prop `" + prop + "': " + message;
     }
 }
-
-function Yielder() {
-	return {shouldYield: function(){return false;}}
-}
-
 
 TestCase("MetaTest",{
     testIntEq: function() {

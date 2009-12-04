@@ -1,3 +1,7 @@
+Yielder = function() {
+	return {shouldYield: function(){return false;}}
+}
+
 var value_prop = {
     "expected_type" : {
         "extends" : ["/type/value"],

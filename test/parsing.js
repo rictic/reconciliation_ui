@@ -1,4 +1,4 @@
-var tests = {
+var parsing_tests = {
     "test parsing a simple TSV": function() {
         var simpleTSV = "\
 name\ttype\n\
@@ -34,6 +34,12 @@ Stevie Wonder\t/people/person\n\
     }
 }
 
+/** @param {!string} name
+  * @param {!string} spreadsheet
+  * @param {!Array.<!loader.tree>} expectedParse
+  * @param {boolean=} ambiguous
+  * @param {boolean=} collapseRows
+  */
 function addCompleteParsingTestCase(name, spreadsheet, expectedParse, ambiguous, collapseRows) {
     function parseCompletely(parseComplete) {
         var ambiguityFound = false;
@@ -48,9 +54,7 @@ function addCompleteParsingTestCase(name, spreadsheet, expectedParse, ambiguous,
             function onComplete() {
                 if (ambiguityFound && !ambiguous)
                     fail("Expected ambiguity, but was parsed as unambiguous");
-                objectifyRows(function() {
-                    parseComplete();
-                })
+                parseComplete();
             }
         );
     }
@@ -64,7 +68,7 @@ function addCompleteParsingTestCase(name, spreadsheet, expectedParse, ambiguous,
     else description += "a "
     description += name;
     
-    tests["test completely parsing " + description] = function theParsingTest() {
+    parsing_tests["test completely parsing " + description] = function theParsingTest() {
         expectAsserts(1);
 
         parseCompletely(function() {
@@ -72,7 +76,7 @@ function addCompleteParsingTestCase(name, spreadsheet, expectedParse, ambiguous,
         })
     }
     
-    tests["test re-rendering " + description] = function theSpreadsheetOutputTest() {
+    parsing_tests["test re-rendering " + description] = function theSpreadsheetOutputTest() {
         expectAsserts(1);
         parseCompletely(function() {
             //rebuild the spreadsheet and confirm it's identical to the original
@@ -117,5 +121,5 @@ addCompleteParsingTestCase("spreadsheet with first column nested",
                            "a:b\ta:c\td\n1\t2\t3\n\t4\t5",
                            [{a:[{b:[1],c:[2]},{c:[4]}],d:[3,5]}],true, true);
 
-TestCase("ParsingTest",tests);
+TestCase("ParsingTest",parsing_tests);
 
