@@ -46,7 +46,7 @@ file "build/recon.html" => "recon.html" do
   File.open("build/recon.html", 'w') {|f| f.write(new_source)}
 end
 
-file "build/compiled.js" => ["build/libs_compiled.js", "build/src_compiled.js"] do
+file "build/compiled.js" => ["build/libs_compiled.js", "build/src_compiled.js"] do |t|
   compilejs(t.prerequisites, t.name, "--warning_level QUIET --compilation_level WHITESPACE_ONLY")
 end
 
