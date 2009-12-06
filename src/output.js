@@ -294,13 +294,13 @@ function form_handler(result){
 function updateUploadProgressbar(url){
   function handler(result){
     var count=result.result.count;
-    var noop=0;
-    for each (var i in result.result.details){
-      if (i.status='noop')
-        noop=i.count;
-    }
-    $('#upload_progressbar').progressbar('option', 'value', (count-noop)*100/count );
-    if (noop!=0)
+    var nil=0;
+    $.each(result.result.details, function(_,i){
+      if (i.status='null')
+        nil=i.count;
+    });
+    $('#upload_progressbar').progressbar('option', 'value', (count-nil)*100/count );
+    if (nil!=0)
       setTimeout(function() {updateUploadProgressbar(url);}, 1000);
   }
   $.getJSON(url, null, handler);
