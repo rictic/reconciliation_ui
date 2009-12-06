@@ -279,7 +279,23 @@ function checkLogin() {
         }});
 }
 
-function form_handler(result){
+function getCreatedIds(url, callback){
+  $.getJSON(url, null, function(result){
+    var actions=result.result.actions;
+    var res={};
+    $.each(actions, function(_,i){
+        var o = JSON.parse(i.result);
+        for (var j in o){
+          if (j.indexOf("entity")==0){
+            res["$"+j]=o[j];
+          }
+        }
+      });
+    callback(res);
+  });
+}
+
+function formHandler(result){
   var url=result.result.status_url;
   var job_id=result.result.job_id;
   url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
@@ -307,6 +323,6 @@ function updateUploadProgressbar(url){
 }
 
 $(document).ready(function () {
-    $('#freeq_form').ajaxForm({dataType:'json', success:form_handler});
+    $('#freeq_form').ajaxForm({dataType:'json', success:formHandler});
   });
 
