@@ -158,7 +158,7 @@
               
               
                   <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
-                  <form action="http://data.labs.freebase.com/freeq/spreadsheet/" target="_blank" method="POST" accept-charset="utf-8">
+                  <form id="freeq_form" action="http://data.labs.freebase.com/freeq/spreadsheet/" target="_blank" method="POST" accept-charset="utf-8">
                       <input type='hidden' name='user' value='' id='user'>
                       <input type='hidden' name="action_type" value="LOAD_TRIPLE" id="action_type">
                       <input type="hidden" name="operator" value="/user/spreadsheet_bot" id="operator">
@@ -171,6 +171,9 @@
                   </form>
                   <br>
               </div>
+              <div id="upload_progressbar" class='invisible'>
+              </div>
+              <a id="freeq_link" target="_blank" class='invisible'>View on Freeq</a><br/>
               
               <button class="triplesDisplayButton">Display Triples</button>
               <div>
@@ -223,6 +226,7 @@
         <script language="javascript" charset="utf-8" src="lib/jquery.ui/ui/ui.tabs.js"></script>
         <script language="javascript" charset="utf-8" src="lib/jquery.ui/ui/ui.progressbar.js"></script>
         <script language="javascript" charset="utf-8" src="lib/jquery.event.hover.js"></script>
+        <script language="javascript" charset="utf-8" src="lib/jquery.form.js"></script>
         <script language="javascript" charset="utf-8" src="lib/jsobjdump.js"></script>
         
         <script language="javascript" charset="utf-8" src="lib/dataTables/media/js/jquery.dataTables.js"></script>
