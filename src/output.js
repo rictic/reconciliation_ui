@@ -299,10 +299,11 @@ function formHandler(result){
   var url=result.result.status_url;
   var job_id=result.result.job_id;
   url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
+  peacock_url="http://peacock.freebaseapps.com/stats/"+job_id+"?url=http://data.labs.freebase.com/freeq/spreadsheet";
   $(".uploadForm").hide();
   $("#upload_progressbar").progressbar({value:0});
   $("#upload_progressbar").show();
-  $("#freeq_link").attr("href",url);
+  $("#freeq_link").attr("href",peacock_url);
   $("#freeq_link").show()
   updateUploadProgressbar(url);
 }
