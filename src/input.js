@@ -350,11 +350,11 @@ function objectifyRows(onComplete) {
                 if (lastPart === "id" || lastPart == "/type/object/type" || isValueProperty(lastPart))
                     slot.addProperty(lastPart, value);
                 else {
-                    var new_entity = new tEntity({"/type/object/type":meta.expected_type.id,
-                                                "/type/object/name":value,
-                                                '/rec_ui/headers': ['/type/object/name','/type/object/type'],
+                    var new_entity = new tEntity({'/rec_ui/headers': ['/type/object/name','/type/object/type'],
                                                 '/rec_ui/mql_props': []
                                                 });
+                    new_entity.addProperty("/type/object/type",meta.expected_type.id);
+                    new_entity.addProperty("/type/object/name",value);
                     if (meta.inverse_property) {
                         new_entity[meta.inverse_property] = slot;
                         
