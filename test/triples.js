@@ -20,7 +20,7 @@ TestCase("triples",{
         
         expectAsserts(1);
         getTriples([entity, cvt], function(triples) {
-            assertEq([{s:"/a", p:"topic", o:{b:["c"]}}], triples);
+            assertEq([{s:"/a", p:"topic", o:{b:"c"}}], triples);
         });
     }
 //    ,"test multiple entities pointing into a cvt": function() {
