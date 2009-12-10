@@ -647,7 +647,8 @@ function treeToEntity(tree, parent, onAddProperty) {
                 if (propMeta) {
                     if (propMeta.expected_type && !("/type/object/type" in innerEntity))
                         innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
-                    innerEntity.addProperty(propMeta.inverse_property, entity);
+                    if (propMeta.inverse_property)
+                        innerEntity.addProperty(propMeta.inverse_property, entity);
                 }
                 return innerEntity;
             });
