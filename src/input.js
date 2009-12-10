@@ -260,6 +260,10 @@ function setupHeaderInfo(headers, onComplete, onError) {
 // }
 
 
+/** @param {!Array.<!loader.row>} spreadsheetRows
+  * @param {!function()} onComplete
+  * @param {Yielder=} yielder
+  */
 function buildRowInfo(spreadsheetRows, onComplete, yielder) {
     //keeps us from crashing on blank input
     if (spreadsheetRows.length === 0) return;
@@ -598,8 +602,12 @@ function addIdColumns() {
     });
 }
 
-//Takes a list of trees and returns a list of all mql properties found anywhere
-//in any of the trees
+/** Takes a list of trees and returns a list of all mql properties found anywhere
+  * in any of the trees
+  * @param {!Array.<loader.tree>} trees
+  * @param {!function(!Array.<string>)} onComplete
+  * @param {Yielder=} yielder
+  */  
 function findAllProperties(trees, onComplete, yielder) {
     var propsSeen = new Set();
     politeEach(trees, findProps, function() {
@@ -664,7 +672,7 @@ function treeToEntity(tree, parent, onAddProperty) {
 /** @param {!string} json
   * @param {!function()} onComplete
   * @param {Yielder=} yielder
- */
+  */
 function parseJSON(json, onComplete, yielder) {
     yielder = yielder || new Yielder();
     try {
