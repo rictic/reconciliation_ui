@@ -112,11 +112,7 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
 
     parseTSV(input,function(spreadsheetRowsWithBlanks) {
         removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
-            buildRowInfo(spreadsheetRows, function(rows){
-                getAmbiguousRowIndex(undefined,
-                                     function curry(startingRowIdx){ambiguityResolver(startingRowIdx,handleAmbiguity);}, 
-                                     onComplete, yielder);
-            }, yielder);
+            buildRowInfo(spreadsheetRows, onComplete, yielder);
         }, yielder)
     }, yielder);
 }
