@@ -41,7 +41,7 @@ function politeEach(array, f, onComplete, yielder) {
 }
 /** @param {!Array} array
     @param {!function(*)} f
-    @param {!function(Array)} onComplete
+    @param {!function(!Array)} onComplete
     @param {Yielder=} yielder
 */
 function politeMap(array, f, onComplete, yielder) {

@@ -631,6 +631,11 @@ function findAllProperties(trees, onComplete, yielder) {
     }
 }
 
+/**
+  * @param {!Array.<!loader.tree>} trees
+  * @param {!function(!Array.<tEntity>)} onComplete
+  * @param {Yielder=} yielder
+  */
 function treesToEntities(trees, onComplete, yielder) {
     politeMap(trees, function(record){return treeToEntity(record)}, onComplete, yielder);
 }

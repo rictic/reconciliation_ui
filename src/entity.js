@@ -12,7 +12,9 @@ function resetEntities() {
 }
 resetEntities();
 
-/** @constructor */
+/** @constructor
+  * @param {Object=} initialVals
+  */
 function tEntity(initialVals) {
     this["/rec_ui/id"] = internalIDCounter++
     this["/rec_ui/mql_props"] = [];
