@@ -300,3 +300,8 @@ var assert = function() {
         return function(bool, message) {return console.assert(bool,message);};
     return function(bool,message){if (!bool) error(message)};
 }()
+
+
+var debug = function(val) {
+    log(JSON.stringify(JsObjDump.annotate(val), null, 2))
+}
