@@ -230,6 +230,7 @@ function getType(v) {
     if (v === undefined) return "undefined";
     if (v instanceof Date) return "date";
     if (v instanceof RegExp) return "regexp";
+    if (v instanceof String) return "string";
     return "object";
 }
 
