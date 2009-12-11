@@ -99,9 +99,13 @@ function areNotEq(a1,a2, cmpFunc, objCompFunc){
         if (!($.isArray(a1) && $.isArray(a2)))
             return "one is an array, the other isn't: " + a1 + " " + a2;
 
-        if (a1.length != a2.length) return "lengths of arrays were different, expected " + a1.length + " got " + a2.length + ": " + a1 + " " + a2;
-        for (var i = 0; i < a1.length; i++){
-            var message = cmpFunc(a1[i], a2[i], cmpFunc, objCompFunc);
+        var ar1 = /** @type {Array} */ (a1);
+        var ar2 = /** @type {Array} */ (a2); 
+
+
+        if (ar1.length != ar2.length) return "lengths of arrays were different, expected " + ar1.length + " got " + ar2.length + ": " + ar1 + " " + ar2;
+        for (var i = 0; i < ar1.length; i++){
+            var message = cmpFunc(ar1[i], ar2[i], cmpFunc, objCompFunc);
             if (message)
                 return i + "th value different in arrays: " + message;
         }
