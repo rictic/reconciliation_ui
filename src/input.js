@@ -77,8 +77,10 @@ loader.path;
 var totalRecords = 0;
 var mqlProps;
 var headers;
+var originalHeaders;
 var rows;
 var typesSeen = new Set();
+var propertiesSeen = new Set();
 var inputType;
 
 
@@ -236,14 +238,6 @@ function removeBlankLines(rows, onComplete, yielder) {
     function(){onComplete(newRows);}, yielder);
 }
 
-function setupHeaderInfo(headers, onComplete, onError) {
-    mqlProps = getMqlProperties(headers);
-    freebase.fetchPropertyInfo(getProperties(headers), onComplete, onError);
-}
-
-
-
-
 // function parseSpreadsheet(spreadsheet, multiline)
 // {
 //     if(multiline)
@@ -271,7 +265,8 @@ function buildRowInfo(spreadsheetRows, onComplete, yielder) {
     yielder = yielder || new Yielder();
 
     // parse headers:
-    headers = spreadsheetRows.shift();
+    originalHeaders = spreadsheetRows.shift();
+    headers = originalHeaders;
     var headerPaths = [];
     $.each(headers, function(_, rawHeader) {
         headerPaths.push(parseHeaderPath($.trim(rawHeader)));
@@ -297,11 +292,18 @@ function buildRowInfo(spreadsheetRows, onComplete, yielder) {
     resetEntities();
     typesSeen = new Set();
     
+    mqlProps = getMqlProperties(originalHeaders);
+    
     parseTrees(trees, function(entities) {
         rows = entities;
-        mqlProps = rows[0]['/rec_ui/mql_props'];
-        onComplete();
-      }, yielder);
+        headers = originalHeaders;
+        
+        freebase.fetchPropertyInfo(getProperties(originalHeaders), onComplete, function(errorProps) {
+            $.each(errorProps, warnUnknownProp);
+            mqlProps = Arr.difference(mqlProps, errorProps);
+            onComplete();
+        });
+    }, yielder);
 }
 
 /** @param {!Array.<!loader.tree>} trees
@@ -605,13 +607,12 @@ function addIdColumns() {
 /** Takes a list of trees and returns a list of all mql properties found anywhere
   * in any of the trees
   * @param {!Array.<loader.tree>} trees
-  * @param {!function(!Array.<string>)} onComplete
+  * @param {!function()} onComplete
   * @param {Yielder=} yielder
   */  
 function findAllProperties(trees, onComplete, yielder) {
-    var propsSeen = new Set();
     politeEach(trees, findProps, function() {
-        onComplete(propsSeen.getAll());
+        onComplete(propertiesSeen.getAll());
     }, yielder);
     
     function findProps(_,obj) {
@@ -622,7 +623,7 @@ function findAllProperties(trees, onComplete, yielder) {
         case "object":
             for (var key in obj) {
                 if (key.charAt(0) === "/") {
-                    propsSeen.add(key);
+                    propertiesSeen.add(key);
                     findProps(null,obj[key]);
                 }
             }
@@ -651,24 +652,29 @@ function treeToEntity(tree, parent, onAddProperty) {
     if (parent)
         entity['/rec_ui/parent'] = [parent];
     for (var prop in tree){
-        var value = tree[prop];
-        if (getType($.makeArray(value)[0]) === "object") {
-            var propMeta = freebase.getPropMetadata(prop);
+        var value = $.makeArray(tree[prop]);
+        var propMeta = freebase.getPropMetadata(prop);
             
-            value = $.map($.makeArray(value), function(innerTree) {
-                var innerEntity = treeToEntity(innerTree, entity);
-                if (propMeta) {
-                    if (propMeta.expected_type && !("/type/object/type" in innerEntity))
-                        innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
-                    if (propMeta.inverse_property)
-                        innerEntity.addProperty(propMeta.inverse_property, entity);
-                }
-                return innerEntity;
-            });
-        }
+        value = $.map(value, function(innerTree) {
+            if (getType(innerTree) === "string") {
+                if (isValueProperty(prop) || !propMeta)
+                    return innerTree; //leave it as a string
+                
+                innerTree = {"/type/object/name" : innerTree};
+            }
+            
+            var innerEntity = treeToEntity(innerTree, entity);
+            if (propMeta) {
+                if (propMeta.expected_type && !("/type/object/type" in innerEntity))
+                    innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
+                if (propMeta.inverse_property)
+                    innerEntity.addProperty(propMeta.inverse_property, entity);
+            }
+            return innerEntity;
+        });
         entity.addProperty(prop, value);
         if (onAddProperty)
-          onAddProperty(prop);
+            onAddProperty(prop);
     }
     
     return entity;

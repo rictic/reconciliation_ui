@@ -258,6 +258,8 @@ freebase.mqlValue;
             if (result.expected_type.id) 
                 typesSeen.add(result.expected_type.id)
             result.inverse_property = result.reverse_property || result.master_property;
+            if (result.inverse_property)
+                propertiesSeen.add(result.inverse_property);
             propMetadata[mqlProp] = result;
         }
         
@@ -270,6 +272,7 @@ freebase.mqlValue;
                 onError(errorProps);
             else
                 onComplete();
+            freebase.fetchPropertyInfo(propertiesSeen.getAll(), function(){}, function(){});
         }
         
     }

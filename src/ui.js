@@ -120,7 +120,7 @@ function showConfirmationSpreadsheet() {
     politeEach(rows, function(_,entity) {
         var row = [];
         for (var j = 0; j < headers.length; j++){
-            var val = entity[headers[j]];
+            var val = entity.getChainedProperty(headers[j]);
             if (val == undefined)
                 val = "";
             else if ($.isArray(val)){
