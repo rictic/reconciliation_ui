@@ -79,6 +79,8 @@ function charIn(string, chr) {
 }
 
 function isValueProperty(propName) {
+    if (Arr.contains(["/type/object/type", "/type/object/name", "id"], propName))
+        return true;
     if (freebase.getPropMetadata(propName))
         return isValueType(freebase.getPropMetadata(propName).expected_type);
     return undefined;
