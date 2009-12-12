@@ -644,13 +644,13 @@ function treesToEntities(trees, onComplete, yielder) {
 /** Assumes that the metadata for all properties encountered
   * already exists.  See findAllProperties() and freebase.fetchPropertyInfo
   * @param {!Object} tree
-  * @param {Object=} parent
+  * @param {tEntity=} parent
   * @param {function(Object)=} onAddProperty
 */
 function treeToEntity(tree, parent, onAddProperty) {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
-        entity['/rec_ui/parent'] = [parent];
+        entity.addParent(parent);
     for (var prop in tree){
         var value = $.makeArray(tree[prop]);
         var propMeta = freebase.getPropMetadata(prop);

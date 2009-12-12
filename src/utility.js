@@ -69,7 +69,7 @@ function idToClass(idName) {
 }
 
 function startsWith(needle, haystack) {
-    if (needle.substr(0,haystack.length) == haystack)
+    if (haystack.substr(0,needle.length) === needle)
         return true;
     return false;
 }
@@ -92,7 +92,7 @@ function isValueType(type) {
 
 function isCVTProperty(propName) {
     var prop = freebase.getPropMetadata(propName);
-    if (freebase.getPropMetadata(propName))
+    if (prop)
         return isCVTType(prop.expected_type);
     return undefined;
 }
@@ -102,6 +102,18 @@ function isCVTType(type) {
         && type["/freebase/type_hints/mediator"].value;
 }
 
+function toJSON(value) {
+    if (typeof value === "object" && 'toJSON' in value)
+        return value.toJSON();
+    switch(getType(value)){
+    case "array": 
+        return $.map(value, toJSON);
+    case "function":
+        return undefined;
+    default:
+        return value;
+    }
+}
 
 //I can't believe I can't find a better way of doing these
 /* Functions for treating an object kinda like a list */
@@ -233,6 +245,7 @@ function getType(v) {
     if (v instanceof Date) return "date";
     if (v instanceof RegExp) return "regexp";
     if (v instanceof String) return "string";
+    if (v instanceof Function) return "function";
     return "object";
 }
 

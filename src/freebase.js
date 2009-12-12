@@ -276,7 +276,12 @@ freebase.mqlValue;
         }
         
     }
-    freebase.getPropMetadata = function(prop) {return propMetadata[prop];}
+    freebase.getPropMetadata = function(prop) {
+        var meta = propMetadata[prop];
+        if (meta instanceof Function)
+            return undefined;
+        return meta;
+    }
 
     /** @param {freebase.mqlTree} mqlResult
         @result {boolean} */

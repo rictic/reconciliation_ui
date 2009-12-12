@@ -66,7 +66,7 @@ var json_examples = [
                we don't have to worry about cyclical data structures.
             */
             "/film/director/film"    : [{"/type/object/name": ["Blade Runner"]}],
-            "/rec_ui/parent"         : [{"/type/object/name": ["Blade Runner"]}],
+            "/rec_ui/parent"         : {"/type/object/name": ["Blade Runner"]},
             "/rec_ui/headers"        : ["/type/object/name", "/type/object/type", "/film/director/film"],
             "/rec_ui/mql_props"      : ["/film/director/film"],
             "/rec_ui/cvt_props"      : [],

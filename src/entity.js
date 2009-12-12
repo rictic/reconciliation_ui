@@ -73,9 +73,8 @@ tEntity.prototype.addProperty = function(prop, value) {
         this[prop] = value;
     }
     
-    if (prop === "/type/object/type") {
+    if (prop === "/type/object/type")
         typesSeen.addAll(this[prop]);
-    }
     if (!Arr.contains(this['/rec_ui/headers'], prop))
         this['/rec_ui/headers'].push(prop);
     if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop))
@@ -89,7 +88,7 @@ tEntity.prototype.addProperty = function(prop, value) {
   * @param {string=} prop
   */
 tEntity.prototype.addParent = function(parent, prop) {
-    this['/rec_ui/parent'] = parent;
+    this['/rec_ui/parent'] = $.makeArray(parent)[0];
     if (prop != undefined)
         this.addProperty(prop, parent);
 }
@@ -97,4 +96,27 @@ tEntity.prototype.addParent = function(parent, prop) {
 /** @return {boolean} */
 tEntity.prototype.isCVT = function() {
     return !!this['/rec_ui/is_cvt'];
+}
+
+tEntity.prototype.toString = function() {
+    return textValue(this);
+}
+
+tEntity.prototype.toJSON = function() {
+    var js = {};
+    for (var key in this) {
+        if (startsWith("/rec_ui/",key) || key === "reconResults")
+            continue;
+        var value = this[key];
+        
+        //remove cyclic links
+        var parent = this['/rec_ui/parent'];
+        if (parent && Arr.filter(value, function(e) {return e !== parent;}).length === 0)
+            continue;
+        
+        value = toJSON(value);
+        if (value !== undefined)
+            js[key] = value; 
+    }
+    return js;
 }

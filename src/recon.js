@@ -13,6 +13,7 @@ function initializeReconciliation(callback) {
     }, function() {
         freebase.fetchTypeInfo(typesSeen.getAll(), function() {
             $(".initialLoadingMessage").hide();
+            log(entities[0].toJSON());
             callback();
         });
     });

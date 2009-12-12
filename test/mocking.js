@@ -44,7 +44,7 @@ var mocked_properties = {
 };
 freebase.fetchPropertyInfo = function(props,onComplete,onError){onComplete();},
 freebase.getPropMetadata = function(prop){
-    if (prop in mocked_properties) return mocked_properties[prop];
+    if (prop in mocked_properties && !(mocked_properties[prop] instanceof Function)) return mocked_properties[prop];
     if (startsWith("/rec_ui/", prop)) return undefined;
     if (startsWith("topic", prop)) return topic_prop;
     return value_prop;
