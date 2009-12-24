@@ -86,3 +86,17 @@ def compilejs(js_files, output_name, options="")
     throw err
   end
 end
+
+
+#tabulates savings by compiling and by gzipping
+task :savings => "build/compiled.js" do
+  sh "cat #{js_files.join ' '} > catted.js"
+  sh "du -h catted.js"
+  sh "gzip catted.js"
+  sh "du -h catted.js.gz"
+  sh "du -h build/compiled.js"
+  sh "cat build/compiled.js | gzip > build/compiled.js.gz"
+  sh "du -h build/compiled.js.gz"
+  sh "rm catted.js.gz"
+  sh "rm build/compiled.js.gz"
+end
