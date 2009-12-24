@@ -3,7 +3,7 @@
 /* Declares the variables exported by 3rd parties*/
 var $, jQuery, JsObjDump, JSON;
 
-/* These are browser top-level values, not sure why closure doens't
+/* Browser top-level values, not sure why closure doesn't
    know about them */
-var setTimeout, clearTimeout, location;
+var location;
 
