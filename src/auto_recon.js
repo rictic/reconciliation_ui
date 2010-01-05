@@ -158,10 +158,16 @@ function autoReconcileResults(entity) {
     }        
     // match found:
     else if(entity.reconResults[0]["match"] == true) {
-        entity.reconcileWith(entity.reconResults[0].id, true);
-        canonicalizeFreebaseId(entity);
-        entity["/rec_ui/freebase_name"] = entity.reconResults[0].name;
-        addColumnRecCases(entity);
+        var matchedResult = entity.reconResults[0];
+        if (require_exact_name_match && !Arr.contains($.makeArray(entity['/type/object/name']),$.makeArray(matchedResult.name)[0])) {
+            addToManualQueue(entity);
+        }
+        else {
+            entity.reconcileWith(matchedResult.id, true);
+            canonicalizeFreebaseId(entity);
+            entity["/rec_ui/freebase_name"] = matchedResult.name;
+            addColumnRecCases(entity);
+        }
     }
     else
         addToManualQueue(entity)
