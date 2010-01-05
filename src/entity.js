@@ -3,7 +3,7 @@
  *   @type {Array.<(!tEntity|undefined)>}
 */
 var entities;
-/** @type {Number}*/
+/** @type {number}*/
 var internalIDCounter;
 
 function resetEntities() {

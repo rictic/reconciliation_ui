@@ -40,6 +40,7 @@ function clone(obj) {
 
 /**constructs a DOM node
   * @param {!string} kind The tag of the created node
+  * @param {...*} var_args
   */
 function node(kind, var_args) {
     var node = $(document.createElement(arguments[0]));
@@ -219,7 +220,9 @@ function OrderedMap() {
     }
 }
 
-/** @constructor */
+/** @constructor 
+  * @param {...*} var_args the initial elements of the set
+  */
 var Set = function(var_args) {
     var set = {};
     this.add = function(val) {set[val] = true;};
@@ -233,8 +236,16 @@ var Set = function(var_args) {
     this.addAll(arguments);
 }
 
+
+/** Wrapper function for setTimeout.  Todo: add error handling
+  * @param {function()} f
+  * @param {number} millis
+  */
+function addTimeout(f, millis) {
+    return setTimeout(f,millis);
+}
+
 /**
-  
   @return {string} 
 */
 function getType(v) {
@@ -269,7 +280,7 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
         timedOut = true;
         if (onTimeout) onTimeout();
     }
-    var timer = setTimeout(timeout, millis);
+    var timer = addTimeout(timeout, millis);
     function responseHandler(response) {
         if (timedOut) {
             warn("got response after timeout")

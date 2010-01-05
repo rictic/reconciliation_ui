@@ -11,7 +11,7 @@ function Yielder() {
         
 //         info("yielding to UI thread");
         this.startTime = time();
-        this.nextAction = setTimeout(continueFunction, 10);
+        this.nextAction = addTimeout(continueFunction, 10);
         return true;
     };
     this.cancel = function(){

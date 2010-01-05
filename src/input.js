@@ -607,7 +607,7 @@ function addIdColumns() {
 /** Takes a list of trees and returns a list of all mql properties found anywhere
   * in any of the trees
   * @param {!Array.<loader.tree>} trees
-  * @param {!function()} onComplete
+  * @param {!function(Array.<string>)} onComplete
   * @param {Yielder=} yielder
   */  
 function findAllProperties(trees, onComplete, yielder) {
@@ -645,7 +645,7 @@ function treesToEntities(trees, onComplete, yielder) {
   * already exists.  See findAllProperties() and freebase.fetchPropertyInfo
   * @param {!Object} tree
   * @param {tEntity=} parent
-  * @param {function(Object)=} onAddProperty
+  * @param {function(string)=} onAddProperty
 */
 function treeToEntity(tree, parent, onAddProperty) {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});

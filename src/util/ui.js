@@ -1,24 +1,24 @@
 /* A collection of utilities for assorted bits of UI functionality*/
 
 /** Returns a function that calls `every()` each time it is called,
-   but only calls `rarely()` at most once per `timeout` milliseconds. 
+   but only calls `rarely()` at most once per `minimumTimeBetween` milliseconds. 
    
    Useful for handling events on rapidly changing input elements,
    
    @param {function()} every
    @param {function()} rarely
-   @param {number=} timeout
+   @param {number=} minimumTimeBetween
    @return {function()}
 */
-function throttler(every, rarely, timeout) {
-    timeout = timeout || 250;
+function throttler(every, rarely, minimumTimeBetween) {
+    var timeout = minimumTimeBetween || 250;
     var waiter = null;
     var againAfterWaiting = false;
     return function() {
         every();
         if (waiter === null) {
             rarely();
-            waiter = setTimeout(function() {
+            waiter = addTimeout(function() {
                 waiter = null;
                 if (againAfterWaiting)
                     rarely();

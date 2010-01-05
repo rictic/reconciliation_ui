@@ -47,24 +47,24 @@ file "build/recon.html" => "recon.html" do
 end
 
 file "build/compiled.js" => ["build/libs_compiled.js", "build/src_compiled.js"] do |t|
-  compilejs(t.prerequisites, t.name, "--warning_level QUIET --compilation_level WHITESPACE_ONLY")
+  compilejs(t.prerequisites, t.name, true)
 end
 
 file "build/libs_compiled.js" => libs do |t|
-  compilejs(t.prerequisites, t.name, "--summary_detail_level 0 --warning_level QUIET  --compilation_level WHITESPACE_ONLY")
+  compilejs(t.prerequisites, t.name, true)
 end
 
 file "build/src_compiled.js" => src + ["src/externs.js"] do |t|
-  compilejs(src, t.name, "--externs src/externs.js --summary_detail_level 3 --jscomp_warning=visibility --warning_level VERBOSE")
+  compilejs(src, t.name, false, ['src/externs.js'])
 end
 
 
 file "build/with_tests_compiled.js" => ["build/libs_compiled.js", "build/src_and_tests_compiled.js"] do |t|
-  compilejs(t.prerequisites, t.name, "--summary_detail_level 0 --warning_level QUIET  --compilation_level WHITESPACE_ONLY")
+  compilejs(t.prerequisites, t.name, true)
 end
 
 file "build/src_and_tests_compiled.js" => src + FileList["test/*.js"] do |t|
-  compilejs(t.prerequisites, t.name, "--externs src/externs.js --externs test/externs --warning_level VERBOSE")
+  compilejs(t.prerequisites, t.name, false, ['src/externs.js','test/externs'])
 end
 
 task :version do
@@ -77,10 +77,16 @@ task :push do
   sh "scp -q -r server.py build data.labs.freebase.com:/mw/loader/"
 end
 
-def compilejs(js_files, output_name, options="")
+def compilejs(js_files, output_name, third_party=false, externs=[])
+  if (third_party)
+    options= "--third_party --summary_detail_level 0 --warning_level QUIET  --compilation_level WHITESPACE_ONLY"
+  else
+    options= "--summary_detail_level 3 --jscomp_warning=visibility --warning_level VERBOSE"
+  end
   js_files_string = js_files.map{|f| "--js #{f}"}.join(" ")
+  externs_string = externs.map{|f| "--externs #{f}"}.join(" ")
   begin
-    sh "compilejs #{js_files_string} #{options} --js_output_file #{output_name}"
+    sh "compilejs #{js_files_string} #{externs_string} #{options} --js_output_file #{output_name}"
   rescue Exception => err
     sh "rm -f #{output_name}"
     throw err
