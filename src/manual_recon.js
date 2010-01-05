@@ -70,6 +70,8 @@ function renderReconChoices(entity) {
         numCandidates = entity.reconResults.length;
     }
     updateCandidates();
+
+    $(".find_topic", template)[0].value = entity['/type/object/name'];
     $(".find_topic", template)
         .suggest({type:entity['/type/object/type'],
                   type_strict:"should",
@@ -78,6 +80,7 @@ function renderReconChoices(entity) {
           entity['/rec_ui/freebase_name'] = $.makeArray(data.name);
           handleReconChoice(entity, data.id);
         });
+
     $(".otherSelection", template).click(function() {handleReconChoice(entity, this.name)});
     
     $(".moreButton",template).click(function() {
@@ -142,8 +145,14 @@ function fetchMqlProps(reconResult, entity) {
         var lastPart = parts[parts.length-1];
         if (isValueProperty(lastPart))
             slot[lastPart] = [];
-        else
-            slot[lastPart] = [{"name":null,"id":null,"optional":true}];
+        else {
+            slot[lastPart] = slot[lastPart] || [{}];
+            var queryObj = slot[lastPart][0];
+            queryObj['name'] = null;
+            queryObj['id'] = null;
+            queryObj['optional'] = true;
+        }
+            
     })
     var envelope = {query:query};
     function handler(results) {

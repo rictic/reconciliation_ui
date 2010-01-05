@@ -23,9 +23,16 @@
         <div id="spreadsheetInput" class="container">
             <h3>Paste your spreadsheet here:</h3>
             <textarea name="initialInput" id="initialInput" class='spreadsheet' ></textarea><br>
-            <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Sample Data</button>
-            <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Complex Sample</button>
-            <img src='resources/spinner.gif' class='inputLoading invisible'>
+            <div class="spinnerHolder">
+              <img src='resources/spinner.gif' class='inputLoading invisible'>
+            </div>
+            
+            <div class='examples'>
+              Try Freebase Loader with these example spreadsheets:
+              <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Load Simple Movie Example</button>
+              <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Load Complex Movie Example</button>
+
+            </div>
         </div>
         
         

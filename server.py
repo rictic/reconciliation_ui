@@ -1,5 +1,6 @@
 import web
 from os import path
+import simplejson
 
 rootdir = path.abspath('./build')
 def getFile(filename):
@@ -23,7 +24,7 @@ class index:
         if ("data" in i):
             data = i.data.replace("'", "\\'")
             return contents.replace("<!--    POSTed data goes here      -->",
-                                    "<script language='javascript'>handlePOSTdata('%s')</script>" % data)
+                                    "<script language='javascript'>handlePOSTdata(%s)</script>" % simplejson.dumps(data))
         return contents
         
     def POST(self, filename):
