@@ -140,8 +140,11 @@ function getPropName(complexProp) {
    ability to expand the list out.
 */
 function displayValue(value) {
-    if ($.isArray(value))
+    if ($.isArray(value)){
+        if (value.length === 1)
+            return displayValue(value[0]);
         return wrapForOverflow($.map(value, displayValue));
+    }
     if (value == undefined || value == null)
         return "";
     if (value.displayValue)
