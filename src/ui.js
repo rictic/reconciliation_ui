@@ -177,13 +177,6 @@ var defaultMDOName = "Spreadsheet Upload about (kind of data)"
 $(document).ready(function() {
     jQuery.ajaxSettings.cache = true; //keeps jquery from inserting cache-busting timecodes into json requests
 
-    //handle the options panel
-    $("#optionsPanel input").each(function(idx, input) {
-      $(input).change(function(){
-        eval(input.id + '="' + input.value + '"');
-      });
-      input.value = eval(input.id);
-    });
     $("#progressbar").progressbar({value:0});
     window.onbeforeunload = function() {
         if (reconciliationBegun)

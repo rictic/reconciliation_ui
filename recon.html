@@ -204,8 +204,10 @@
     </div>
 
     <div id="optionsPanel" class='invisible container'>
+      <label for="require_exact_name_match">Require Exact Name Match to Autoreconcile</label><input type="checkbox" name="require_exact_name_match" id="require_exact_name_match"><br>
       <label for="reconciliation_url">Reconciliation URL: </label><input type="text" name="reconciliation_url" value="" id="reconciliation_url" size='60'><br>
       <label for="freebase_url">Freebase URL: </label><input type="text" name="freebase_url" value="" id="freebase_url" size='60'><br>
+      
       <button onclick='$("#optionsPanel").hide();$("#main_app").show();'>Ok</button>
     </div>
     
@@ -251,6 +253,8 @@
         <script language="javascript" charset="utf-8" src="src/yielder.js"></script>
         <script language="javascript" charset="utf-8" src="src/entity.js"></script>
         <script language="javascript" charset="utf-8" src="src/freebase.js"></script>
+        <script language="javascript" charset="utf-8" src="src/options.js"></script>
+
 
         <script language="javascript" charset="utf-8" src="src/ui.js"></script>
 <!--  End scripts to compile -->
