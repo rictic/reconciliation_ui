@@ -242,7 +242,7 @@ var Set = function(var_args) {
   * @param {number} millis
   */
 function addTimeout(f, millis) {
-    return setTimeout(f,millis);
+    return setTimeout(f,millis,"JavaScript");
 }
 
 /**
