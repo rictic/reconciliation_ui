@@ -95,8 +95,12 @@ var inputType;
   * @param {Yielder=} yielder
   */
 function parseInput(input, ambiguityResolver, onComplete, yielder) {
-    clearInputWarnings();
     yielder = yielder || new Yielder();
+
+    //reset global values
+    clearInputWarnings();
+    mqlProps = headers = originalHeaders = rows = inputType = undefined;
+    
 
     if (input.charAt(0) === "[") {
         inputType = "JSON";
@@ -651,6 +655,8 @@ function treeToEntity(tree, parent, onAddProperty) {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity.addParent(parent);
+    else if (originalHeaders)
+        entity.setInitialHeaders(originalHeaders);
     for (var prop in tree){
         var value = $.makeArray(tree[prop]);
         var propMeta = freebase.getPropMetadata(prop);
@@ -659,7 +665,7 @@ function treeToEntity(tree, parent, onAddProperty) {
             if (getType(innerTree) === "string") {
                 if (isValueProperty(prop) || !propMeta)
                     return innerTree; //leave it as a string
-                
+
                 innerTree = {"/type/object/name" : innerTree};
             }
             

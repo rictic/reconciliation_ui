@@ -25,6 +25,14 @@ function tEntity(initialVals) {
         this[key] = initialVals[key];
 }
 
+tEntity.prototype.setInitialHeaders = function(headers) {
+    headers = headers.slice();
+    var self = this;
+    $.each(headers, function(_,header) {
+        self.propSeen(header);
+    });
+}
+
 /** @param {string} prop */
 tEntity.prototype.getChainedProperty = function(prop) {
     return getChainedProperty(this,prop);
@@ -72,16 +80,22 @@ tEntity.prototype.addProperty = function(prop, value) {
         value = Arr.filter($.makeArray(value), function(v) {return v !== undefined;})
         this[prop] = value;
     }
-    
+
     if (prop === "/type/object/type")
         typesSeen.addAll(this[prop]);
+    this.propSeen(prop);
+}
+
+/** Keep up with needed metadata about a given property
+  * @param {string} prop
+  */
+tEntity.prototype.propSeen = function(prop) {
     if (!Arr.contains(this['/rec_ui/headers'], prop))
         this['/rec_ui/headers'].push(prop);
     if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop))
         this['/rec_ui/mql_props'].push(prop);
     if (this.isCVT() && !Arr.contains(this['/rec_ui/cvt_props'], prop))
         this['/rec_ui/cvt_props'].push(prop);
-        
 }
 
 /** @param {tEntity} parent
