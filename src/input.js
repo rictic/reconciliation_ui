@@ -622,7 +622,7 @@ function findAllProperties(trees, onComplete, yielder) {
     function findProps(_,obj) {
         switch(getType(obj)) {
         case "array":
-            $.map(obj, findProps); 
+            $.each(obj, findProps); 
             break;
         case "object":
             for (var key in obj) {
