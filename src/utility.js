@@ -75,6 +75,13 @@ function startsWith(needle, haystack) {
     return false;
 }
 
+function endsWith(needle, haystack) {
+    if (haystack.substr(haystack.length-needle.length) === needle)
+        return true;
+    return false;
+}
+
+
 function charIn(string, chr) {
     return string.indexOf(chr) !== -1;
 }
