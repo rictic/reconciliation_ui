@@ -18,9 +18,9 @@ function assertEq(msg, a1, a2) {
     }
     var message = areNotEq(a1,a2);
     if (message){
-        log(a1);
+        debug(a1);
         log("expected, but found");
-        log(a2);
+        debug(a2);
         fail(msg + " " + message);
     }
     else
@@ -42,9 +42,9 @@ function assertNotEq(msg, a1, a2) {
         pass();
     }
     else {
-        log(a1);
+        debug(a1);
         log("should not be equal to");
-        log(a2);
+        debug(a2);
         fail();
     }
 }
