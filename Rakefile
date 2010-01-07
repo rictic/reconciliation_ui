@@ -39,7 +39,9 @@ js_files = scripts_region.scan(/src=\"(.*?)\"/).compact.map{|a|a[0]}
 libs, src = js_files.partition {|f| f.start_with? "lib/"}
 
 task :compile => [:copy, "build/compiled.js", "build/recon.html"]
-task :compile_tests => "build/with_tests_compiled.js"
+
+#this file isn't used, it just gives the compiler a chance to catch errors before we even run tests
+task :compile_tests => "build/src_and_tests_compiled.js"
 
 file "build/recon.html" => "recon.html" do
   new_source = source.sub(region_regex, "<script language=\"javascript\" charset=\"utf-8\" src=\"compiled.js\"></script>")
@@ -56,11 +58,6 @@ end
 
 file "build/src_compiled.js" => src + ["src/externs.js"] do |t|
   compilejs(src, t.name, false, ['src/externs.js'])
-end
-
-
-file "build/with_tests_compiled.js" => ["build/libs_compiled.js", "build/src_and_tests_compiled.js"] do |t|
-  compilejs(t.prerequisites, t.name, true)
 end
 
 file "build/src_and_tests_compiled.js" => src + FileList["test/*.js"] do |t|
