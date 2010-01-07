@@ -148,6 +148,10 @@ function getTriples(entities, callback) {
                 return getValue(property, value[0]);
             return $.map(value, function(val){return getValue(property, val)});
         }
+        if (getType(value) === "object") {
+            error("found an object for the value property " + property + "!");
+            return undefined;
+        }
         var stringValue = value;
         var expectedType = freebase.getPropMetadata(property).expected_type.id;
         if (Arr.contains(["/type/int","/type/float"], expectedType))
