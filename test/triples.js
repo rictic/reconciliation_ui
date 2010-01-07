@@ -35,12 +35,6 @@ TestCase("triples",{
         
         expectAsserts(1);
         getTriples([entity, cvt, leaf], function(triples) {
-            $.each(triples, function(_, triple) {
-              log("s:" + triple.s);
-              log("p:" + triple.p);
-              log("o:" + triple.o);
-              log("\n");
-            });
             assertEq([{s:"/entity",
                        p:"/topic/cvt_topic",
                        o:{leaf_topic:"/leaf"}}], triples);
