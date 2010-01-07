@@ -19,7 +19,6 @@ function tEntity(initialVals) {
     this["/rec_ui/id"] = internalIDCounter++
     this["/rec_ui/mql_props"] = [];
     this["/rec_ui/headers"] = [];
-    this["/rec_ui/cvt_props"] = [];
     entities[this["/rec_ui/id"]] = this;
     for (var key in initialVals)
         this[key] = initialVals[key];
@@ -94,8 +93,6 @@ tEntity.prototype.propSeen = function(prop) {
         this['/rec_ui/headers'].push(prop);
     if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop))
         this['/rec_ui/mql_props'].push(prop);
-    if (this.isCVT() && !Arr.contains(this['/rec_ui/cvt_props'], prop))
-        this['/rec_ui/cvt_props'].push(prop);
 }
 
 /** @param {tEntity} parent
@@ -109,7 +106,8 @@ tEntity.prototype.addParent = function(parent, prop) {
 
 /** @return {boolean} */
 tEntity.prototype.isCVT = function() {
-    return !!this['/rec_ui/is_cvt'];
+    //an entity is a CVT if any of its types are CVT types
+    return Arr.any($.makeArray(this['/type/object/type']), isCVTType);
 }
 
 tEntity.prototype.toString = function() {

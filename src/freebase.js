@@ -192,7 +192,8 @@ freebase.mqlValue;
             return {
                 id:type,
                 type:'/type/type',
-                "/freebase/type_hints/included_types":[]
+                "/freebase/type_hints/included_types":[],
+                "/freebase/type_hints/mediator":{}
             }
         }
         

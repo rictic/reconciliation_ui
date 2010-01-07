@@ -164,7 +164,7 @@ function getTriples(entities, callback) {
     }
     function cvtObject(cvt) {
         var result = {};
-        var props = cvt['/rec_ui/cvt_props'];
+        var props = cvt['/rec_ui/headers'];
         var empty = true;
         var type = $.makeArray(cvt['/type/object/type'])[0];
         for (var i = 0; i < props.length; i++){
@@ -238,9 +238,14 @@ function getTriples(entities, callback) {
                     return;
                 }
                 
-                if (object['/rec_ui/is_cvt']){
+                if (getType(object) !== "object") {
+                    error("expected the target of the property " + predicate + " to be an object, but it was a " + getType(object));
+                    return;
+                }
+                
+                if (object.isCVT()){
                     if (!(object['/rec_ui/parent']['/rec_ui/id'] === subject['/rec_ui/id']))
-                        return; //only create cvt once, from the 'root' of the parent
+                        return; //only create the cvt once, from the 'root' of the parent
                     var cvtTripleObject = cvtObject(object);
                     if (cvtTripleObject)
                         triples.push({s:getID(subject),p:predicate,o:cvtTripleObject}); 
@@ -248,6 +253,7 @@ function getTriples(entities, callback) {
                 
                 if  (!isValidID(object.id))
                     return;
+                
                 
                 triples.push({s:getID(subject),p:predicate,o:getID(object)});
             })

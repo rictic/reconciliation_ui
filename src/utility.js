@@ -98,7 +98,17 @@ function isCVTProperty(propName) {
     return undefined;
 }
 
+/** @param {!(string|Object)} type
+  * @return {(boolean|undefined)}
+  */
 function isCVTType(type) {
+    if (getType(type) === "string")
+        type = freebase.getTypeMetadata(type);
+    if (type === undefined) {
+        error("type undefined in isCVTType");
+        return;
+    }
+        
     return type["/freebase/type_hints/mediator"] 
         && type["/freebase/type_hints/mediator"].value;
 }
