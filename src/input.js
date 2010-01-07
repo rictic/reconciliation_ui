@@ -658,14 +658,19 @@ function treeToEntity(tree, parent, onAddProperty) {
     else if (originalHeaders)
         entity.setInitialHeaders(originalHeaders);
     for (var prop in tree){
-        var value = $.makeArray(tree[prop]);
+        var values = $.makeArray(tree[prop]);
         var propMeta = freebase.getPropMetadata(prop);
-            
-        value = $.map(value, function(innerTree) {
+        
+        values = $.map(values, function(innerTree) {
             if (getType(innerTree) === "string") {
-                if (isValueProperty(prop) || !propMeta)
-                    return innerTree; //leave it as a string
-
+                if (!propMeta) {
+                    warn("can't find property " + prop);
+                    return innerTree; //not a valid mql property, leave it alone
+                }
+                if (isValueProperty(prop))
+                    return innerTree;
+                
+                //treat this string as a tree itself
                 innerTree = {"/type/object/name" : innerTree};
             }
             
@@ -678,7 +683,7 @@ function treeToEntity(tree, parent, onAddProperty) {
             }
             return innerEntity;
         });
-        entity.addProperty(prop, value);
+        entity.addProperty(prop, values);
         if (onAddProperty)
             onAddProperty(prop);
     }
