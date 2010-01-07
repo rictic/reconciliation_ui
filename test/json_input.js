@@ -12,7 +12,6 @@ var json_examples = [
       "/type/object/type"      : ["/people/person"],
       "/rec_ui/headers"        : ["/type/object/name","/type/object/type"],
       "/rec_ui/mql_props"      : [],
-      "/rec_ui/cvt_props"      : [],
       "/rec_ui/toplevel_entity": true},
       
     []
@@ -28,7 +27,6 @@ var json_examples = [
      "/people/person/date_of_birth": ["1819"],
      "/rec_ui/headers"             : ["/type/object/name","/type/object/type","/people/person/date_of_birth"],
      "/rec_ui/mql_props"           : ["/people/person/date_of_birth"],
-     "/rec_ui/cvt_props"           : [],
      "/rec_ui/toplevel_entity"     : true},
      
     ["/people/person/date_of_birth"]
@@ -44,9 +42,7 @@ var json_examples = [
        "id"                          : "/en/joshua_norton",
        "/rec_ui/headers"             : ["/type/object/name","/type/object/type","id"],
        "/rec_ui/mql_props"           : [],
-       "/rec_ui/cvt_props"           : [],
        "/rec_ui/toplevel_entity"     : true},
-       
       []
   ]
  ,[ "a film and its director (direct topic property)",
@@ -69,12 +65,10 @@ var json_examples = [
             "/rec_ui/parent"         : {"/type/object/name": ["Blade Runner"]},
             "/rec_ui/headers"        : ["/type/object/name", "/type/object/type", "/film/director/film"],
             "/rec_ui/mql_props"      : ["/film/director/film"],
-            "/rec_ui/cvt_props"      : [],
             "/rec_ui/toplevel_entity": false
         }],
       "/rec_ui/headers": ["/type/object/name", "/type/object/type", "/film/film/directed_by"],
       "/rec_ui/mql_props": ["/film/film/directed_by"],
-      "/rec_ui/cvt_props": [],
       "/rec_ui/toplevel_entity": true
     },
     
