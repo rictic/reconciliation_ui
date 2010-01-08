@@ -82,7 +82,7 @@ var rows;
 var typesSeen = new Set();
 var propertiesSeen = new Set();
 var inputType;
-
+var headerPaths;
 
 /*
 ** Parsing and munging the input
@@ -90,7 +90,7 @@ var inputType;
 
 
 /** @param {!string} input Either a tsv or a json array of trees
-  * @param {!function(number, function(boolean))} ambiguityResolver
+  * @param {!function(loader.record, function(boolean))} ambiguityResolver
   * @param {!function()} onComplete
   * @param {Yielder=} yielder
   */
@@ -99,7 +99,8 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
 
     //reset global values
     clearInputWarnings();
-    mqlProps = headers = originalHeaders = rows = inputType = undefined;
+    //this is more or less a list of variables which need to be refactored from globals
+    mqlProps = headers = originalHeaders = rows = inputType = headerPaths = undefined;
     
 
     if (input.charAt(0) === "[") {
@@ -109,16 +110,10 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
     }
     
     inputType = "TSV";
-    function handleAmbiguity(shouldCombineRows) {
-        if (shouldCombineRows)
-            combineRows(onComplete);
-        else
-            onComplete();
-    }
 
     parseTSV(input,function(spreadsheetRowsWithBlanks) {
         removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
-            buildRowInfo(spreadsheetRows, onComplete, yielder);
+            buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder);
         }, yielder)
     }, yielder);
 }
@@ -135,7 +130,7 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
  */
 function parseTSV(spreadsheet, onComplete, yielder) {
     yielder = yielder || new Yielder();
-    var position = 0;    
+    var position = 0;
     function parseLine() {
         var fields = [];
         var inQuotes = false;
@@ -242,27 +237,11 @@ function removeBlankLines(rows, onComplete, yielder) {
     function(){onComplete(newRows);}, yielder);
 }
 
-// function parseSpreadsheet(spreadsheet, multiline)
-// {
-//     if(multiline)
-//     {
-//         
-//     }
-//     else
-//     {
-//         var records = parseSinglelineRecords(rows.slice(1))
-//     }
-//     
-// 
-//     return {"headers":headerData, "headerPaths":headerPaths, "entities":entities}
-// }
-
-
 /** @param {!Array.<!loader.row>} spreadsheetRows
   * @param {!function()} onComplete
   * @param {Yielder=} yielder
   */
-function buildRowInfo(spreadsheetRows, onComplete, yielder) {
+function buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder) {
     //keeps us from crashing on blank input
     if (spreadsheetRows.length === 0) return;
 
@@ -271,42 +250,56 @@ function buildRowInfo(spreadsheetRows, onComplete, yielder) {
     // parse headers:
     originalHeaders = spreadsheetRows.shift();
     headers = originalHeaders;
-    var headerPaths = [];
+    headerPaths = [];
     $.each(headers, function(_, rawHeader) {
         headerPaths.push(parseHeaderPath($.trim(rawHeader)));
     })
 
-    var records = parseMultilineRecords(spreadsheetRows);
-    var trees = []
-    $.each(records, function(i,record) {
-        var tree = {}
-        $.each(record, function(j, row) {
-            for(var k in row)
-            {
-                var value = row[k]
-                if(value != null && value.length > 0)
-                {
-                    pathPut(headerPaths[k], j, tree, value)
-                }
-            }
-        });
-        trees.push(tree)        
+    rowsToRecords(spreadsheetRows, function(singleRecords, multiRecords, exampleRecord) {
+        if (exampleRecord === undefined)
+            handleRecords(singleRecords);
+        else
+            ambiguityResolver(exampleRecord, function(useMultiRecords) {
+                handleRecords(useMultiRecords ? multiRecords : singleRecords);
+            });
+    }, yielder);
+    
+    function handleRecords(records) {recordsToEntities(records, onComplete, yielder)}
+}
+
+function recordsToTrees(records, onComplete, yielder) {
+    politeMap(records, recordToTree, onComplete, yielder);
+}
+
+function recordToTree(record) {
+    var tree = {}
+    $.each(record, function(j, row) {
+        for(var k in row) {
+            var value = row[k]
+            if(value != null && value.length > 0)
+                pathPut(headerPaths[k], j, tree, value)
+        }
     });
-    
-    resetEntities();
-    typesSeen = new Set();
-    
-    mqlProps = getMqlProperties(originalHeaders);
-    
-    parseTrees(trees, function(entities) {
-        rows = entities;
-        headers = originalHeaders;
-        
-        freebase.fetchPropertyInfo(getProperties(originalHeaders), onComplete, function(errorProps) {
-            $.each(errorProps, warnUnknownProp);
-            mqlProps = Arr.difference(mqlProps, errorProps);
-            onComplete();
-        });
+    return tree;
+}
+
+function recordsToEntities(records, onComplete, yielder) {
+    recordsToTrees(records, function(trees) {
+        resetEntities();
+        typesSeen = new Set();
+
+        mqlProps = getMqlProperties(originalHeaders);
+
+        treesToEntities(trees, function(entities) {
+            rows = entities;
+            headers = originalHeaders;
+
+            freebase.fetchPropertyInfo(getProperties(originalHeaders), onComplete, function(errorProps) {
+                $.each(errorProps, warnUnknownProp);
+                mqlProps = Arr.difference(mqlProps, errorProps);
+                onComplete();
+            });
+        }, yielder);
     }, yielder);
 }
 
@@ -314,7 +307,7 @@ function buildRowInfo(spreadsheetRows, onComplete, yielder) {
   * @param {!function(!Array.<!tEntity>)} onComplete
   * @param {Yielder=} yielder
   */
-function parseTrees(trees, onComplete, yielder) {
+function treesToEntities(trees, onComplete, yielder) {
     yielder = yielder || new Yielder();
     findAllProperties(trees, function(props) {
         freebase.fetchPropertyInfo(props, afterPropertiesFetched, 
@@ -325,105 +318,61 @@ function parseTrees(trees, onComplete, yielder) {
         );
         
         function afterPropertiesFetched() {
-            treesToEntities(trees, onComplete, yielder);
+            mapTreesToEntities(trees, onComplete, yielder);
         }
     }, yielder);
 }
 
 /**
-*  Starting at `from+1`, look for the first row that has an entry in the
-*  first column which is followed by a row without an entry in the first
-*  column.
-* 
-* @param {(number|undefined|null)} from
-* @param {function(number)} onFound
-* @param {function()} noneLeft
-* @param {Yielder=} yielder
-*/
-function getAmbiguousRowIndex(from, onFound, noneLeft, yielder) {
-    if (from == undefined)
-        from = -1;
-    from++;
-    yielder = yielder || new Yielder();
-    var startingRowIdx;
-    var i = from;
-    function searchForAmbiguity() {
-        for(;i < rows.length; i++) {
-            if (rows[i][headers[0]][0] != "" && rows[i][headers[0]][0] != undefined)
-                startingRowIdx = i;
-            else if (startingRowIdx != undefined)
-                return onFound(startingRowIdx);
-            if (yielder.shouldYield(searchForAmbiguity))
-                return;
-        }
-        noneLeft();
-    }
-    searchForAmbiguity();
-}
-
-/**
- * Returns true if an array of rows contains a multiline record (the first column in any row is empty).
+ * Parses rows into records.  The callback should be a function that takes either one or three arguments.
+ * If one argument, then there was only one way to parse the rows into records, and the one argument is
+ * just the records.  If multiple arguments, then the first is the singleline parse, the second the multiline parse,
+ * and the third is an exemplary multiline record which differs from its singleline version, helpful for displaying
+ * a disambiguation dialog to a user.
  *
- * [["1", "2", "3"], ["a", "b", "c"]] returns false
- * [["1", "2", "3"], ["", "b", "c"]] returns true
- *
- * @param {Array.<loader.row>} rows
- * @return {boolean}
- */
-function isMultilineFormat(rows)
-{
-    for(var i in rows)
-    {
-        if(rows[i][0].length == 0) return true;
-    }
-    return false;
-}
-
-/**
- * Parses a set of multi-line records.
- *
+ * Multiline rows:
  * [["1", "2", "3"], ["", "b", "c"], ["d", "e", "f"]] returns [ [["1", "2", "3"], ["", "b", "c"]], [["d", "e", "f"]] ]
  *
- * @param {Array.<loader.row>} rows
- * @return {Array.<loader.record>}
- */
-function parseMultilineRecords(rows)
-{
-    var records = []
-    var currentRecord = []
-    for(var i in rows)
-    {
-        var currentRow = rows[i]
-        // start new record if the first column is non-empty and the current record is non-empty:
-        if(currentRow[0].length > 0 && currentRecord.length > 0)
-        {
-            records.push(currentRecord)
-            currentRecord = []
-        }
-        currentRecord.push(currentRow)
-    }
-    if(currentRecord.length > 0) records.push(currentRecord)
-    return records
-}
-
-/**
- * Parses a set of single-line records.
- *
+ * Singleline rows:
  * [["1", "2", "3"], ["a", "b", "c"]] returns [[["1", "2", "3"]], [["a", "b", "c"]]]
- *
- * @param {Array.<loader.row>} rows
- * @return {Array.<loader.record>}
+ 
+ * @param {!Array.<loader.row>} rows
+ * @param {!function(!Array.<loader.record>, Array.<loader.record>=, loader.record=)} onComplete
+ * @param {Yielder=} yielder
  */
-function parseSinglelineRecords(rows)
-{
-    var records = []
-    for(var i in rows)
-    {
-        records.push([rows[i]])
+function rowsToRecords(rows, onComplete, yielder) {
+    yielder = yielder || new Yielder();
+    
+    var firstMultilineRecord = undefined;
+    var multiRecords = [];
+    var singleRecords = [];
+    
+    var currentMultiRecord = []
+    
+    function addMultiRecord() {
+        if (currentMultiRecord.length > 1 && !firstMultilineRecord)
+            firstMultilineRecord = currentMultiRecord;
+        multiRecords.push(currentMultiRecord)
+        currentMultiRecord = []
     }
-    return records
+    
+    politeEach(rows, function(_, currentRow) {
+        singleRecords.push([currentRow]);
+        
+        // start new record if the first column is non-empty and the current record is non-empty:
+        if(currentRow[0].length > 0 && currentMultiRecord.length > 0)
+            addMultiRecord();
+        
+        currentMultiRecord.push(currentRow);
+    }, function() {
+        if(currentMultiRecord.length > 0)
+            addMultiRecord();
+        if (singleRecords.length === multiRecords.length)
+            onComplete(singleRecords);
+        else
+            onComplete(singleRecords, multiRecords, firstMultilineRecord);
+    }, yielder);
 }
-
 
 /**
  * Parses a header into a path object.
@@ -554,32 +503,6 @@ function pathGet(paths, topindex, record)
 }
 
 
-function combineRows(onComplete) {
-    var rowIndex = undefined;
-    var yielder = new Yielder();
-    
-    function doCombineRows() {
-        getAmbiguousRowIndex(rowIndex, rowCombiner, onComplete, yielder);
-    }
-    
-    function rowCombiner(ambiguousRow) {
-        rowIndex = ambiguousRow;
-        var mergeRow = rows[rowIndex];
-        var i;
-        for (i = rowIndex+1; i < rows.length && rows[i][headers[0]][0] == undefined;i++) {
-            for (var j = 0; j<headers.length; j++) {
-                var col = headers[j];
-                mergeRow[col].push(rows[i][col][0]);
-            }
-            entities[rows[i]["/rec_ui/id"]] = undefined;
-        }
-        //remove the rows that we've combined in
-        rows.splice(rowIndex+1, (i - rowIndex) - 1);
-        doCombineRows();
-    }
-    doCombineRows();
-}
-
 function addIdColumns() {
     if (!Arr.contains(headers, "id"))
         headers.push("id");
@@ -641,8 +564,8 @@ function findAllProperties(trees, onComplete, yielder) {
   * @param {!function(!Array.<tEntity>)} onComplete
   * @param {Yielder=} yielder
   */
-function treesToEntities(trees, onComplete, yielder) {
-    politeMap(trees, function(record){return treeToEntity(record)}, onComplete, yielder);
+function mapTreesToEntities(trees, onComplete, yielder) {
+    politeMap(trees, function(record){return mapTreeToEntity(record)}, onComplete, yielder);
 }
 
 /** Assumes that the metadata for all properties encountered
@@ -651,7 +574,7 @@ function treesToEntities(trees, onComplete, yielder) {
   * @param {tEntity=} parent
   * @param {function(string)=} onAddProperty
 */
-function treeToEntity(tree, parent, onAddProperty) {
+function mapTreeToEntity(tree, parent, onAddProperty) {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity.addParent(parent);
@@ -674,7 +597,7 @@ function treeToEntity(tree, parent, onAddProperty) {
                 innerTree = {"/type/object/name" : innerTree};
             }
             
-            var innerEntity = treeToEntity(innerTree, entity);
+            var innerEntity = mapTreeToEntity(innerTree, entity);
             if (propMeta) {
                 if (propMeta.expected_type && !("/type/object/type" in innerEntity))
                     innerEntity.addProperty("/type/object/type", propMeta.expected_type.id);
@@ -705,7 +628,7 @@ function parseJSON(json, onComplete, yielder) {
         return;
     }
     
-    parseTrees(trees, function(entities) {
+    treesToEntities(trees, function(entities) {
         rows = entities;
         headers = rows[0]['/rec_ui/headers'];
         mqlProps = rows[0]['/rec_ui/mql_props'];

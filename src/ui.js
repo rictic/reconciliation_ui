@@ -41,9 +41,9 @@ function handleInput(callback) {
         $("#inputWindow").removeClass("disabled");
         $("#inputWindow button").removeAttr("disabled");
     }
-    function onAmbiguity(ambiguousRowIdx, handleAmbiguity) {
+    function onAmbiguity(ambiguousRecord, onAmbiguityResolved) {
         onProgressMade();
-        showAmbiguousRowPrompt(ambiguousRowIdx, handleAmbiguity);
+        showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved);
     }
     function onComplete() {
         onProgressMade();
@@ -53,7 +53,7 @@ function handleInput(callback) {
 }
 
 
-function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
+function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
     var groupedHeaders = groupProperties(headers);
     var context = $("#formatDisambiguation");
     $("table thead",context).replaceWith(buildTableHeaders(groupedHeaders));
@@ -63,7 +63,7 @@ function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
         var html = "<tr>";
         for (var i = 0; i < headerProps.length; i++) {
             html += "<td>" 
-            var val = row[headerProps[i]] || "";
+            var val = row[$.inArray(headerProps[i],headers)] || "";
             if (typeof val == "string")
                 html += val;
             else
@@ -75,16 +75,14 @@ function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
         return html + "<\/tr>";
     }
 
-    var separateRows = rowHTML(rows[startingRowIdx]);
-    var numThings = 1;
-    for (var i = startingRowIdx + 1; i < rows.length && rows[i][headerProps[0]][0] == undefined; i++) {
-        separateRows += rowHTML(rows[i]);
-        numThings++;
-    }
+    var separateRows = $.map(ambiguousRecord, rowHTML).join("");
+    var numThings = ambiguousRecord.length;
+    
     $("table tbody", context).html(separateRows);
 
-    $(".thingName", context).html(textValue(rows[startingRowIdx]));
-    var thingType = rows[startingRowIdx]['/type/object/type'];
+    var tree = mapTreeToEntity(recordToTree(ambiguousRecord));
+    $(".thingName", context).html(textValue(tree));
+    var thingType = tree['/type/object/type'];
     if (thingType){
         var thingTypeEl = $(".thingType", context);
         freebase.getName(thingType[0],function(name){
@@ -95,7 +93,7 @@ function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
     
     function ambiguityWrapper(shouldCombine) {
         $("button", context).attr("disabled","disabled");
-        handleAmbiguity(shouldCombine);
+        onAmbiguityResolved(shouldCombine);
     }
     $(".doCombine", context).click(function() {ambiguityWrapper(true);});
     $(".dontCombine", context).click(function() {ambiguityWrapper(false);});
@@ -103,14 +101,6 @@ function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
     $('table tbody tr:odd', context).addClass('odd');
     $('table tbody tr:even', context).addClass('even');
     context.show();
-}
-function doCombineRows() {
-    $("#inputWindow .screen button").attr("disabled","disabled");
-    combineRows(function(){
-        $("#formatDisambiguation").hide(); 
-        $("button").removeAttr("disabled");
-        showConfirmationSpreadsheet();
-    });
 }
 function showConfirmationSpreadsheet() {
     var spreadSheetData = {"aoColumns":[], "aaData":[]};

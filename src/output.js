@@ -174,7 +174,8 @@ function getTriples(entities, callback) {
         for (var i = 0; i < props.length; i++){
             var predicate = props[i];
             if (predicate.indexOf(type) != 0){
-                warn("bad predicate " + predicate + " in CVT with type" + type);
+                if (predicate !== "/type/object/type")
+                    warn("bad predicate " + predicate + " in CVT with type" + type);
                 continue;
             }
             var value = cvt[predicate];
