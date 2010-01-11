@@ -32,7 +32,9 @@ tEntity.prototype.setInitialHeaders = function(headers) {
     });
 }
 
-/** @param {string} prop */
+/** @param {string} prop
+  * @return {Array}
+  */
 tEntity.prototype.getChainedProperty = function(prop) {
     return getChainedProperty(this,prop);
 }
@@ -110,10 +112,12 @@ tEntity.prototype.isCVT = function() {
     return Arr.any($.makeArray(this['/type/object/type']), isCVTType);
 }
 
+/** @return {string} */
 tEntity.prototype.toString = function() {
     return textValue(this);
 }
 
+/** @return {Object} */
 tEntity.prototype.toJSON = function() {
     var js = {};
     for (var key in this) {

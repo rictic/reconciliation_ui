@@ -44,11 +44,14 @@ function onHideOutputScreen() {
     $("#outputSpreadSheet")[0].value = "";
 }
 
+/** @param {!Array.<(string|undefined)>} arr
+  * @returns {!string}
+  */
 function encodeLine(arr) {
     var values = [];
     for(var i = 0; i < headers.length; i++){
         var val = arr[i];
-        if (typeof val == "undefined")
+        if (typeof val === "undefined")
             values.push("");
         else if (!val.match(/(\t|\"|\n)/))
             values.push(arr[i])
@@ -60,7 +63,10 @@ function encodeLine(arr) {
     return values.join("\t");
 }
 
-//Like getChainedProperty, only it preserves array placement
+/** @param {!tEntity} entity
+  * @param {!string} prop
+  * @return {(Array.<(string|undefined)>|undefined)}
+  */
 function getChainedPropertyPreservingPlace(entity, prop) {
     var slots = [entity];
     $.each(prop.split(":"), function(_,part) {
@@ -77,11 +83,14 @@ function getChainedPropertyPreservingPlace(entity, prop) {
     return slots;
 }
 
-
+/**
+  * @param {!tEntity} row
+  * @return {!Array.<!string>}
+  */
 function encodeRow(row) {
     var lines = [[]];
-    for (var i = 0; i < headers.length; i++){
-        var val = getChainedPropertyPreservingPlace(row, headers[i]);
+    $.each(headers, function(i, header) {
+        var val = getChainedPropertyPreservingPlace(row, header);
         if ($.isArray(val)) {
             for (var j = 0; j < val.length; j++) {
                 if (lines[j] == undefined) lines[j] = [];
@@ -90,7 +99,7 @@ function encodeRow(row) {
         }
         else
             lines[0][i] = textValue(val);
-    }
+    });
     return $.map(lines,encodeLine);
 }
 
