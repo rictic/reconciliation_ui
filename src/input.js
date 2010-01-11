@@ -67,7 +67,7 @@ loader.row;
 loader.record;
 /** @typedef {!Object.<!string,(!string,!loader.tree)>} */
 loader.tree;
-/** @typedef {{prop: !string, index: !number}} */
+/** @typedef {{prop: !string, index: (!number|undefined)}} */
 loader.pathsegment;
 /** @typedef {Array.<loader.pathsegment>} */
 loader.path;
@@ -375,15 +375,17 @@ function rowsToRecords(rows, onComplete, yielder) {
 }
 
 /**
- * Parses a header into a path object.
+ * Parses a header into a path object.  The index is sometimes
+ * undefined because knowing that it wasn't specified is useful
+ * in reconstructing the original spreadsheet.
  *
  * "/foo/bar:/baz/asdf[1]:/fdsa[2]" returns
- *   [ {"prop":"/foo/bar", "index":0},
+ *   [ {"prop":"/foo/bar", "index":undefined},
  *     {"prop":"/baz/asdf", "index":1},
  *     {"prop":"/fdsa", "index":2} ]
  *
- * @param {string} path
- * @return loader.path
+ * @param {!string} path
+ * @return !loader.path
  */
 function parseHeaderPath(path)
 {
@@ -393,7 +395,7 @@ function parseHeaderPath(path)
     function parseIndex(part)
     {
         var numsearch = part.match(/\[(\d+)\]/)
-        if(numsearch == null || numsearch.length != 2) return 0
+        if(numsearch == null || numsearch.length !== 2) return undefined
         else return parseInt(numsearch[1], 10)
     }
 
@@ -421,17 +423,23 @@ function parseHeaderPath(path)
  * and a target record and value, and inserts the value into the
  * record.
  *
- * @param {loader.path} paths
- * @param {number} topindex
- * @param {loader.tree} record
- * @value {string} value
+ * @param {!loader.path} paths
+ * @param {!number} topindex
+ * @param {!loader.tree} record
+ * @value {!string} value
  *
  */
 function pathPut(paths, topindex, record, value)
 {
-    function putValue(currentRecord, pathIndex)
+    /** @param {!loader.tree} currentRecord
+      * @param {!number} pathIndex
+      * @param {number=} currentIndex
+      */
+    function putValue(currentRecord, pathIndex, currentIndex)
     {
         var currentPath = paths[pathIndex]
+        if (currentIndex === undefined)
+            currentIndex = currentPath.index || 0;
         var lastPath = pathIndex + 1 >= paths.length
 
         // if we're at the last path:
@@ -443,7 +451,7 @@ function pathPut(paths, topindex, record, value)
             {
                 // place the value:
                 if(!(currentPath.prop in currentRecord)) currentRecord[currentPath.prop] = []
-                currentRecord[currentPath.prop][currentPath.index] = value
+                currentRecord[currentPath.prop][currentIndex] = value
             }
         }
 
@@ -452,56 +460,15 @@ function pathPut(paths, topindex, record, value)
         {
             if(!(currentPath.prop in currentRecord)) currentRecord[currentPath.prop] = []
             var currentList = currentRecord[currentPath.prop]
-            if(currentList.length <= currentPath.index ||
-               currentList[currentPath.index] == null)
-                currentList[currentPath.index] = {}
-            putValue(currentList[currentPath.index], pathIndex + 1)
-        }
-    }
-    paths[0].index = topindex
-    putValue(record, 0)
-}
-
-/**
- * Takes a list of path objects, an index for the first path,
- * and a target record gets the value from the record.
- *
- * @param {loader.path} paths
- * @param {number} topindex
- * @param {loader.tree} record
- */
-function pathGet(paths, topindex, record)
-{
-    function getValue(currentRecord, pathIndex)
-    {
-        var currentPath = paths[pathIndex]
-        if(!(currentPath.prop in currentRecord))
-        {
-            return null
-        }
-        var currentList = currentRecord[currentPath.prop]
-
-        // no more paths, get the value:
-        if(pathIndex + 1 >= paths.length)
-        {
-            // special case for ids - no lists:
-            if(currentPath.prop == "id") return currentList
-            else return currentList[currentPath.index]
-        }
-        // recurse to the next path:
-        else
-        {
-            if(currentList.length <= currentPath.index)
-            {
-                return null
+            if(currentList.length <= currentIndex || currentList[currentIndex] == null) {
+                currentList[currentIndex] = {}
             }
-            getValue(currentList[currentPath.index], pathIndex + 1)
+
+            putValue(currentList[currentIndex], pathIndex + 1)
         }
     }
-    paths[0].index = topindex
-    getValue(record, 0)
+    putValue(record, 0, topindex)
 }
-
 
 function addIdColumns() {
     if (!Arr.contains(headers, "id"))

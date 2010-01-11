@@ -64,18 +64,30 @@ function encodeLine(arr) {
 }
 
 /** @param {!tEntity} entity
-  * @param {!string} prop
+  * @param {!loader.path} path
   * @return {(Array.<(string|undefined)>|undefined)}
   */
-function getChainedPropertyPreservingPlace(entity, prop) {
+function getChainedPropertyPreservingPlace(entity, path) {
     var slots = [entity];
-    $.each(prop.split(":"), function(_,part) {
+    $.each(path, function(_,part) {
         var newSlots = [];
         $.each(slots, function(_,slot) {
-            if (!slot || !slot[part])
+            if (!slot) {
                 newSlots.push(undefined);
+                return;
+            }
+            
+            var vals = slot[part.prop];
+            if (vals === undefined) {
+                newSlots.push(undefined);
+                return;
+            }
+            
+            vals = $.makeArray(vals);
+            if (part.index !== undefined)
+                newSlots = newSlots.concat($.makeArray(vals[part.index]));
             else
-                newSlots = newSlots.concat($.makeArray(slot && slot[part]))
+                newSlots = newSlots.concat(vals);
         })
         slots = newSlots;
     });
@@ -89,8 +101,8 @@ function getChainedPropertyPreservingPlace(entity, prop) {
   */
 function encodeRow(row) {
     var lines = [[]];
-    $.each(headers, function(i, header) {
-        var val = getChainedPropertyPreservingPlace(row, header);
+    $.each(headerPaths, function(i, headerPath) {
+        var val = getChainedPropertyPreservingPlace(row, headerPath);//getChainedPropertyPreservingPlace(row, header);
         if ($.isArray(val)) {
             for (var j = 0; j < val.length; j++) {
                 if (lines[j] == undefined) lines[j] = [];
@@ -114,7 +126,7 @@ function displaySpreadsheet() {
 var spreadsheetRendererYielder;
 function renderSpreadsheet(onComplete) {
     var lines = [];
-    lines.push(encodeLine(headers));
+    lines.push(encodeLine(originalHeaders));
     spreadsheetRendererYielder = new Yielder();
     politeEach(rows, function(idx, row) {
         lines = lines.concat(encodeRow(row));

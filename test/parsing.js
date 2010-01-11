@@ -105,5 +105,9 @@ addCompleteParsingTestCase("spreadsheet with first column nested",
                            "a:b\ta:c\td\n1\t2\t3\n\t4\t5",
                            [{a:[{b:[1],c:[2]},{c:[4]}],d:[3,5]}],true, true);
 
+addCompleteParsingTestCase("spreadsheet with path indeces"
+                          ,"a:b:c[0]\ta:b:c[1]\ta:b:c[2]\n1\t2\t3"
+                          ,[{a:[{b:[{c:[1,2,3]}]}]}]);
+
 TestCase("ParsingTest",parsing_tests);
 
