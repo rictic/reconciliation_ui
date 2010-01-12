@@ -587,7 +587,8 @@ function mapTreeToEntity(tree, parent, onAddProperty) {
         values = $.map(values, function(innerTree) {
             if (getType(innerTree) === "string") {
                 if (!propMeta) {
-                    warn("can't find property " + prop);
+                    if (prop !== "id")
+                        warn("can't find property " + prop);
                     return innerTree; //not a valid mql property, leave it alone
                 }
                 if (isValueProperty(prop))
