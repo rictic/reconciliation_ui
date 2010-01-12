@@ -105,5 +105,9 @@ addCompleteParsingTestCase("spreadsheet with first column nested",
                            "a:b\ta:c\td\n1\t2\t3\n\t4\t5",
                            [{a:[{b:[1],c:[2]},{c:[4]}],d:[3,5]}],true, true);
 
+addCompleteParsingTestCase("spreadsheet with an column which has an id",
+                           "a\ta:id\n1\t2",
+                           [{a:[{"/type/object/name":["1"], id:"2"}]}]);
+
 TestCase("ParsingTest",parsing_tests);
 
