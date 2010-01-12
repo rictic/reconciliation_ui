@@ -463,6 +463,8 @@ function pathPut(paths, topindex, record, value)
             if(currentList.length <= currentIndex || currentList[currentIndex] == null) {
                 currentList[currentIndex] = {}
             }
+            if(getType(currentList[currentIndex]) === "string")
+                currentList[currentIndex] = {"/type/object/name":[currentList[currentIndex]]};
 
             putValue(currentList[currentIndex], pathIndex + 1)
         }
