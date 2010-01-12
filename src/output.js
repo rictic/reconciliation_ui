@@ -44,11 +44,14 @@ function onHideOutputScreen() {
     $("#outputSpreadSheet")[0].value = "";
 }
 
+/** @param {!Array.<(string|undefined)>} arr
+  * @returns {!string}
+  */
 function encodeLine(arr) {
     var values = [];
     for(var i = 0; i < headers.length; i++){
         var val = arr[i];
-        if (typeof val == "undefined")
+        if (typeof val === "undefined")
             values.push("");
         else if (!val.match(/(\t|\"|\n)/))
             values.push(arr[i])
@@ -60,16 +63,31 @@ function encodeLine(arr) {
     return values.join("\t");
 }
 
-//Like getChainedProperty, only it preserves array placement
-function getChainedPropertyPreservingPlace(entity, prop) {
+/** @param {!tEntity} entity
+  * @param {!loader.path} path
+  * @return {(Array.<(string|undefined)>|undefined)}
+  */
+function getChainedPropertyPreservingPlace(entity, path) {
     var slots = [entity];
-    $.each(prop.split(":"), function(_,part) {
+    $.each(path, function(_,part) {
         var newSlots = [];
         $.each(slots, function(_,slot) {
-            if (!slot || !slot[part])
+            if (!slot) {
                 newSlots.push(undefined);
+                return;
+            }
+            
+            var vals = slot[part.prop];
+            if (vals === undefined) {
+                newSlots.push(undefined);
+                return;
+            }
+            
+            vals = $.makeArray(vals);
+            if (part.index !== undefined)
+                newSlots = newSlots.concat($.makeArray(vals[part.index]));
             else
-                newSlots = newSlots.concat($.makeArray(slot && slot[part]))
+                newSlots = newSlots.concat(vals);
         })
         slots = newSlots;
     });
@@ -77,11 +95,14 @@ function getChainedPropertyPreservingPlace(entity, prop) {
     return slots;
 }
 
-
+/**
+  * @param {!tEntity} row
+  * @return {!Array.<!string>}
+  */
 function encodeRow(row) {
     var lines = [[]];
-    for (var i = 0; i < headers.length; i++){
-        var val = getChainedPropertyPreservingPlace(row, headers[i]);
+    $.each(headerPaths, function(i, headerPath) {
+        var val = getChainedPropertyPreservingPlace(row, headerPath);//getChainedPropertyPreservingPlace(row, header);
         if ($.isArray(val)) {
             for (var j = 0; j < val.length; j++) {
                 if (lines[j] == undefined) lines[j] = [];
@@ -90,7 +111,7 @@ function encodeRow(row) {
         }
         else
             lines[0][i] = textValue(val);
-    }
+    });
     return $.map(lines,encodeLine);
 }
 
@@ -105,7 +126,7 @@ function displaySpreadsheet() {
 var spreadsheetRendererYielder;
 function renderSpreadsheet(onComplete) {
     var lines = [];
-    lines.push(encodeLine(headers));
+    lines.push(encodeLine(originalHeaders));
     spreadsheetRendererYielder = new Yielder();
     politeEach(rows, function(idx, row) {
         lines = lines.concat(encodeRow(row));

@@ -7,7 +7,7 @@ task :deploy_debug => [:build_debug, :push]
 
 FileUtils.mkdir_p "build"
 
-multitask :test => [:compile_tests, :run_tests]
+task :test => [:compile_tests, :run_tests]
 
 task :run_tests do
   sh "jstdServer ; sleep 3 ; open http://localhost:4224/capture" unless `nc -z localhost 4224` =~ /succeeded!/

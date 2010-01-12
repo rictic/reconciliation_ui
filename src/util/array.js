@@ -92,7 +92,7 @@ Arr.all = function(array, predicate) {
 
 /**
   * @param {!Array} array
-  * @param {!function(*):boolean=} predicate
+  * @param {function()=} predicate
   * @return {!boolean}
   */
 Arr.any = function(array, predicate) {
