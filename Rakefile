@@ -80,7 +80,7 @@ def compilejs(js_files, output_name, third_party=false, externs=[])
   if (third_party)
     options= "--third_party --summary_detail_level 0 --warning_level QUIET  --compilation_level WHITESPACE_ONLY"
   else
-    options= "--summary_detail_level 3 --jscomp_warning=visibility --warning_level VERBOSE"
+    options= "--summary_detail_level 3 --jscomp_warning=visibility --jscomp_warning=checkVars --jscomp_error=deprecated --jscomp_warning=fileoverviewTags --jscomp_warning=invalidCasts --jscomp_error=nonStandardJsDocs --jscomp_error=undefinedVars --jscomp_error=unknownDefines --warning_level VERBOSE"
   end
   js_files_string = js_files.map{|f| "--js #{f}"}.join(" ")
   externs_string = externs.map{|f| "--externs #{f}"}.join(" ")
