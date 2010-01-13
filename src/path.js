@@ -39,8 +39,13 @@ loader.path.prototype.toString = function() {
 }
 
 loader.path.prototype.getDisplayName = function() {
-    var lastPart = this.parts[this.parts.length-1];
-    return getPropName(lastPart.prop);
+    return getPropName(this.toComplexProp());
+}
+
+//a string representation without indices, for calling legacy
+//functions.  should be removed eventually
+loader.path.prototype.toComplexProp = function() {
+    return $.map(this.parts, function(part){return part.prop}).join(":");
 }
 
 loader.path.prototype.getProps = function() {
