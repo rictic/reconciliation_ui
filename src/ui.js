@@ -179,7 +179,7 @@ $(document).ready(function() {
                          });
     $("#mdo_name")[0].value = defaultMDOName;
     $("#mdo_name").change(updateMdoInfo);
-	$("input:name='option_layout'").change(function(){
+	$("input.graphport").change(function(){
         var warning = $("#otg_upload_warning"); 
         if (this.value === "otg") 
             warning.show(); 

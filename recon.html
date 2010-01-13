@@ -157,7 +157,7 @@
               <div class='uploadLogin invisible'>
                   You need to <a href='http://www.freebase.com/signin/login' target='_blank'>login at Freebase.com</a> before uploading.  <button class="checkLogin">Then Click Here To Continue</button>
               </div>
-              <div class='uploadForm invisible'>
+              <div class='uploadForm invisible'> 
                   We've found <span class='triple_count'></span> assertions that you can upload.
                   <br>
                   <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
@@ -172,7 +172,7 @@
                       <input type="hidden" name="check_params" value="false" id="check_params">
                       <input type='hidden' name='mdo_info' value='' id='mdo_info'>
                       <input type="hidden" name="payload" value="" id="payload">
-                      Upload to: <label for='sandbox'>Sandbox</label><input type="radio" name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" name="graphport" id='otg' value="otg"><br>
+                      Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
                       <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
                       <input type="submit" value="Upload">
                   </form>
