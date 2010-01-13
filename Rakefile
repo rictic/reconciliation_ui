@@ -46,7 +46,7 @@ task :compile => [:copy, "build/compiled.js", "build/recon.html"]
 task :compile_tests => "build/src_and_tests_compiled.js"
 
 file "build/recon.html" => "recon.html" do
-  new_source = source.sub(region_regex, "<script language=\"javascript\" charset=\"utf-8\" src=\"compiled.js\"></script>")
+  new_source = source.sub(region_regex, "<script charset=\"utf-8\" src=\"compiled.js\"></script>")
   File.open("build/recon.html", 'w') {|f| f.write(new_source)}
 end
 
