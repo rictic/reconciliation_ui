@@ -95,8 +95,8 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
         $("button", context).attr("disabled","disabled");
         onAmbiguityResolved(shouldCombine);
     }
-    $(".doCombine", context).click(function() {ambiguityWrapper(true);});
-    $(".dontCombine", context).click(function() {ambiguityWrapper(false);});
+    $(".doCombine", context).unbind("click").click(function() {ambiguityWrapper(true);});
+    $(".dontCombine", context).unbind("click").click(function() {ambiguityWrapper(false);});
     
     $('table tbody tr:odd', context).addClass('odd');
     $('table tbody tr:even', context).addClass('even');
