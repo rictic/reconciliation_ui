@@ -88,6 +88,12 @@ var headerPaths;
 ** Parsing and munging the input
 */
 
+function resetGlobals() {
+    //this is more or less a list of variables which need to be eliminated
+    headers = originalHeaders = rows = inputType = headerPaths = undefined;
+    typesSeen = new Set();
+    propertiesSeen = new Set();
+}
 
 /** @param {!string} input Either a tsv or a json array of trees
   * @param {!function(loader.record, function(boolean))} ambiguityResolver
@@ -99,9 +105,7 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
 
     //reset global values
     clearInputWarnings();
-    //this is more or less a list of variables which need to be refactored from globals
-    mqlProps = headers = originalHeaders = rows = inputType = headerPaths = undefined;
-    
+    resetGlobals();
 
     if (input.charAt(0) === "[") {
         inputType = "JSON";
@@ -555,11 +559,9 @@ function mapTreeToEntity(tree, parent, onAddProperty) {
         
         values = $.map(values, function(innerTree) {
             if (getType(innerTree) === "string") {
-                if (!propMeta) {
-                    if (prop !== "id")
-                        warn("can't find property " + prop);
+                if (!propMeta)
                     return innerTree; //not a valid mql property, leave it alone
-                }
+
                 if (isValueProperty(prop))
                     return innerTree;
                 

@@ -223,9 +223,13 @@ freebase.mqlValue;
       */
     freebase.fetchPropertyInfo = function(properties, onComplete, onError) {
         var simpleProps = [];
+        var errorProps = [];
+        
         $.each(properties, function(_, mqlProp) {
             $.each(mqlProp.split(":"), function(i, simpleProp) {
-                if (simpleProp == "id" || freebase.getPropMetadata(simpleProp))
+                if (simpleProp in propMetadata && propMetadata[simpleProp] === undefined)
+                    errorProps.push(simpleProp);
+                if (simpleProp == "id" || simpleProp in propMetadata)
                     return;
                 simpleProps.push(simpleProp);
             });
@@ -237,7 +241,6 @@ freebase.mqlValue;
             q_pairs.push([simpleProp, {query: getQuery(simpleProp)}]);
         });
         
-        var errorProps = [];
         freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
         
         function getQuery(prop) {
@@ -264,16 +267,18 @@ freebase.mqlValue;
             propMetadata[mqlProp] = result;
         }
         
-        function onErrorHandler(key, response) { 
-            errorProps.push(key); 
+        function onErrorHandler(mqlProp, response) { 
+            propMetadata[mqlProp] = undefined;
+            errorProps.push(mqlProp);
         }
         
         function onCompleteHandler() {
-            if (errorProps.length > 0)
+            if (onError && errorProps.length > 0)
                 onError(errorProps);
             else
                 onComplete();
-            freebase.fetchPropertyInfo(propertiesSeen.getAll(), function(){}, function(){});
+            if (q_pairs.length > 0)
+                freebase.fetchPropertyInfo(propertiesSeen.getAll(), function(){}, function(){});
         }
         
     }
