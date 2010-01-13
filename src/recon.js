@@ -44,8 +44,8 @@ function canonicalizeFreebaseId(entity) {
 function addColumnRecCases(entity) {
     if (entity["/rec_ui/toplevel_entity"]) {
         var autoQueueLength = automaticQueue.length;
-        for (var i = 0; i < mqlProps.length; i++) {
-            var values = entity.getChainedProperty(mqlProps[i]);
+        $.each(entity['/rec_ui/mql_props'], function(_, mqlProp) {
+            var values = entity.getChainedProperty(mqlProp);
             for (var j = 0; j < values.length; j++) {
                 if (values[j] && values[j]['/type/object/name'] != undefined){
                     if (!values[j].id)
@@ -53,7 +53,7 @@ function addColumnRecCases(entity) {
                     totalRecords++;
                 }
             }
-        }
+        });
         //The auto queue was empty when this started, so autorecon needs
         //to be restarted.
         if (autoQueueLength == 0)

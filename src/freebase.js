@@ -215,7 +215,7 @@ freebase.mqlValue;
     }
     freebase.getTypeMetadata = function(type) {return typeMetadata[type];}
     
-    /** @type {Object.<string, freebase.mqlTree>} */
+    /** @type {Object.<string, (freebase.mqlTree|undefined)>} */
     var propMetadata = {};
     /** @param {!Array.<!string>} properties
       * @param {!function(string, freebase.mqlTree)} onComplete

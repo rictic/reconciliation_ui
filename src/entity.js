@@ -39,6 +39,42 @@ tEntity.prototype.getChainedProperty = function(prop) {
     return getChainedProperty(this,prop);
 }
 
+/** @param {loader.path} path
+  * @param {boolean=} preservePlace
+  * @return {Array}
+  */
+tEntity.prototype.get = function(path, preservePlace) {
+    var slots = [this];
+    $.each(path.parts, function(_,part) {
+        var newSlots = [];
+        $.each(slots, function(_,slot) {
+            if (!slot) {
+                newSlots.push(undefined);
+                return;
+            }
+            
+            var vals = slot[part.prop];
+            if (vals === undefined) {
+                newSlots.push(undefined);
+                return;
+            }
+            
+            vals = $.makeArray(vals);
+            if (part.index !== undefined)
+                newSlots = newSlots.concat($.makeArray(vals[part.index]));
+            else
+                newSlots = newSlots.concat(vals);
+        })
+        slots = newSlots;
+    });
+    if (!preservePlace) {
+        return Arr.filter(slots, function(v) {
+            return v !== undefined;
+        });
+    }
+    return slots;
+}
+
 /** @param {string=} linkText */
 tEntity.prototype.freebaseLink = function(linkText) {
     linkText = linkText || this.name || this.id;

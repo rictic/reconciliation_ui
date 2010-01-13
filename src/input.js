@@ -67,15 +67,9 @@ loader.row;
 loader.record;
 /** @typedef {!Object.<!string,(!string,!loader.tree)>} */
 loader.tree;
-/** @typedef {{prop: !string, index: (!number|undefined)}} */
-loader.pathsegment;
-/** @typedef {Array.<loader.pathsegment>} */
-loader.path;
-
 
 //Some globals that various components poke into
 var totalRecords = 0;
-var mqlProps;
 var headers;
 var originalHeaders;
 var rows;
@@ -256,18 +250,21 @@ function buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder) {
     headers = originalHeaders;
     headerPaths = [];
     $.each(headers, function(_, rawHeader) {
-        headerPaths.push(parseHeaderPath($.trim(rawHeader)));
+        headerPaths.push(new loader.path($.trim(rawHeader)));
     })
 
-    rowsToRecords(spreadsheetRows, function(singleRecords, multiRecords, exampleRecord) {
-        if (exampleRecord === undefined)
-            handleRecords(singleRecords);
-        else
-            ambiguityResolver(exampleRecord, function(useMultiRecords) {
-                handleRecords(useMultiRecords ? multiRecords : singleRecords);
-            });
-    }, yielder);
-    
+    //fetching property metadata early helps in the UI
+    freebase.fetchPropertyInfo(getProperties(headerPaths), function() {
+        rowsToRecords(spreadsheetRows, function(singleRecords, multiRecords, exampleRecord) {
+            if (exampleRecord === undefined)
+                handleRecords(singleRecords);
+            else
+                ambiguityResolver(exampleRecord, function(useMultiRecords) {
+                    handleRecords(useMultiRecords ? multiRecords : singleRecords);
+                });
+        }, yielder);
+    });
+
     function handleRecords(records) {recordsToEntities(records, onComplete, yielder)}
 }
 
@@ -292,17 +289,11 @@ function recordsToEntities(records, onComplete, yielder) {
         resetEntities();
         typesSeen = new Set();
 
-        mqlProps = getMqlProperties(originalHeaders);
 
         treesToEntities(trees, function(entities) {
             rows = entities;
             headers = originalHeaders;
-
-            freebase.fetchPropertyInfo(getProperties(originalHeaders), onComplete, function(errorProps) {
-                $.each(errorProps, warnUnknownProp);
-                mqlProps = Arr.difference(mqlProps, errorProps);
-                onComplete();
-            });
+            onComplete();
         }, yielder);
     }, yielder);
 }
@@ -388,16 +379,48 @@ function rowsToRecords(rows, onComplete, yielder) {
  *     {"prop":"/baz/asdf", "index":1},
  *     {"prop":"/fdsa", "index":2} ]
  *
- * @param {!string} path
+ * @constructor
+ * @param {!string} pathString
  * @return !loader.path
  */
-function parseHeaderPath(path)
-{
+loader.path = function(pathString) {
+    var sections = pathString.split(/[:.]/)
+    this.parts = $.map(sections, function(section) {
+        return new loader.path.part(section);
+    });
+}
+
+/** @type {Array.<loader.path.part>} */
+loader.path.prototype.parts;
+
+/** @return {!string} */
+loader.path.prototype.toString = function() {
+    var result = "";
+    var segments = $.map(this.parts, function(part) {
+        return part.toString();
+    });
+    return segments.join(":");
+}
+
+loader.path.prototype.getDisplayName = function() {
+    var lastPart = this.parts[this.parts.length-1];
+    return getPropName(lastPart.prop);
+}
+
+loader.path.prototype.getProps = function() {
+    return $.map(this.parts, function(part) {return part.prop})
+}
+
+
+/** @constructor
+  * @param {!string} segmentString
+  * @return !loader.path.part
+  */
+loader.path.part = (function() {
     /**
-     * Returns the index or 0.
+     * Returns the index or undefined
      */
-    function parseIndex(part)
-    {
+    function parseIndex(part) {
         var numsearch = part.match(/\[(\d+)\]/)
         if(numsearch == null || numsearch.length !== 2) return undefined
         else return parseInt(numsearch[1], 10)
@@ -406,67 +429,68 @@ function parseHeaderPath(path)
     /**
      * Returns the property without the index.
      */
-    function parseProp(part)
-    {
+    function parseProp(part) {
         var propsearch = part.match(/(.+)\[\d+\]/)
         if(propsearch == null || propsearch.length != 2) return part
         else return propsearch[1]
     }
-    var paths = []
-    var parts = path.split(/[:.]/)
-    for(var i in parts)
-    {
-        path = {"index":parseIndex(parts[i]), "prop":parseProp(parts[i])}
-        paths.push(path)
+    
+    //the constructor;
+    /** @constructor */
+    return function(segmentString) {
+        this.index = parseIndex(segmentString);
+        this.prop = parseProp(segmentString);
     }
-    return paths
+})();
+
+loader.path.part.prototype.toString = function() {
+    var s = this.prop;
+    if (this.index !== undefined)
+        s += "[" + this.index + "]";
+    return s;
 }
 
+
 /**
- * Takes a list of path objects, an index for the first path,
- * and a target record and value, and inserts the value into the
- * record.
+ * Inserts the value into the tree at the path (with the initial
+ * index of topindex)
  *
- * @param {!loader.path} paths
+ * @param {!loader.path} path
  * @param {!number} topindex
  * @param {!loader.tree} record
  * @value {!string} value
  *
  */
-function pathPut(paths, topindex, record, value)
-{
+function pathPut(path, topindex, record, value) {
     /** @param {!loader.tree} currentRecord
       * @param {!number} pathIndex
       * @param {number=} currentIndex
       */
-    function putValue(currentRecord, pathIndex, currentIndex)
-    {
-        var currentPath = paths[pathIndex]
+    function putValue(currentRecord, pathIndex, currentIndex) {
+        var currentPart = path.parts[pathIndex]
         if (currentIndex === undefined)
-            currentIndex = currentPath.index || 0;
-        var lastPath = pathIndex + 1 >= paths.length
+            currentIndex = currentPart.index || 0;
+        var atLastPath = pathIndex + 1 >= path.parts.length
 
         // if we're at the last path:
-        if(lastPath)
-        {
+        if(atLastPath) {
             // special case for ids:
-            if(currentPath.prop == "id") currentRecord["id"] = value
-            else
-            {
+            if(currentPart.prop == "id") 
+                currentRecord["id"] = value
+            else {
                 // place the value:
-                if(!(currentPath.prop in currentRecord)) currentRecord[currentPath.prop] = []
-                currentRecord[currentPath.prop][currentIndex] = value
+                if(!(currentPart.prop in currentRecord)) 
+                    currentRecord[currentPart.prop] = []
+                currentRecord[currentPart.prop][currentIndex] = value
             }
         }
-
         // otherwise recurse:
-        else
-        {
-            if(!(currentPath.prop in currentRecord)) currentRecord[currentPath.prop] = []
-            var currentList = currentRecord[currentPath.prop]
-            if(currentList.length <= currentIndex || currentList[currentIndex] == null) {
+        else {
+            if(!(currentPart.prop in currentRecord)) 
+                currentRecord[currentPart.prop] = []
+            var currentList = currentRecord[currentPart.prop]
+            if(currentList.length <= currentIndex || currentList[currentIndex] == null)
                 currentList[currentIndex] = {}
-            }
             if(getType(currentList[currentIndex]) === "string")
                 currentList[currentIndex] = {"/type/object/name":[currentList[currentIndex]]};
 
@@ -477,31 +501,46 @@ function pathPut(paths, topindex, record, value)
 }
 
 function addIdColumns() {
-    if (!Arr.contains(headers, "id"))
-        headers.push("id");
-    $.each(getProperties(headers), function(_,complexProp) {
+    if (!columnAlreadyExists("id"))
+        headerPaths.push(new loader.path("id"));
+    $.each(headerPaths, function(_,headerPath) {
         var partsSoFar = [];
-        $.each(complexProp.split(":"), function(_, mqlProp) {
+        //only add id columns if they look like mql props
+        if (!isMqlProp(headerPath.parts[0].prop))
+            return;
+        
+        $.each(headerPath.parts, function(_, part) {
+            var mqlProp = part.prop;
             if (mqlProp == "id") return;
-            partsSoFar.push(mqlProp);
+
+            partsSoFar.push(part.toString());
             var idColumn = partsSoFar.concat("id").join(":");
             var meta = freebase.getPropMetadata(mqlProp);
             //if we don't have metadata on it, it's not a valid property, so no id column for it
             if (!meta) return;
             //if it's a value then it doesn't get an id
             if (isValueProperty(mqlProp)) return;
-            //if there already is an id column for it, then don't create a new one
-            if (Arr.contains(headers,idColumn)) return;
             //if the property is /type/object/type then we treat it as an id automatically, no id column needed
             if (mqlProp == "/type/object/type") return;
             //if it's a CVT then we won't do reconciliation of it ourselves (that's triplewriter's job)
             //so no id column
             if (meta.expected_type && isCVTType(meta.expected_type))
                 return;
+            //if there already is an id column for it, then don't create a new one
+            if (columnAlreadyExists(idColumn))
+                return;
+            
             //otherwise, add an id column
-            headers.push(idColumn);
+            headerPaths.push(new loader.path(idColumn));
         });
     });
+    
+    function columnAlreadyExists(header) {
+        for (var i = 0; i < headerPaths.length; i++)
+            if (headerPaths[i].toString() === header)
+                return true;
+        return false;
+    }
 }
 
 /** Takes a list of trees and returns a list of all mql properties found anywhere
@@ -603,7 +642,6 @@ function parseJSON(json, onComplete, yielder) {
     treesToEntities(trees, function(entities) {
         rows = entities;
         headers = rows[0]['/rec_ui/headers'];
-        mqlProps = rows[0]['/rec_ui/mql_props'];
         onComplete();
     }, yielder);
 }

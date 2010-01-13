@@ -165,6 +165,7 @@ function fetchMqlProps(reconResult, entity) {
 
 function fillInMQLProps(entity, mqlResult) {
     var context = $("#manualReconcile" + entity["/rec_ui/id"]);
+    var mqlProps = entity['/rec_ui/mql_props'];
     if (!mqlResult || mqlResult["code"] != "/api/status/ok" || mqlResult["result"] == null) {
         error(mqlResult);
         return;

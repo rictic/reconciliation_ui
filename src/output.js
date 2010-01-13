@@ -49,7 +49,7 @@ function onHideOutputScreen() {
   */
 function encodeLine(arr) {
     var values = [];
-    for(var i = 0; i < headers.length; i++){
+    for(var i = 0; i < headerPaths.length; i++){
         var val = arr[i];
         if (typeof val === "undefined")
             values.push("");
@@ -63,38 +63,6 @@ function encodeLine(arr) {
     return values.join("\t");
 }
 
-/** @param {!tEntity} entity
-  * @param {!loader.path} path
-  * @return {(Array.<(string|undefined)>|undefined)}
-  */
-function getChainedPropertyPreservingPlace(entity, path) {
-    var slots = [entity];
-    $.each(path, function(_,part) {
-        var newSlots = [];
-        $.each(slots, function(_,slot) {
-            if (!slot) {
-                newSlots.push(undefined);
-                return;
-            }
-            
-            var vals = slot[part.prop];
-            if (vals === undefined) {
-                newSlots.push(undefined);
-                return;
-            }
-            
-            vals = $.makeArray(vals);
-            if (part.index !== undefined)
-                newSlots = newSlots.concat($.makeArray(vals[part.index]));
-            else
-                newSlots = newSlots.concat(vals);
-        })
-        slots = newSlots;
-    });
-    if (slots === []) return undefined;
-    return slots;
-}
-
 /**
   * @param {!tEntity} row
   * @return {!Array.<!string>}
@@ -102,7 +70,7 @@ function getChainedPropertyPreservingPlace(entity, path) {
 function encodeRow(row) {
     var lines = [[]];
     $.each(headerPaths, function(i, headerPath) {
-        var val = getChainedPropertyPreservingPlace(row, headerPath);//getChainedPropertyPreservingPlace(row, header);
+        var val = row.get(headerPath, true);
         if ($.isArray(val)) {
             for (var j = 0; j < val.length; j++) {
                 if (lines[j] == undefined) lines[j] = [];
@@ -126,7 +94,7 @@ function displaySpreadsheet() {
 var spreadsheetRendererYielder;
 function renderSpreadsheet(onComplete) {
     var lines = [];
-    lines.push(encodeLine(originalHeaders));
+    lines.push(encodeLine($.map(headerPaths, function(headerPath){return headerPath.toString()})));
     spreadsheetRendererYielder = new Yielder();
     politeEach(rows, function(idx, row) {
         lines = lines.concat(encodeRow(row));

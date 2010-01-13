@@ -192,12 +192,12 @@ var isMqlProp = (function(){
     }
 })();
 
-function getMqlProperties(headers) {
-    return Arr.filter(getProperties(headers), isMqlProp);
-}
-
-function getProperties(headers) {
-    return Arr.filter(headers, function(header) {
+/** @param {!Array.<!loader.path>} headerPaths
+  * @return !Array.<!string>
+  */
+function getProperties(headerPaths) {
+    var candidates = Arr.unique(Arr.concat($.map(headerPaths, function(headerPath){return headerPath.getProps();})));
+    return Arr.filter(candidates, function(header) {
         return header.charAt(0) == "/"
     })
 }

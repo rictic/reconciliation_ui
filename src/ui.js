@@ -69,7 +69,7 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
             else
                 for (var j = 0; j < val.length; j++)
                     if (val[j] != undefined)
-                      html += val[j] + "<br>";
+                        html += val[j] + "<br>";
             html += "<\/td>";
         }
         return html + "<\/tr>";
@@ -104,13 +104,13 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
 }
 function showConfirmationSpreadsheet() {
     var spreadSheetData = {"aoColumns":[], "aaData":[]};
-    var columnNames = $.map(headers, getPropName);
+    var columnNames = $.map(headerPaths, function(header) {return header.getDisplayName();});
     for (var i = 0; i < columnNames.length; i++)
         spreadSheetData.aoColumns.push({"sTitle":columnNames[i]});
     politeEach(rows, function(_,entity) {
         var row = [];
         for (var j = 0; j < headers.length; j++){
-            var val = entity.getChainedProperty(headers[j]);
+            var val = entity.get(headerPaths[j]);
             if (val == undefined)
                 val = "";
             else if ($.isArray(val)){
@@ -126,8 +126,7 @@ function showConfirmationSpreadsheet() {
             row[j] = val;
         }
         spreadSheetData.aaData.push(row);
-    },
-    function() {
+    }, function() {
         updateUnreconciledCount();
         spreadSheetData["bAutoWidth"] = false;
         spreadSheetData["bSort"] = false;
