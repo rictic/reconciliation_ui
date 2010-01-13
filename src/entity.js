@@ -20,6 +20,7 @@ function tEntity(initialVals) {
     this["/rec_ui/mql_props"] = [];
     this["/rec_ui/mql_paths"] = []
     this["/rec_ui/headers"] = [];
+    this["/rec_ui/headerPaths"] = [];
     entities[this["/rec_ui/id"]] = this;
     for (var key in initialVals)
         this[key] = initialVals[key];
@@ -128,8 +129,10 @@ tEntity.prototype.addProperty = function(prop, value) {
   * @param {string} prop
   */
 tEntity.prototype.propSeen = function(prop) {
-    if (!Arr.contains(this['/rec_ui/headers'], prop))
+    if (!Arr.contains(this['/rec_ui/headers'], prop)) {
         this['/rec_ui/headers'].push(prop);
+        this['/rec_ui/headerPaths'].push(new loader.path(prop));
+    }
     if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop)) {
         this['/rec_ui/mql_props'].push(prop);
         this['/rec_ui/mql_paths'].push(new loader.path(prop));
