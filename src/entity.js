@@ -18,6 +18,7 @@ resetEntities();
 function tEntity(initialVals) {
     this["/rec_ui/id"] = internalIDCounter++
     this["/rec_ui/mql_props"] = [];
+    this["/rec_ui/mql_paths"] = []
     this["/rec_ui/headers"] = [];
     entities[this["/rec_ui/id"]] = this;
     for (var key in initialVals)
@@ -129,8 +130,10 @@ tEntity.prototype.addProperty = function(prop, value) {
 tEntity.prototype.propSeen = function(prop) {
     if (!Arr.contains(this['/rec_ui/headers'], prop))
         this['/rec_ui/headers'].push(prop);
-    if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop))
+    if (isMqlProp(prop) && !isCVTProperty(prop) && !Arr.contains(this['/rec_ui/mql_props'], prop)) {
         this['/rec_ui/mql_props'].push(prop);
+        this['/rec_ui/mql_paths'].push(new loader.path(prop));
+    }
 }
 
 /** @param {tEntity} parent

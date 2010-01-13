@@ -44,8 +44,8 @@ function canonicalizeFreebaseId(entity) {
 function addColumnRecCases(entity) {
     if (entity["/rec_ui/toplevel_entity"]) {
         var autoQueueLength = automaticQueue.length;
-        $.each(entity['/rec_ui/mql_props'], function(_, mqlProp) {
-            var values = entity.getChainedProperty(mqlProp);
+        $.each(entity['/rec_ui/mql_paths'], function(_, mqlPath) {
+            var values = entity.get(mqlPath);
             for (var j = 0; j < values.length; j++) {
                 if (values[j] && values[j]['/type/object/name'] != undefined){
                     if (!values[j].id)
