@@ -1,11 +1,16 @@
-task :default => [:run_tests ]
-task :build => [:clean, :copy, :compile, :version]
+task :default => [:test]
+task :build => [:copy, :compile, :version]
 task :build_debug => [:clean, :copy_all, :version]
 task :deploy => [:build, :push]
 task :deploy_debug => [:build_debug, :push]
 
+
+FileUtils.mkdir_p "build"
+
+task :test => [:compile_tests, :run_tests]
+
 task :run_tests do
-  sh "jstdServer && sleep 3" unless `nc -z localhost 4224` =~ /succeeded!/
+  sh "jstdServer ; sleep 3 ; open http://localhost:4224/capture" unless `nc -z localhost 4224` =~ /succeeded!/
   sh "testjstd"
 end
 
@@ -14,7 +19,6 @@ task :clean do
 end
 
 task :copy do
-  sh "mkdir -p build"
   #copy static resources
   sh "cp COPYRIGHT *.css build/"
   #make sure our other css and images make it
@@ -28,19 +32,38 @@ task :copy_all => :copy do
   sh "cp recon.html build/"
 end
 
-task :compile => :copy do
-  source = File.read("recon.html")
-  region_regex = /<!--\s*Begin scripts to compile\s*-->(.*?)<!--\s*End scripts to compile\s*-->/m
-  scripts_region = region_regex.match(source)[1]
-  script_matcher = /src=\"(.*?)\"/
-  js_files = scripts_region.scan(script_matcher).compact
-  
-  js_files.map! {|f| "--js #{f}"}
-  opts = js_files.join(" ")
-  compiled_name = "compiled.js"
-  sh "compilejs #{opts} --js_output_file build/#{compiled_name} --compilation_level WHITESPACE_ONLY"
-  new_source = source.sub(region_regex, "<script language=\"javascript\" charset=\"utf-8\" src=\"#{compiled_name}\"></script>")
+#extract out the js files from recon.html
+source = File.read("recon.html")
+region_regex = /<!--\s*Begin scripts to compile\s*-->(.*?)<!--\s*End scripts to compile\s*-->/m
+scripts_region = region_regex.match(source)[1]
+js_files = scripts_region.scan(/src=\"(.*?)\"/).compact.map{|a|a[0]}
+
+libs, src = js_files.partition {|f| f.start_with? "lib/"}
+
+task :compile => [:copy, "build/compiled.js", "build/recon.html"]
+
+#this file isn't used, it just gives the compiler a chance to catch errors before we even run tests
+task :compile_tests => "build/src_and_tests_compiled.js"
+
+file "build/recon.html" => "recon.html" do
+  new_source = source.sub(region_regex, "<script charset=\"utf-8\" src=\"compiled.js\"></script>")
   File.open("build/recon.html", 'w') {|f| f.write(new_source)}
+end
+
+file "build/compiled.js" => ["build/libs_compiled.js", "build/src_compiled.js"] do |t|
+  compilejs(t.prerequisites, t.name, true)
+end
+
+file "build/libs_compiled.js" => libs do |t|
+  compilejs(t.prerequisites, t.name, true)
+end
+
+file "build/src_compiled.js" => src + ["src/externs.js"] do |t|
+  compilejs(src, t.name, false, ['src/externs.js'])
+end
+
+file "build/src_and_tests_compiled.js" => src + FileList["test/*.js"] do |t|
+  compilejs(t.prerequisites, t.name, false, ['src/externs.js','test/externs'])
 end
 
 task :version do
@@ -53,3 +76,32 @@ task :push do
   sh "scp -q -r server.py build data.labs.freebase.com:/mw/loader/"
 end
 
+def compilejs(js_files, output_name, third_party=false, externs=[])
+  if (third_party)
+    options= "--third_party --summary_detail_level 0 --warning_level QUIET  --compilation_level WHITESPACE_ONLY"
+  else
+    options= "--summary_detail_level 3 --jscomp_warning=visibility --jscomp_warning=checkVars --jscomp_error=deprecated --jscomp_warning=fileoverviewTags --jscomp_warning=invalidCasts --jscomp_error=nonStandardJsDocs --jscomp_error=undefinedVars --jscomp_error=unknownDefines --warning_level VERBOSE"
+  end
+  js_files_string = js_files.map{|f| "--js #{f}"}.join(" ")
+  externs_string = externs.map{|f| "--externs #{f}"}.join(" ")
+  begin
+    sh "compilejs #{js_files_string} #{externs_string} #{options} --js_output_file #{output_name}"
+  rescue Exception => err
+    sh "rm -f #{output_name}"
+    throw err
+  end
+end
+
+
+#tabulates savings by compiling and by gzipping
+task :savings => "build/compiled.js" do
+  sh "cat #{js_files.join ' '} > catted.js"
+  sh "du -h catted.js"
+  sh "gzip catted.js"
+  sh "du -h catted.js.gz"
+  sh "du -h build/compiled.js"
+  sh "cat build/compiled.js | gzip > build/compiled.js.gz"
+  sh "du -h build/compiled.js.gz"
+  sh "rm catted.js.gz"
+  sh "rm build/compiled.js.gz"
+end

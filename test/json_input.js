@@ -12,7 +12,6 @@ var json_examples = [
       "/type/object/type"      : ["/people/person"],
       "/rec_ui/headers"        : ["/type/object/name","/type/object/type"],
       "/rec_ui/mql_props"      : [],
-      "/rec_ui/cvt_props"      : [],
       "/rec_ui/toplevel_entity": true},
       
     []
@@ -28,7 +27,6 @@ var json_examples = [
      "/people/person/date_of_birth": ["1819"],
      "/rec_ui/headers"             : ["/type/object/name","/type/object/type","/people/person/date_of_birth"],
      "/rec_ui/mql_props"           : ["/people/person/date_of_birth"],
-     "/rec_ui/cvt_props"           : [],
      "/rec_ui/toplevel_entity"     : true},
      
     ["/people/person/date_of_birth"]
@@ -44,9 +42,7 @@ var json_examples = [
        "id"                          : "/en/joshua_norton",
        "/rec_ui/headers"             : ["/type/object/name","/type/object/type","id"],
        "/rec_ui/mql_props"           : [],
-       "/rec_ui/cvt_props"           : [],
        "/rec_ui/toplevel_entity"     : true},
-       
       []
   ]
  ,[ "a film and its director (direct topic property)",
@@ -66,15 +62,13 @@ var json_examples = [
                we don't have to worry about cyclical data structures.
             */
             "/film/director/film"    : [{"/type/object/name": ["Blade Runner"]}],
-            "/rec_ui/parent"         : [{"/type/object/name": ["Blade Runner"]}],
+            "/rec_ui/parent"         : {"/type/object/name": ["Blade Runner"]},
             "/rec_ui/headers"        : ["/type/object/name", "/type/object/type", "/film/director/film"],
             "/rec_ui/mql_props"      : ["/film/director/film"],
-            "/rec_ui/cvt_props"      : [],
             "/rec_ui/toplevel_entity": false
         }],
       "/rec_ui/headers": ["/type/object/name", "/type/object/type", "/film/film/directed_by"],
       "/rec_ui/mql_props": ["/film/film/directed_by"],
-      "/rec_ui/cvt_props": [],
       "/rec_ui/toplevel_entity": true
     },
     
@@ -86,7 +80,7 @@ var json_examples = [
 $.each(json_examples, function(_,example) {
     var name = example[0]; var tree = example[1]; var expected = example[2];
     tests["test " + name] = function() {
-        var entity = recordToEntity(tree);
+        var entity = mapTreeToEntity(tree);
         assertSubsetOf(entity, expected);
     }
 })

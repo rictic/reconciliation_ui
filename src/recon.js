@@ -13,6 +13,7 @@ function initializeReconciliation(callback) {
     }, function() {
         freebase.fetchTypeInfo(typesSeen.getAll(), function() {
             $(".initialLoadingMessage").hide();
+            log(entities[0].toJSON());
             callback();
         });
     });
@@ -37,11 +38,14 @@ function canonicalizeFreebaseId(entity) {
     });
 }
 
+/** @params {!tEntity} entity
+  * 
+  */
 function addColumnRecCases(entity) {
     if (entity["/rec_ui/toplevel_entity"]) {
         var autoQueueLength = automaticQueue.length;
-        for (var i = 0; i < mqlProps.length; i++) {
-            var values = $.makeArray(getChainedProperty(entity,mqlProps[i]));
+        $.each(entity['/rec_ui/mql_paths'], function(_, mqlPath) {
+            var values = entity.get(mqlPath);
             for (var j = 0; j < values.length; j++) {
                 if (values[j] && values[j]['/type/object/name'] != undefined){
                     if (!values[j].id)
@@ -49,7 +53,9 @@ function addColumnRecCases(entity) {
                     totalRecords++;
                 }
             }
-        }
+        });
+        //The auto queue was empty when this started, so autorecon needs
+        //to be restarted.
         if (autoQueueLength == 0)
             beginAutoReconciliation();
     }

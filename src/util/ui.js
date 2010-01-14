@@ -1,18 +1,24 @@
 /* A collection of utilities for assorted bits of UI functionality*/
 
-//Useful for handling events on rapidly changing input elements,
-/* Returns a function that calls `every()` each time it is called,
-   but only calls `rarely()` at most once per `timeout` milliseconds. 
+/** Returns a function that calls `every()` each time it is called,
+   but only calls `rarely()` at most once per `minimumTimeBetween` milliseconds. 
+   
+   Useful for handling events on rapidly changing input elements,
+   
+   @param {function()} every
+   @param {function()} rarely
+   @param {number=} minimumTimeBetween
+   @return {function()}
 */
-function throttler(every, rarely, timeout) {
-    timeout = timeout || 250;
+function throttler(every, rarely, minimumTimeBetween) {
+    var timeout = minimumTimeBetween || 250;
     var waiter = null;
     var againAfterWaiting = false;
     return function() {
         every();
         if (waiter === null) {
             rarely();
-            waiter = setTimeout(function() {
+            waiter = addTimeout(function() {
                 waiter = null;
                 if (againAfterWaiting)
                     rarely();
@@ -23,34 +29,6 @@ function throttler(every, rarely, timeout) {
             againAfterWaiting = true;
     }
 }
-
-/* Adds insertAtCaret function to jQuery objects, to insert text where the caret is in
-  a textarea */
-$.fn.insertAtCaret = function (myValue) {
-	return this.each(function(){
-			//IE support
-			if (document.selection) {
-					this.focus();
-					sel = document.selection.createRange();
-					sel.text = myValue;
-					this.focus();
-			}
-			//MOZILLA / NETSCAPE support
-			else if (this.selectionStart || this.selectionStart == '0') {
-					var startPos = this.selectionStart;
-					var endPos = this.selectionEnd;
-					var scrollTop = this.scrollTop;
-					this.value = this.value.substring(0, startPos)+ myValue+ this.value.substring(endPos,this.value.length);
-					this.focus();
-					this.selectionStart = startPos + myValue.length;
-					this.selectionEnd = startPos + myValue.length;
-					this.scrollTop = scrollTop;
-			} else {
-					this.value += myValue;
-					this.focus();
-			}
-	});
-};
 
 /* Groups a list of complex properties into a hierarchy 
    that is fit for display in a fancy table.
@@ -133,8 +111,10 @@ function buildTableHeaders(groupedProps) {
     return tableHeader;
 }
 
-/* Given a complex property, return the human name of its last segment
-    if known, or the property itself if not
+/** Given a complex property, return the human name of its last segment
+    if known, or the property itself if not.
+   @param {!string} complexProp
+   @return {!string}
 */
 function getPropName(complexProp) {
     if (complexProp.charAt(0) !== "/")
@@ -160,8 +140,11 @@ function getPropName(complexProp) {
    ability to expand the list out.
 */
 function displayValue(value) {
-    if ($.isArray(value))
+    if ($.isArray(value)){
+        if (value.length === 1)
+            return displayValue(value[0]);
         return wrapForOverflow($.map(value, displayValue));
+    }
     if (value == undefined || value == null)
         return "";
     if (value.displayValue)
@@ -174,23 +157,27 @@ function displayValue(value) {
     return textValue(value);
 }
 
-/* Returns the best string representation of `value` it can.*/
+/** Returns the best string representation of `value` it can.
+  *
+  * @return {string}
+  */
 function textValue(value) {
     if ($.isArray(value))
         return "[" + $.map(value, textValue).join(", ") + "]";
     if (value == undefined || value == null)
         return "";
-    if (typeof value === "object"){
+    if (getType(value) === "object") {
         var result = value['/type/object/name'];
         if ($.isArray(result)) result = result[0];
         return textValue(result);
     }
-    return value;
+    return "" + value;
 }
 
-/* `elementArray` is an array of html nodes which are wrapped in a single
-    div, of which at most about `cutoff` are initially visible, and
-    a control is rendered to enable the user to expand the list out. 
+/** @param {Array} elementArray an array of html nodes which are wrapped in a single
+                                div, of which at most about cutoff are initially visible, and
+                                a control is rendered to enable the user to expand the list out. 
+    @param {number=} cutoff
 */
 function wrapForOverflow(elementArray, cutoff) {
     var result = node("div")

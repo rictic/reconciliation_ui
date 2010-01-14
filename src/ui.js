@@ -41,9 +41,9 @@ function handleInput(callback) {
         $("#inputWindow").removeClass("disabled");
         $("#inputWindow button").removeAttr("disabled");
     }
-    function onAmbiguity(ambiguousRowIdx, handleAmbiguity) {
+    function onAmbiguity(ambiguousRecord, onAmbiguityResolved) {
         onProgressMade();
-        showAmbiguousRowPrompt(ambiguousRowIdx, handleAmbiguity);
+        showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved);
     }
     function onComplete() {
         onProgressMade();
@@ -53,7 +53,7 @@ function handleInput(callback) {
 }
 
 
-function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
+function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
     var groupedHeaders = groupProperties(headers);
     var context = $("#formatDisambiguation");
     $("table thead",context).replaceWith(buildTableHeaders(groupedHeaders));
@@ -63,28 +63,26 @@ function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
         var html = "<tr>";
         for (var i = 0; i < headerProps.length; i++) {
             html += "<td>" 
-            var val = row[headerProps[i]] || "";
+            var val = row[$.inArray(headerProps[i],headers)] || "";
             if (typeof val == "string")
                 html += val;
             else
                 for (var j = 0; j < val.length; j++)
                     if (val[j] != undefined)
-                      html += val[j] + "<br>";
+                        html += val[j] + "<br>";
             html += "<\/td>";
         }
         return html + "<\/tr>";
     }
 
-    var separateRows = rowHTML(rows[startingRowIdx]);
-    var numThings = 1;
-    for (var i = startingRowIdx + 1; i < rows.length && rows[i][headerProps[0]][0] == undefined; i++) {
-        separateRows += rowHTML(rows[i]);
-        numThings++;
-    }
+    var separateRows = $.map(ambiguousRecord, rowHTML).join("");
+    var numThings = ambiguousRecord.length;
+    
     $("table tbody", context).html(separateRows);
 
-    $(".thingName", context).html(textValue(rows[startingRowIdx]));
-    var thingType = rows[startingRowIdx]['/type/object/type'];
+    var tree = mapTreeToEntity(recordToTree(ambiguousRecord));
+    $(".thingName", context).html(textValue(tree));
+    var thingType = tree['/type/object/type'];
     if (thingType){
         var thingTypeEl = $(".thingType", context);
         freebase.getName(thingType[0],function(name){
@@ -95,32 +93,24 @@ function showAmbiguousRowPrompt(startingRowIdx, handleAmbiguity) {
     
     function ambiguityWrapper(shouldCombine) {
         $("button", context).attr("disabled","disabled");
-        handleAmbiguity(shouldCombine);
+        onAmbiguityResolved(shouldCombine);
     }
-    $(".doCombine", context).click(function() {ambiguityWrapper(true);});
-    $(".dontCombine", context).click(function() {ambiguityWrapper(false);});
+    $(".doCombine", context).unbind("click").click(function() {ambiguityWrapper(true);});
+    $(".dontCombine", context).unbind("click").click(function() {ambiguityWrapper(false);});
     
     $('table tbody tr:odd', context).addClass('odd');
     $('table tbody tr:even', context).addClass('even');
     context.show();
 }
-function doCombineRows() {
-    $("#inputWindow .screen button").attr("disabled","disabled");
-    combineRows(function(){
-        $("#formatDisambiguation").hide(); 
-        $("button").removeAttr("disabled");
-        showConfirmationSpreadsheet();
-    });
-}
 function showConfirmationSpreadsheet() {
     var spreadSheetData = {"aoColumns":[], "aaData":[]};
-    var columnNames = $.map(headers, getPropName);
+    var columnNames = $.map(headerPaths, function(header) {return header.getDisplayName();});
     for (var i = 0; i < columnNames.length; i++)
         spreadSheetData.aoColumns.push({"sTitle":columnNames[i]});
     politeEach(rows, function(_,entity) {
         var row = [];
         for (var j = 0; j < headers.length; j++){
-            var val = entity[headers[j]];
+            var val = entity.get(headerPaths[j]);
             if (val == undefined)
                 val = "";
             else if ($.isArray(val)){
@@ -136,8 +126,7 @@ function showConfirmationSpreadsheet() {
             row[j] = val;
         }
         spreadSheetData.aaData.push(row);
-    },
-    function() {
+    }, function() {
         updateUnreconciledCount();
         spreadSheetData["bAutoWidth"] = false;
         spreadSheetData["bSort"] = false;
@@ -170,22 +159,13 @@ function continueToReconciliation() {
     $("#gettingInput").remove();
     initializeTabs();
     addIdColumns();
-    objectifyRows(function() {
-        initializeReconciliation(beginAutoReconciliation);
-    });
+    initializeReconciliation(beginAutoReconciliation);
 }
 var reconciliationBegun = false;
 var defaultMDOName = "Spreadsheet Upload about (kind of data)"
 $(document).ready(function() {
     jQuery.ajaxSettings.cache = true; //keeps jquery from inserting cache-busting timecodes into json requests
 
-    //handle the options panel
-    $("#optionsPanel input").each(function(idx, input) {
-      $(input).change(function(){
-        eval(input.id + '="' + input.value + '"');
-      });
-      input.value = eval(input.id);
-    });
     $("#progressbar").progressbar({value:0});
     window.onbeforeunload = function() {
         if (reconciliationBegun)
@@ -199,7 +179,7 @@ $(document).ready(function() {
                          });
     $("#mdo_name")[0].value = defaultMDOName;
     $("#mdo_name").change(updateMdoInfo);
-	$("input:name='option_layout'").change(function(){
+	$("input.graphport").change(function(){
         var warning = $("#otg_upload_warning"); 
         if (this.value === "otg") 
             warning.show(); 
@@ -234,7 +214,7 @@ $(document).ready(function() {
         //ctrl-a or cmd-a
         if ((event.metaKey || event.ctrlKey) && event.keyCode === 65)
             return;
-        inputThrottler(event);
+        inputThrottler();
     }
     
     $("#initialInput").keyup(inputFilterer).keydown(inputFilterer);
@@ -243,6 +223,9 @@ $(document).ready(function() {
     //for most everyone else's browsers
 	$("#initialInput")[0].oninput = inputThrottler;
     if ($("#initialInput")[0].value != "") inputThrottler();
+    
+    $("#spreadsheetPreview button.continue").click(continueToReconciliation);
+    $(".uploadLogin button.checkLogin").click(checkLogin);
 });
 
 function updateUnreconciledCount() {

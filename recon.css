@@ -283,3 +283,11 @@ td {
 
 .inputWarnings li {
 }
+
+.spinnerHolder {
+    height: 30px;
+}
+
+.examples {
+    font-size: 90%;
+}

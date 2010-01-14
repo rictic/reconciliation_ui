@@ -32,9 +32,9 @@
 */
 
 function onDisplayOutputScreen() {
-    setTimeout(checkLogin,0);
-    setTimeout(displaySpreadsheet,0);
-    setTimeout(prepareTriples,0);
+    addTimeout(checkLogin,0);
+    addTimeout(displaySpreadsheet,0);
+    addTimeout(prepareTriples,0);
 }
 function onHideOutputScreen() {
     if (spreadsheetRendererYielder)
@@ -44,11 +44,14 @@ function onHideOutputScreen() {
     $("#outputSpreadSheet")[0].value = "";
 }
 
+/** @param {!Array.<(string|undefined)>} arr
+  * @returns {!string}
+  */
 function encodeLine(arr) {
     var values = [];
-    for(var i = 0; i < headers.length; i++){
+    for(var i = 0; i < headerPaths.length; i++){
         var val = arr[i];
-        if (typeof val == "undefined")
+        if (typeof val === "undefined")
             values.push("");
         else if (!val.match(/(\t|\"|\n)/))
             values.push(arr[i])
@@ -60,28 +63,14 @@ function encodeLine(arr) {
     return values.join("\t");
 }
 
-//Like getChainedProperty, only it preserves array placement
-function getChainedPropertyPreservingPlace(entity, prop) {
-    var slots = [entity];
-    $.each(prop.split(":"), function(_,part) {
-        var newSlots = [];
-        $.each(slots, function(_,slot) {
-            if (!slot || !slot[part])
-                newSlots.push(undefined);
-            else
-                newSlots = newSlots.concat($.makeArray(slot && slot[part]))
-        })
-        slots = newSlots;
-    });
-    if (slots === []) return undefined;
-    return slots;
-}
-
-
+/**
+  * @param {!tEntity} row
+  * @return {!Array.<!string>}
+  */
 function encodeRow(row) {
     var lines = [[]];
-    for (var i = 0; i < headers.length; i++){
-        var val = getChainedPropertyPreservingPlace(row, headers[i]);
+    $.each(headerPaths, function(i, headerPath) {
+        var val = row.get(headerPath, true);
         if ($.isArray(val)) {
             for (var j = 0; j < val.length; j++) {
                 if (lines[j] == undefined) lines[j] = [];
@@ -90,7 +79,7 @@ function encodeRow(row) {
         }
         else
             lines[0][i] = textValue(val);
-    }
+    });
     return $.map(lines,encodeLine);
 }
 
@@ -105,7 +94,7 @@ function displaySpreadsheet() {
 var spreadsheetRendererYielder;
 function renderSpreadsheet(onComplete) {
     var lines = [];
-    lines.push(encodeLine(headers));
+    lines.push(encodeLine($.map(headerPaths, function(headerPath){return headerPath.toString()})));
     spreadsheetRendererYielder = new Yielder();
     politeEach(rows, function(idx, row) {
         lines = lines.concat(encodeRow(row));
@@ -148,6 +137,10 @@ function getTriples(entities, callback) {
                 return getValue(property, value[0]);
             return $.map(value, function(val){return getValue(property, val)});
         }
+        if (getType(value) === "object") {
+            error("found an object for the value property " + property + "!");
+            return undefined;
+        }
         var stringValue = value;
         var expectedType = freebase.getPropMetadata(property).expected_type.id;
         if (Arr.contains(["/type/int","/type/float"], expectedType))
@@ -164,13 +157,14 @@ function getTriples(entities, callback) {
     }
     function cvtObject(cvt) {
         var result = {};
-        var props = cvt['/rec_ui/cvt_props'];
+        var props = cvt['/rec_ui/headers'];
         var empty = true;
         var type = $.makeArray(cvt['/type/object/type'])[0];
         for (var i = 0; i < props.length; i++){
             var predicate = props[i];
             if (predicate.indexOf(type) != 0){
-                warn("bad predicate " + predicate + " in CVT with type" + type);
+                if (predicate !== "/type/object/type")
+                    warn("bad predicate " + predicate + " in CVT with type" + type);
                 continue;
             }
             var value = cvt[predicate];
@@ -183,9 +177,9 @@ function getTriples(entities, callback) {
                 }
             }
             else {
-                var value = $.makeArray(value);
+                value = $.makeArray(value);
                 value = Arr.filter(value, function(val){return !val['/rec_ui/toplevel_entity']});
-                ids = $.map(value, getID);
+                var ids = $.map(value, getID);
                 if (ids.length === 0)
                     continue;
                 if (ids.length === 1)
@@ -238,9 +232,14 @@ function getTriples(entities, callback) {
                     return;
                 }
                 
-                if (object['/rec_ui/is_cvt']){
+                if (getType(object) !== "object") {
+                    error("expected the target of the property " + predicate + " to be an object, but it was a " + getType(object));
+                    return;
+                }
+                
+                if (object.isCVT()){
                     if (!(object['/rec_ui/parent']['/rec_ui/id'] === subject['/rec_ui/id']))
-                        return; //only create cvt once, from the 'root' of the parent
+                        return; //only create the cvt once, from the 'root' of the parent
                     var cvtTripleObject = cvtObject(object);
                     if (cvtTripleObject)
                         triples.push({s:getID(subject),p:predicate,o:cvtTripleObject}); 
@@ -248,6 +247,7 @@ function getTriples(entities, callback) {
                 
                 if  (!isValidID(object.id))
                     return;
+                
                 
                 triples.push({s:getID(subject),p:predicate,o:getID(object)});
             })
