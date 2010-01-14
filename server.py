@@ -1,6 +1,7 @@
 import web
 from os import path
 import simplejson
+import sys
 
 rootdir = path.abspath('./build')
 def getFile(filename):
@@ -37,4 +38,8 @@ web.config.debug = False
 urls = ('/(.*)', 'index')
 app = web.application(urls, globals())
 if __name__ == "__main__":
-    web.httpserver.runsimple(app.wsgifunc(), ("localhost",9777))
+    port = 9777
+    
+    if (len(sys.argv) == 2):
+        port = int(sys.argv[1])
+    web.httpserver.runsimple(app.wsgifunc(), ("localhost",port))

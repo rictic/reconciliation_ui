@@ -1,11 +1,13 @@
 task :default => [:test]
 task :build => [:copy, :compile, :version]
 task :build_debug => [:clean, :copy_all, :version]
-task :deploy => [:build, :push]
-task :deploy_debug => [:build_debug, :push]
+task :deploy => [:clean, :build, :push]
+task :deploy_debug => [:clean, :build_debug, :compile_tests, :push]
+task :deploy_dev => [:clean, :build_debug, :compile_tests, :push_dev]
 
-
-FileUtils.mkdir_p "build"
+file "build/" do
+  sh "mkdir -p build"
+end
 
 task :test => [:compile_tests, :run_tests]
 
@@ -18,7 +20,7 @@ task :clean do
   sh "rm -rf build"
 end
 
-task :copy do
+task :copy => "build/" do
   #copy static resources
   sh "cp COPYRIGHT *.css build/"
   #make sure our other css and images make it
@@ -45,7 +47,7 @@ task :compile => [:copy, "build/compiled.js", "build/recon.html"]
 #this file isn't used, it just gives the compiler a chance to catch errors before we even run tests
 task :compile_tests => "build/src_and_tests_compiled.js"
 
-file "build/recon.html" => "recon.html" do
+file "build/recon.html" => ["build/", "recon.html"] do
   new_source = source.sub(region_regex, "<script charset=\"utf-8\" src=\"compiled.js\"></script>")
   File.open("build/recon.html", 'w') {|f| f.write(new_source)}
 end
@@ -73,7 +75,15 @@ task :version do
 end
 
 task :push do
-  sh "scp -q -r server.py build data.labs.freebase.com:/mw/loader/"
+  push "/mw/loader/"
+end
+
+task :push_dev do
+  push "/mw/loader_dev/"
+end
+
+def push(target)
+  sh "scp -q -r server.py build data.labs.freebase.com:#{target}"
 end
 
 def compilejs(js_files, output_name, third_party=false, externs=[])
