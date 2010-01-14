@@ -298,7 +298,7 @@ function getCreatedIds(url, callback){
 function formHandler(result){
   var job_id=result.result.job_id;
   var url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
-  var peacock_url="http://peacock.freebaseapps.com/stats/"+job_id+"?url=http://data.labs.freebase.com/freeq/spreadsheet";
+  var peacock_url="http://peacock.freebaseapps.com/stats/data.labs/spreadsheet/"+job_id;
   $(".uploadForm").hide();
   $("#upload_progressbar").progressbar({value:0});
   $("#upload_progressbar").show();
@@ -324,5 +324,5 @@ function updateUploadProgressbar(url){
 
 $(document).ready(function () {
     $('#freeq_form').ajaxForm({dataType:'json', success:formHandler});
-  });
+});
 
