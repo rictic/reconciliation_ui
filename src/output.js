@@ -279,50 +279,49 @@ function checkLogin() {
         }});
 }
 
-function getCreatedIds(url, callback){
-  $.getJSON(url, null, function(result){
-    var actions=result.result.actions;
-    var res={};
-    $.each(actions, function(_,i){
-        var o = JSON.parse(i.result);
-        for (var j in o){
-          if (j.indexOf("entity")==0){
-            res["$"+j]=o[j];
-          }
-        }
-      });
-    callback(res);
-  });
-}
-
-function formHandler(result){
-  var job_id=result.result.job_id;
-  var url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
-  var peacock_url="http://peacock.freebaseapps.com/stats/data.labs/spreadsheet/"+job_id;
-  $(".uploadForm").hide();
-  $("#upload_progressbar").progressbar({value:0});
-  $("#upload_progressbar").show();
-  $("#freeq_link").attr("href",peacock_url);
-  $("#freeq_link").show()
-  updateUploadProgressbar(url);
-}
-
-function updateUploadProgressbar(url){
-  function handler(result){
-    var count=result.result.count;
-    var nil=0;
-    $.each(result.result.details, function(_,i){
-      if (i.status==='null')
-        nil=parseInt(i.count,10);
+function getCreatedIds(url, callback) {
+    $.getJSON(url, null, function(result) {
+        var actions=result.result.actions;
+        var res={};
+        $.each(actions, function(_,i) {
+            var o = JSON.parse(i.result);
+            for (var j in o) {
+                if (j.indexOf("entity")==0){
+                    res["$"+j]=o[j];
+                }
+            }
+        });
+        callback(res);
     });
-    $('#upload_progressbar').progressbar('option', 'value', (count-nil)*100/count );
-    if (nil!=0)
-      setTimeout(function() {updateUploadProgressbar(url);}, 1000);
-  }
-  $.getJSON(url, null, handler);
+}
+
+function formHandler(result) {
+    var job_id=result.result.job_id;
+    var url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
+    var peacock_url="http://peacock.freebaseapps.com/stats/data.labs/spreadsheet/"+job_id;
+    $(".uploadForm").hide();
+    $("#upload_progressbar").progressbar({value:0});
+    $("#upload_progressbar").show();
+    $("#freeq_link").attr("href",peacock_url);
+    $("#freeq_link").show()
+    updateUploadProgressbar(url);
+}
+
+function updateUploadProgressbar(url) {
+    function handler(result){
+        var count=result.result.count;
+        var nil=0;
+        $.each(result.result.details, function(_,i){
+            if (i.status === 'null')
+                nil=parseInt(i.count,10);
+        });
+        $('#upload_progressbar').progressbar('option', 'value', (count-nil)*100/count );
+        if (nil !== 0)
+            setTimeout(function() {updateUploadProgressbar(url);}, 1000);
+    }
+    $.getJSON(url, null, handler);
 }
 
 $(document).ready(function () {
     $('#freeq_form').ajaxForm({dataType:'json', success:formHandler});
 });
-
