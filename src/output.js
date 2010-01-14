@@ -296,10 +296,9 @@ function getCreatedIds(url, callback){
 }
 
 function formHandler(result){
-  var url=result.result.status_url;
   var job_id=result.result.job_id;
-  url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
-  peacock_url="http://peacock.freebaseapps.com/stats/"+job_id+"?url=http://data.labs.freebase.com/freeq/spreadsheet";
+  var url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
+  var peacock_url="http://peacock.freebaseapps.com/stats/"+job_id+"?url=http://data.labs.freebase.com/freeq/spreadsheet";
   $(".uploadForm").hide();
   $("#upload_progressbar").progressbar({value:0});
   $("#upload_progressbar").show();
