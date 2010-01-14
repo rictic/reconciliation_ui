@@ -313,7 +313,7 @@ function updateUploadProgressbar(url){
     var nil=0;
     $.each(result.result.details, function(_,i){
       if (i.status='null')
-        nil=i.count;
+        nil=parseInt(i.count,10);
     });
     $('#upload_progressbar').progressbar('option', 'value', (count-nil)*100/count );
     if (nil!=0)
