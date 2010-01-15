@@ -58,12 +58,12 @@ file "build/libs_compiled.js" => libs do |t|
   compilejs(t.prerequisites, t.name, true)
 end
 
-file "build/src_compiled.js" => src + ["src/externs.js"] do |t|
-  compilejs(src, t.name, false, ['src/externs.js'])
+file "build/src_compiled.js" => src + ["src/externs.js", "lib/jquery-1.3.2.externs.js"] do |t|
+  compilejs(src, t.name, false, ['src/externs.js', 'lib/jquery-1.3.2.externs.js'])
 end
 
 file "build/src_and_tests_compiled.js" => src + FileList["test/*.js"] do |t|
-  compilejs(t.prerequisites, t.name, false, ['src/externs.js','test/externs'])
+  compilejs(t.prerequisites, t.name, false, ['src/externs.js','lib/jquery-1.3.2.externs.js','test/externs'])
 end
 
 task :version do
