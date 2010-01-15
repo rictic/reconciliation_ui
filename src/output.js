@@ -276,7 +276,8 @@ function checkLogin() {
             }
             else
                 error(response);
-        }});
+        }
+    });
 }
 
 function getCreatedIds(url, callback) {
@@ -295,7 +296,7 @@ function getCreatedIds(url, callback) {
     });
 }
 
-function formHandler(result) {
+function onFreeQJobStarted(result) {
     var job_id=result.result.job_id;
     var url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
     var peacock_url="http://peacock.freebaseapps.com/stats/data.labs/spreadsheet/"+job_id;
@@ -309,19 +310,25 @@ function formHandler(result) {
 
 function updateUploadProgressbar(url) {
     function handler(result){
-        var count=result.result.count;
-        var nil=0;
+        var totalActions = result.result.count;
+        var actionsRemaining = 0;
         $.each(result.result.details, function(_,i){
             if (i.status === 'null')
-                nil=parseInt(i.count,10);
+                actionsRemaining = parseInt(i.count,10);
         });
-        $('#upload_progressbar').progressbar('option', 'value', (count-nil)*100/count );
-        if (nil !== 0)
+        $('#upload_progressbar').progressbar('option', 'value', (totalActions-actionsRemaining)*100/totalActions);
+        if (actionsRemaining === 0) {
+            //TODO:
+            //if uploaded to sandbox, suggest uploading to OTG
+            //if uploaded to otg, grab the ids of newly created topics
+        }
+        else {
             setTimeout(function() {updateUploadProgressbar(url);}, 1000);
+        }
     }
     $.getJSON(url, null, handler);
 }
 
 $(document).ready(function () {
-    $('#freeq_form').ajaxForm({dataType:'json', success:formHandler});
+    $('#freeq_form').ajaxForm({dataType:'json', success:onFreeQJobStarted});
 });
