@@ -291,3 +291,14 @@ td {
 .examples {
     font-size: 90%;
 }
+
+.triplesDisplay {
+    max-height: 200px;
+    overflow: auto;
+}
+
+.loginUnknown {
+    padding-left: 10px;
+    padding-top: 2px;
+    font-size: 95%;
+}

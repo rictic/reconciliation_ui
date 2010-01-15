@@ -186,7 +186,7 @@ $(document).ready(function() {
         else 
             warning.hide();
     });
-	$(".triplesDisplayButton").click(function(){$(".triplesDisplay").slideToggle()})
+	
 	if ("LOADER_VERSION" in window) {
 	    var version = window['LOADER_VERSION'];
 	    $(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + version);
@@ -225,7 +225,6 @@ $(document).ready(function() {
     if ($("#initialInput")[0].value != "") inputThrottler();
     
     $("#spreadsheetPreview button.continue").click(continueToReconciliation);
-    $(".uploadLogin button.checkLogin").click(checkLogin);
 });
 
 function updateUnreconciledCount() {

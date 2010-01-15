@@ -159,6 +159,11 @@
               </div>
               <div class='uploadForm invisible'> 
                   We've found <span class='triple_count'></span> assertions that you can upload.
+                  <button class="displayTriples">Detailed view &darr;</button>
+                  <div>
+                      <pre class='triplesDisplay invisible'></pre>
+                  </div>
+                  
                   <br>
                   <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
                   <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
@@ -175,16 +180,29 @@
                       Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
                       <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
                       <input type="submit" value="Upload">
+                      
+                      <div class="loginUnknown invisible">
+                          Unable to tell if you're logged in or not.<br>
+                          If you get a 401 Unauthenticated error when uploading, be sure that you're <a href='http://www.freebase.com/signin/login' target='_blank'>logged in on freebase.com</a>.
+                      </div>
                   </form>
+                  
                   <br>
               </div>
-              <div id="upload_progressbar" class='invisible'>
-              </div>
-              <a id="freeq_link" target="_blank" class='invisible'>View on Peacock</a><br/>
               
-              <button class="triplesDisplayButton">Display Triples</button>
-              <div>
-                  <pre class='triplesDisplay invisible'></pre>
+              <div class="freeqLoad invisible">
+                  <div class="freeqLoadInProgress invisible">
+                      <div>
+                          FreeQ is loading your data now:
+                      </div>
+                      <div id="upload_progressbar"></div>
+                  </div>
+                  
+                  <div class="freeqLoadComplete invisible">
+                      Your data is finished loading!  <button class="loadAgainButton">Upload with different settings</button>
+                  </div>
+                  
+                  <a id="freeq_link" target="_blank">View the status of your data on Peacock</a><br/>
               </div>
           </div>
       </div>

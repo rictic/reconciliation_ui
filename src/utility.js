@@ -314,6 +314,10 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
         $.getJSON(url, params, responseHandler);
 }
 
+function onSameDomain() {
+    return location.host === "data.labs.freebase.com";
+}
+
 /*
 ** create debugging tools if they're not available
 */
