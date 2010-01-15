@@ -1,15 +1,18 @@
 task :default => [:test]
+task :test => [:compile_tests, :run_tests]
+
 task :build => [:copy, :compile, :version]
+#i.e. don't compile, just copy
 task :build_debug => [:clean, :copy_all, :version]
-task :deploy => [:clean, :build, :push]
-task :deploy_debug => [:clean, :build_debug, :compile_tests, :push]
-task :deploy_dev => [:clean, :build_debug, :compile_tests, :push_dev]
+
+task :deploy => [:clean, :build, :push, :clean_again]
+task :deploy_debug => [:clean, :build_debug, :compile_tests, :push, :clean_again]
+task :deploy_dev => [:clean, :build_debug, :compile_tests, :push_dev, :clean_again]
 
 file "build/" do
   sh "mkdir -p build"
 end
 
-task :test => [:compile_tests, :run_tests]
 
 task :run_tests do
   sh "jstdServer ; sleep 3 ; open http://localhost:4224/capture" unless `nc -z localhost 4224` =~ /succeeded!/
@@ -17,6 +20,10 @@ task :run_tests do
 end
 
 task :clean do
+  sh "rm -rf build"
+end
+
+task :clean_again do
   sh "rm -rf build"
 end
 
@@ -42,10 +49,10 @@ js_files = scripts_region.scan(/src=\"(.*?)\"/).compact.map{|a|a[0]}
 
 libs, src = js_files.partition {|f| f.start_with? "lib/"}
 
-task :compile => [:copy, "build/compiled.js", "build/recon.html"]
+task :compile => [:copy, "build/", "build/compiled.js", "build/recon.html"]
 
 #this file isn't used, it just gives the compiler a chance to catch errors before we even run tests
-task :compile_tests => "build/src_and_tests_compiled.js"
+task :compile_tests => ["build/", "build/src_and_tests_compiled.js"]
 
 file "build/recon.html" => ["build/", "recon.html"] do
   new_source = source.sub(region_regex, "<script charset=\"utf-8\" src=\"compiled.js\"></script>")
