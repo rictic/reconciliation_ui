@@ -331,7 +331,7 @@ function updateUploadProgressbar(url) {
             //if uploaded to otg, grab the ids of newly created topics
         }
         else {
-            setTimeout(function() {updateUploadProgressbar(url);}, 1000);
+            addTimeout(function() {updateUploadProgressbar(url);}, 1000);
         }
     }
     $.getJSON(url, null, handler);
