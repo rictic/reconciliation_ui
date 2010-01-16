@@ -67,12 +67,15 @@ file "build/libs_compiled.js" => libs do |t|
   compilejs(t.prerequisites, t.name, true)
 end
 
-file "build/src_compiled.js" => src + ["src/externs.js", "lib/jquery.externs.js"] do |t|
-  compilejs(src, t.name, false, ['src/externs.js', 'lib/jquery.externs.js'])
+#externs files for libraries
+lib_externs = ["src/externs.js", "lib/jquery.externs.js", "lib/jsobjdump.externs.js"]
+
+file "build/src_compiled.js" => src + lib_externs do |t|
+  compilejs(src, t.name, false, lib_externs)
 end
 
 file "build/src_and_tests_compiled.js" => src + FileList["test/*.js"] do |t|
-  compilejs(t.prerequisites, t.name, false, ['src/externs.js','lib/jquery.externs.js','test/externs'])
+  compilejs(t.prerequisites, t.name, false, lib_externs + ['test/externs'])
 end
 
 task :version do

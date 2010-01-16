@@ -308,14 +308,14 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
         onSuccess(response);
     }
 
-    if (location.host === "data.labs.freebase.com")
+    if (window.location.host === "data.labs.freebase.com")
         $.post(url, params, responseHandler, "jsonp")
     else 
         $.getJSON(url, params, responseHandler);
 }
 
 function onSameDomain() {
-    return location.host === "data.labs.freebase.com";
+    return window.location.host === "data.labs.freebase.com";
 }
 
 /*
