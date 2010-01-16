@@ -1,5 +1,6 @@
 TestCase("triples",{
     "test a simple entity with a value property": function() {
+        resetGlobals();
         var entity = new tEntity({id:"/a"});
         entity.addProperty("b", "c");
         
@@ -9,6 +10,7 @@ TestCase("triples",{
         });
     }
    ,"test a simple cvt": function() {
+        resetGlobals();
         var entity = new tEntity({id:"/a"});
         var cvt    = new tEntity({"/rec_ui/is_cvt":true, "/rec_ui/parent":entity});
         entity.addProperty("topic",cvt);
@@ -24,6 +26,7 @@ TestCase("triples",{
         });
     }
    ,"test multiple entities pointing into a cvt": function() {
+        resetGlobals();
         var entity = new tEntity({id:"/entity", "/rec_ui/toplevel_entity":true});
         var cvt    = new tEntity();
         var leaf   = new tEntity({id:"/leaf"});
