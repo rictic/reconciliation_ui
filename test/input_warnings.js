@@ -10,7 +10,7 @@ TestCase("input warnings",{
             else
                 onComplete();
         });
-        var unmockWarnUnknownProp= temporaryMock(window, 'warnUnknownProp', pass);
+        var unmockWarnUnknownProp = temporaryMock(window, 'warnUnknownProp', pass);
         
         try {
             expectAsserts(2);
@@ -19,7 +19,38 @@ TestCase("input warnings",{
         finally {
             unmockFetch();
             unmockWarnUnknownProp();
-            resetGlobals();
+        }
+    }
+    ,testWarnTypeMissing: function() {
+        var unmockWarnPropMissing = temporaryMock(window, 'warnPropertyMissing', pass);
+        
+        try {
+            expectAsserts(1);
+            justParseIt("/type/object/name\nSt. Francis");
+        }
+        finally {
+            unmockWarnPropMissing();
+        }
+    }
+    ,testWarnNameMissing: function() {
+        var unmockWarnPropMissing = temporaryMock(window, 'warnPropertyMissing', pass);
+        
+        try {
+            expectAsserts(1);
+            justParseIt("/type/object/type\n/film/film");
+        }
+        finally {
+            unmockWarnPropMissing();
+        }
+    }
+    ,testUnwarnedSpreadsheet: function() {
+        var unmockInputWarning = temporaryMock(window, 'addInputWarning', fail);
+        
+        try {
+            justParseIt("/type/object/type\t/type/object/name\n/film/film\tBlade Runner");
+        }
+        finally {
+            unmockInputWarning()
         }
     }
 });

@@ -254,12 +254,18 @@ function handlePOSTdata(data) {
     initialInputUpdated();
 }
 
+var inputWarnings = {};
 function addInputWarning(text) {
+    if (text in inputWarnings) 
+        return;
+    else
+        inputWarnings[text] = true;
     $(".inputWarnings").show()
     $(".inputWarnings ul").append(node("li", text));
 }
 
 function clearInputWarnings() {
+    inputWarnings = {};
     $(".inputWarnings").hide()
     $(".inputWarnings ul").empty();
 }
