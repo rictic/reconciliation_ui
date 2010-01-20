@@ -306,6 +306,8 @@ function populateCreatedIds(job_id, onComplete) {
 
 function getCreatedIds(url, callback) {
     $.getJSON(url, null, function(result) {
+        $(".fetchingFreeqIds").hide();
+        $(".idsFetched").show();
         var actions=result.result.actions;
         var res={};
         $.each(actions, function(_,i) {
