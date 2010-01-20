@@ -8,15 +8,19 @@ function addReviewItem(entity) {
     var skippedTemplate = $(".templates .reviewSkippedTemplate");
     var reconciledTemplate = $(".templates .reviewReconciledTemplate");
     if (!entity) return;
-    if (entity["/rec_ui/is_cvt"] || null == entity.id || $.isArray(entity.id))
+    if (entity.isCVT() || null == entity.id || $.isArray(entity.id))
         return;
-
+    
     var template;
     switch(entity.id){
       case "None": template = newTemplate.clone(); break;
       case ""    : template = skippedTemplate.clone(); break;
       default    : template = reconciledTemplate.clone(); break;
     }
+    
+    var classSelector = "reviewEntity" + entity['/rec_ui/id'];
+    template.addClass(classSelector);
+    $("." + classSelector, container).remove();
     
     $(".candidateName",template).html("<a class='internalLink' href='#" + entity['/rec_ui/id'] + "'>" + textValue(entity) + "</a>");
     var freebaseName = null;

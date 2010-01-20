@@ -12,7 +12,7 @@ TestCase("triples",{
    ,"test a simple cvt": function() {
         resetGlobals();
         var entity = new tEntity({id:"/a"});
-        var cvt    = new tEntity({"/rec_ui/is_cvt":true, "/rec_ui/parent":entity});
+        var cvt    = new tEntity({"/rec_ui/parent":entity});
         entity.addProperty("topic",cvt);
         
         /* CVT properties have to begin with the CVT's type, 
