@@ -277,6 +277,11 @@ function recordToTree(record) {
     $.each(record, function(j, row) {
         for(var k in row) {
             var value = row[k]
+            if (k >= headerPaths.length) {
+                var errorMessage = "There are more columns than headers.  " + row.length + " columns found, but only " + headerPaths.length + " headers.";
+                inputError(errorMessage);
+                throw new Error(errorMessage);
+            }
             if(value != null && value.length > 0)
                 pathPut(headerPaths[k], j, tree, value)
         }
