@@ -262,12 +262,14 @@ function checkLogin() {
         return;
     }
     
+    $(".uploadSpinner").show();
     $(".uploadLogin").hide();
     $(".uploadForm").hide();
     $.ajax({
         url:"http://data.labs.freebase.com/freeq/spreadsheet/",
         type:"GET",
         complete:function(response){
+            $(".uploadSpinner").hide();
             if (!response || !response.status){
                 error(response);
                 return;
@@ -286,6 +288,22 @@ function checkLogin() {
     });
 }
 
+var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
+
+/** @param {!number} job_id
+  * @param {function()=} onComplete
+  */
+function populateCreatedIds(job_id, onComplete) {
+    getCreatedIds(freeq_url + job_id + "?view=list", function(createdEntities) {
+        for (var key in createdEntities) {
+            var entity = entities[key.match(/entity(\d+)/)[1]];
+            var id = createdEntities[key];
+            entity.id = standardizeId(id);
+        }
+        if (onComplete) onComplete();
+    });
+}
+
 function getCreatedIds(url, callback) {
     $.getJSON(url, null, function(result) {
         var actions=result.result.actions;
@@ -294,7 +312,7 @@ function getCreatedIds(url, callback) {
             var o = JSON.parse(i.result);
             for (var j in o) {
                 if (j.indexOf("entity")==0){
-                    res["$"+j]=o[j];
+                    res[j]=o[j];
                 }
             }
         });
@@ -302,20 +320,26 @@ function getCreatedIds(url, callback) {
     });
 }
 
-function onFreeQJobStarted(result) {
-    var job_id=result.result.job_id;
-    var url="http://data.labs.freebase.com/freeq/spreadsheet/"+job_id;
-    var peacock_url="http://peacock.freebaseapps.com/stats/data.labs/spreadsheet/"+job_id;
-    $(".uploadForm").hide();
-    $(".freeqLoad").show();
-    $(".freeqLoadInProgress").show();
-    $("#upload_progressbar").progressbar({value:0});
-    $("#freeq_link").attr("href",peacock_url);
-    updateUploadProgressbar(url);
+
+/** @constructor
+  * @param {!number} job_id
+  * @param {function(!number)=} onComplete
+  */
+function FreeQMonitor(job_id, onComplete) {
+    /** @const */
+    this.job_id = job_id;
+    /** @const */
+    this.url = freeq_url + job_id;
+    this.onComplete = onComplete;
+    var self = this;
+    this.repeatingTimer = new RepeatingTimer(30 * 1000, function() {self.checkProgress();})
+    this.checkProgress();
 }
 
-function updateUploadProgressbar(url) {
+FreeQMonitor.prototype.checkProgress = function() {
+    var self = this;
     function handler(result){
+        self.repeatingTimer.reset();
         var totalActions = result.result.count;
         var actionsRemaining = 0;
         $.each(result.result.details, function(_,i){
@@ -323,29 +347,87 @@ function updateUploadProgressbar(url) {
                 actionsRemaining = parseInt(i.count,10);
         });
         $('#upload_progressbar').progressbar('option', 'value', (totalActions-actionsRemaining)*100/totalActions);
+        
         if (actionsRemaining === 0) {
-            $(".freeqLoadInProgress").hide();
-            $(".freeqLoadComplete").show();
-            //TODO:
-            //if uploaded to sandbox, suggest uploading to OTG
-            //if uploaded to otg, grab the ids of newly created topics
+            self.repeatingTimer.stop();
+            if (self.onComplete) {
+                //ensures that onComplete is called at most once
+                var onComplete = self.onComplete;
+                self.onComplete = undefined;
+                onComplete(self.job_id);
+            }
         }
         else {
-            setTimeout(function() {updateUploadProgressbar(url);}, 1000);
+            addTimeout(function() {self.checkProgress()}, 1000);
         }
     }
-    $.getJSON(url, null, handler);
+    $.getJSON(this.url, null, handler);
 }
 
 $(document).ready(function () {
-    if (onSameDomain())
-        $('#freeq_form').ajaxForm({dataType:'json', success:onFreeQJobStarted});
+    if (onSameDomain()) {
+        $('#freeq_form').ajaxForm({
+            dataType:'json'
+            ,beforeSend: function() {
+                $(".uploadToFreeQ").hide();
+                $(".uploadForm .error").hide();
+                $(".uploadSpinner").show();
+            }
+            ,error: function(x, msg, error) {
+                $(".uploadToFreeQ").show();
+                $(".uploadForm .error").show().html(escape(msg));
+            }
+            ,success: function(result) {
+                var job_id=result.result.job_id;
+                var peacock_url="http://peacock.freebaseapps.com/stats/data.labs/spreadsheet/"+job_id;
+                $(".freeqLoad").show();
+                $(".freeqLoadInProgress").show();
+                $("#upload_progressbar").progressbar({value:0});
+                $(".peacock_link").attr("href",peacock_url);
+                
+                var url=freeq_url+job_id;
+                var freeqMonitor = new FreeQMonitor(job_id, function(job_id) {
+                    $(".freeqLoadInProgress").hide();
+                    if ($("input.graphport:checked")[0].value === "otg") {
+                        populateCreatedIds(job_id, function() {
+                            displaySpreadsheet();
+                        });
+                        $(".uploadToOTGComplete").show();
+                    }
+                    else {
+                        $(".uploadToSandboxComplete").show();
+                    }
+                });
+            }
+            ,complete: function() {
+                $(".uploadSpinner").hide();
+            }
+        });
+    }
+        
         
     $(".displayTriples").click(function(){$(".triplesDisplay").slideToggle(); return false;});
     $(".uploadLogin button.checkLogin").click(checkLogin);
     $(".loadAgainButton").click(function() {
-        $(".uploadForm").show();
         $(".freeqLoad").hide();
-        $(".freeqLoadComplete").hide();
+        $(".uploadToSandboxComplete").hide();
+        $(".uploadToFreeQ").show();
+    });
+    
+    
+    $("#mdo_data_source").suggest({type:"/dataworld/information_source",
+                               flyout:true,type_strict:"should"})
+                         .bind("fb-select", function(e, data) { 
+                               $("#mdo_data_source_id")[0].value = data.id;
+                               updateMdoInfo();
+                         });
+    $("#mdo_name")[0].value = defaultMDOName;
+    $("#mdo_name").change(updateMdoInfo);
+	$("input.graphport").change(function(){
+        var warning = $("#otg_upload_warning"); 
+        if (this.value === "otg") 
+            warning.show(); 
+        else 
+            warning.hide();
     });
 });

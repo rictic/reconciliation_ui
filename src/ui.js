@@ -171,21 +171,6 @@ $(document).ready(function() {
         if (reconciliationBegun)
             return "You may have unsaved changes.  Make sure to copy your updated spreadsheet or upload your data to Freebase on the Retrieve Your Data tab.";
     };
-    $("#mdo_data_source").suggest({type:"/dataworld/information_source",
-                               flyout:true,type_strict:"should"})
-                         .bind("fb-select", function(e, data) { 
-                               $("#mdo_data_source_id")[0].value = data.id;
-                               updateMdoInfo();
-                         });
-    $("#mdo_name")[0].value = defaultMDOName;
-    $("#mdo_name").change(updateMdoInfo);
-	$("input.graphport").change(function(){
-        var warning = $("#otg_upload_warning"); 
-        if (this.value === "otg") 
-            warning.show(); 
-        else 
-            warning.hide();
-    });
 	
 	if ("LOADER_VERSION" in window) {
 	    var version = window['LOADER_VERSION'];

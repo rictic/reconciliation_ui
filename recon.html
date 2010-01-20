@@ -152,44 +152,49 @@
               <h3>Copy your updated spreadsheet from here:</h3>
               <textarea name="outputSpreadSheet" id="outputSpreadSheet" class='spreadsheet'></textarea><br>
               
-
+              
+              
               <h3>Upload your data to Freebase:</h3>
-              <div class='uploadLogin invisible'>
-                  You need to <a href='http://www.freebase.com/signin/login' target='_blank'>login at Freebase.com</a> before uploading.  <button class="checkLogin">Then Click Here To Continue</button>
-              </div>
-              <div class='uploadForm invisible'> 
-                  We've found <span class='triple_count'></span> assertions that you can upload.
-                  <button class="displayTriples">Detailed view &darr;</button>
-                  <div>
-                      <pre class='triplesDisplay invisible'></pre>
+              <div class="uploadToFreeQ">
+                  <div class='uploadLogin invisible'>
+                      You need to <a href='http://www.freebase.com/signin/login' target='_blank'>login at Freebase.com</a> before uploading.  <button class="checkLogin">Then Click Here To Continue</button>
                   </div>
-                  
-                  <br>
-                  <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
-                  <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
-              
-              
-                  <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
-                  <form id="freeq_form" action="http://data.labs.freebase.com/freeq/spreadsheet/" target="_blank" method="POST" accept-charset="utf-8">
-                      <input type='hidden' name='user' value='' id='user'>
-                      <input type='hidden' name="action_type" value="LOAD_TRIPLE" id="action_type">
-                      <input type="hidden" name="operator" value="/user/spreadsheet_bot" id="operator">
-                      <input type="hidden" name="check_params" value="false" id="check_params">
-                      <input type='hidden' name='mdo_info' value='' id='mdo_info'>
-                      <input type="hidden" name="payload" value="" id="payload">
-                      Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
-                      <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
-                      <input type="submit" value="Upload">
-                      
-                      <div class="loginUnknown invisible">
-                          Unable to tell if you're logged in or not.<br>
-                          If you get a 401 Unauthenticated error when uploading, be sure that you're <a href='http://www.freebase.com/signin/login' target='_blank'>logged in on freebase.com</a>.
+                  <div class='uploadForm invisible'> 
+                      We've found <span class='triple_count'></span> assertions that you can upload.
+                      <button class="displayTriples">Detailed view &darr;</button>
+                      <div>
+                          <pre class='triplesDisplay invisible'></pre>
                       </div>
-                  </form>
                   
-                  <br>
-              </div>
+                      <br>
+                      <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
+                      <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
               
+              
+                      <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
+                      <form id="freeq_form" action="http://data.labs.freebase.com/freeq/spreadsheet/" target="_blank" method="POST" accept-charset="utf-8">
+                          <input type='hidden' name='user' value='' id='user'>
+                          <input type='hidden' name="action_type" value="LOAD_TRIPLE" id="action_type">
+                          <input type="hidden" name="operator" value="/user/spreadsheet_bot" id="operator">
+                          <input type="hidden" name="check_params" value="false" id="check_params">
+                          <input type='hidden' name='mdo_info' value='' id='mdo_info'>
+                          <input type="hidden" name="payload" value="" id="payload">
+                          Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
+                          <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
+                          <input type="submit" value="Upload">
+                      
+                          <div class="loginUnknown invisible">
+                              Unable to tell if you're logged in or not.<br>
+                              If you get a 401 Unauthenticated error when uploading, be sure that you're <a href='http://www.freebase.com/signin/login' target='_blank'>logged in on freebase.com</a>.
+                          </div>
+                          <div class="error invisible">
+                              
+                          </div>
+                      </form>
+                  
+                      <br>
+                  </div>
+              </div>
               <div class="freeqLoad invisible">
                   <div class="freeqLoadInProgress invisible">
                       <div>
@@ -197,13 +202,21 @@
                       </div>
                       <div id="upload_progressbar"></div>
                   </div>
-                  
-                  <div class="freeqLoadComplete invisible">
-                      Your data is finished loading!  <button class="loadAgainButton">Upload with different settings</button>
+
+                  <div class="uploadToSandboxComplete invisible">
+                      Your data is finished loading into sandbox!  Check the data on sandbox to ensure its quality, then click here: <button class="loadAgainButton">Upload with different settings</button>
                   </div>
-                  
-                  <a id="freeq_link" target="_blank">View the status of your data on Peacock</a><br/>
+
+                  <div class="uploadToOTGComplete invisible">
+                      Your data has been uploaded to Freebase.  The ids of any new topics that were created have been added into to your spreadsheet.
+                  </div>
+
+                  <a class="peacock_link" target="_blank">View the status of your data on Peacock</a><br/>
               </div>
+              
+              <div class='uploadSpinner invisible'>
+                  <img src="resources/spinner.gif">
+              </div>              
           </div>
       </div>
       
