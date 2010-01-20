@@ -8,7 +8,7 @@ function addReviewItem(entity) {
     var skippedTemplate = $(".templates .reviewSkippedTemplate");
     var reconciledTemplate = $(".templates .reviewReconciledTemplate");
     if (!entity) return;
-    if (entity["/rec_ui/is_cvt"] || null == entity.id || $.isArray(entity.id))
+    if (entity.isCVT() || null == entity.id || $.isArray(entity.id))
         return;
 
     var template;
