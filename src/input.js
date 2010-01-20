@@ -508,8 +508,14 @@ function mapTreeToEntity(tree, parent, onAddProperty) {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity.addParent(parent);
-    else if (originalHeaders)
-        entity.setInitialHeaders(originalHeaders);
+    else {
+        if (originalHeaders)
+            entity.setInitialHeaders(originalHeaders);
+        $.each(requiredProperties, function(_,requiredProperty) {
+            if (!(requiredProperty in tree))
+                warnPropertyMissing(requiredProperty);
+        });
+    }
     for (var prop in tree){
         var values = $.makeArray(tree[prop]);
         var propMeta = freebase.getPropMetadata(prop);
@@ -566,4 +572,10 @@ function parseJSON(json, onComplete, yielder) {
 
 function warnUnknownProp(_, errorProp) {
     addInputWarning("Cannot find property '" + errorProp + "'");
+}
+
+/** @const */
+var requiredProperties = ["/type/object/type", "/type/object/name"];
+function warnPropertyMissing(propName) {
+    addInputWarning(propName + " is required for Freebase Loader to function correctly");
 }

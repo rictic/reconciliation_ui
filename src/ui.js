@@ -177,7 +177,7 @@ $(document).ready(function() {
 	    $(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + version);
 	    var bugReportDetails = "&description=" + escape("Found in version: " + version + "\r\n\r\n");
 	    $(".bugReportLink").attr("href", $(".bugReportLink").attr("href") + bugReportDetails);
-	    freebase.beacon();
+	    freebase.beacon("ready");
 	}
 
     var capture_tab = function(event) {
@@ -239,12 +239,18 @@ function handlePOSTdata(data) {
     initialInputUpdated();
 }
 
+var inputWarnings = {};
 function addInputWarning(text) {
+    if (text in inputWarnings) 
+        return;
+    else
+        inputWarnings[text] = true;
     $(".inputWarnings").show()
     $(".inputWarnings ul").append(node("li", text));
 }
 
 function clearInputWarnings() {
+    inputWarnings = {};
     $(".inputWarnings").hide()
     $(".inputWarnings ul").empty();
 }

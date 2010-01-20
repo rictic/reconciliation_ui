@@ -71,3 +71,19 @@ freebase.getTypeMetadata = function(type) {
         "/freebase/type_hints/mediator":{}
     }
 }
+
+/** @param {*} context
+  * @param {!string} name
+  * @param {*} value
+  * @returns function()
+  */
+function temporaryMock(context, name, value) {
+    var oldValue = context[name];
+    if (oldValue === undefined) {
+        error("mocking " + name + " which is undefined");
+    }
+    context[name] = value;
+    return function unmock() {
+        context[name] = oldValue;
+    }
+}

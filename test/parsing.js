@@ -18,6 +18,15 @@ Stevie Wonder\t/people/person\n\
     }
 }
 
+/********************************************************************
+
+* Test that we can correctly parse a variety of spreadsheet shapes
+* into the correct objects and then re-render them into the original
+* spreadsheet correctly
+
+********************************************************************/
+
+
 /** @param {!string} name
   * @param {!string} spreadsheet
   * @param {!Array.<!loader.tree>} expectedParse

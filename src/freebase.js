@@ -298,6 +298,6 @@ freebase.mqlValue;
     /** @param {string=} info */
     freebase.beacon = function(info) {
         var url = "http://www.freebase.com/private/beacon?c=spreadsheetloader" + (info || "");
-        $("<img src='" + url + "'>").appendTo($("body"));
+        $("<img src='" + url + "'>").appendTo("body");
     }
 })();
