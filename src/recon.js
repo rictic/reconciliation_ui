@@ -7,7 +7,7 @@ function initializeReconciliation(callback) {
 
     totalRecords = rows.length;
     var rec_partition = Arr.partition(rows,isUnreconciled);
-    automaticQueue = rec_partition[0];
+    automaticQueue = new AutomaticQueue(rec_partition[0]);
     politeEach(rec_partition[1],function(_,reconciled_row){
         addColumnRecCases(reconciled_row);
     }, function() {
@@ -42,21 +42,27 @@ function canonicalizeFreebaseId(entity) {
   * 
   */
 function addColumnRecCases(entity) {
-    if (entity["/rec_ui/toplevel_entity"]) {
-        var autoQueueLength = automaticQueue.length;
-        $.each(entity['/rec_ui/mql_paths'], function(_, mqlPath) {
-            var values = entity.get(mqlPath);
-            for (var j = 0; j < values.length; j++) {
-                if (values[j] && values[j]['/type/object/name'] != undefined){
-                    if (!values[j].id)
-                        automaticQueue.push(values[j]);
+    var autoQueueLength = automaticQueue.length;
+    for (var key in entity) {
+        var values = $.makeArray(entity[key]);
+        $.each(values, function(_, value) {
+            if (value instanceof tEntity) {
+                if (!value['/rec_ui/rec_begun']) {
+                    if (value.isCVT()) {
+                        value['/rec_ui/rec_begun'] = true;
+                        addColumnRecCases(value);
+                        return;
+                    }
+                    if (!value.id && value['/type/object/name'])
+                        automaticQueue.push(value);
                     totalRecords++;
                 }
             }
         });
-        //The auto queue was empty when this started, so autorecon needs
-        //to be restarted.
-        if (autoQueueLength == 0)
-            beginAutoReconciliation();
     }
+    
+    //The auto queue was empty when this started, so autorecon needs
+    //to be restarted.
+    if (autoQueueLength == 0)
+        beginAutoReconciliation();
 }
