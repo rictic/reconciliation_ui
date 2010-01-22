@@ -305,21 +305,34 @@ function populateCreatedIds(job_id, onComplete) {
 }
 
 function getCreatedIds(url, callback) {
-    $.getJSON(url, null, function(result) {
-        $(".fetchingFreeqIds").hide();
-        $(".idsFetched").show();
-        var actions=result.result.actions;
-        var res={};
-        $.each(actions, function(_,i) {
-            var o = JSON.parse(i.result);
-            for (var j in o) {
-                if (j.indexOf("entity")==0){
-                    res[j]=o[j];
-                }
+    //this request is idempotent, and sometimes fails, so repeat until it works
+    var repeatingTimer = new RepeatingTimer(30 * 1000, fetchIds);
+    
+    function fetchIds() {
+        $.getJSON(url, null, function(result) {
+            repeatingTimer.reset();
+            //this request should succeed, so retry
+            if (!result || !result.status || result.status.code !== 200) {
+                addTimeout(function() {
+                    getCreatedIds(url, callback);
+                }, 2000);
             }
+            $(".fetchingFreeqIds").hide();
+            $(".idsFetched").show();
+            var actions=result.result.actions;
+            var res={};
+            $.each(actions, function(_,i) {
+                var o = JSON.parse(i.result);
+                for (var j in o) {
+                    if (j.indexOf("entity")==0){
+                        res[j]=o[j];
+                    }
+                }
+            });
+            repeatingTimer.stop();
+            callback(res);
         });
-        callback(res);
-    });
+    }
 }
 
 
@@ -345,8 +358,8 @@ FreeQMonitor.prototype.checkProgress = function() {
         var totalActions = result.result.count;
         var actionsRemaining = 0;
         $.each(result.result.details, function(_,i){
-            if (i.status === 'null')
-                actionsRemaining = parseInt(i.count,10);
+            if (Arr.contains([null, "proc", "queued"], i.status))
+                actionsRemaining += parseInt(i.count,10);
         });
         $('#upload_progressbar').progressbar('option', 'value', (totalActions-actionsRemaining)*100/totalActions);
         
@@ -390,6 +403,7 @@ $(document).ready(function () {
                 var url=freeq_url+job_id;
                 var freeqMonitor = new FreeQMonitor(job_id, function(job_id) {
                     $(".freeqLoadInProgress").hide();
+                    
                     if ($("input.graphport:checked")[0].value === "otg") {
                         populateCreatedIds(job_id, function() {
                             displaySpreadsheet();
