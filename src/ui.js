@@ -219,6 +219,7 @@ $(document).ready(function() {
     }
     
     $("#initialInput").keyup(inputFilterer).keydown(inputFilterer);
+	$("#initialInput").bind("paste", null, inputThrottler);
 	//for IE
 	$("#initialInput")[0].onpaste = inputThrottler;
     //for most everyone else's browsers
