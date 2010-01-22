@@ -1,4 +1,4 @@
-var inputProcessingYielder = new Yielder();
+var inputProcessingYielder = new Yielder;
 
 function initialInputChanged() {
     cancelInputProcessing();
@@ -34,6 +34,7 @@ function cancelInputProcessing() {
 }
 
 function handleInput(callback) {
+    inputProcessingYielder = new Yielder();
     var input = $('#initialInput')[0].value;
     function onProgressMade() {
         $("#inputWindow .screen").hide();
@@ -203,6 +204,7 @@ $(document).ready(function() {
     }
     
     $("#initialInput").keyup(inputFilterer).keydown(inputFilterer);
+	$("#initialInput").bind("paste", null, inputThrottler);
 	//for IE
 	$("#initialInput")[0].onpaste = inputThrottler;
     //for most everyone else's browsers

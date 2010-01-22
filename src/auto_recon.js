@@ -31,7 +31,38 @@
 **  Automatic reconciliation
 */
 var manualQueue = {};
-var automaticQueue = [];
+var automaticQueue = new AutomaticQueue();
+
+
+/** @constructor
+  * @param {Array.<tEntity>=} initialValues
+  */
+function AutomaticQueue(initialValues) {
+    /** @const
+        @type {Array.<tEntity>}*/
+    this.internalQueue = initialValues || [];
+    /** @type {number} */
+    this.length = this.internalQueue.length;
+}
+
+/** @param {tEntity} entity
+  */
+AutomaticQueue.prototype.push = function(entity) {
+    entity['/rec_ui/rec_begun'] = true;
+    this.length++;
+    this.internalQueue.push(entity);
+}
+
+/** @return {tEntity} */
+AutomaticQueue.prototype.peek = function() {
+    return this.internalQueue[0];
+}
+
+/** @return {tEntity} */
+AutomaticQueue.prototype.shift = function() {
+    this.length--;
+    return this.internalQueue.shift();
+}
 
 function beginAutoReconciliation() {
     $(".nowReconciling").show();
@@ -52,7 +83,7 @@ function autoReconcile() {
         return;
     }
     updateUnreconciledCount();
-    getCandidates(automaticQueue[0], autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
+    getCandidates(automaticQueue.peek(), autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
 }
 
 /** @param {!tEntity} entity
