@@ -290,16 +290,20 @@ function checkLogin() {
 
 var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
+function fillinIds(createdEntities) {
+    for (var key in createdEntities) {
+        var entity = entities[key.match(/entity(\d+)/)[1]];
+        var id = createdEntities[key];
+        entity.id = standardizeId(id);
+    }
+}
+
 /** @param {!number} job_id
   * @param {function()=} onComplete
   */
 function populateCreatedIds(job_id, onComplete) {
     getCreatedIds(freeq_url + job_id + "?view=list", function(createdEntities) {
-        for (var key in createdEntities) {
-            var entity = entities[key.match(/entity(\d+)/)[1]];
-            var id = createdEntities[key];
-            entity.id = standardizeId(id);
-        }
+        fillinIds(createdEntities);
         if (onComplete) onComplete();
     });
 }
