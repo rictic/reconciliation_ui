@@ -263,6 +263,10 @@ function addTimeout(f, millis) {
     return setTimeout(f,millis,"JavaScript");
 }
 
+function addInterval(f, millis) {
+    return setInterval(f,millis,"JavaScript");
+}
+
 /**
   @return {string} 
 */
@@ -317,6 +321,51 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
 
 function onSameDomain() {
     return window.location.host === "data.labs.freebase.com";
+}
+
+/** Returns the standard form that an id should take.
+  * Useful for interfacing with other tools.
+  * 
+  * @param {!string} id
+  * @returns {!string}
+  */
+function standardizeId(id) {
+    return id.replace(/\#([0-9a-f]{32})/, "/guid/$1");
+}
+
+/** A wrapper around setInterval that can be reset, so that
+  * onTick fires at most once every interval millis.
+  *
+  * @constructor
+  * @param {!number} interval
+  * @param {!function()} onTick
+  */
+function RepeatingTimer(interval, onTick) {
+    /** @const */
+    this.interval = interval;
+    /** @const */
+    this.onTick = onTick;
+    this.stopped = false;
+    this.reset();
+}
+
+RepeatingTimer.prototype.reset = function() {
+    if (this.stopped) 
+        return;
+    this.clear();
+    this.id = addInterval(this.onTick, this.interval);
+}
+
+RepeatingTimer.prototype.stop = function() {
+    this.clear();
+    this.stopped = true;
+}
+
+RepeatingTimer.prototype.clear = function() {
+    if (this.id) {
+        clearTimeout(this.id)
+        this.id = undefined;
+    }
 }
 
 /*
