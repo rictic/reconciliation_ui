@@ -80,6 +80,7 @@ function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated
     headers = originalHeaders = rows = inputType = headerPaths = undefined;
     internalReconciler = new InternalReconciler();
+    resetEntities();
     typesSeen = new Set();
     propertiesSeen = new Set();
 }
