@@ -93,7 +93,15 @@ tEntity.prototype.displayValue = function() {
   * @param {!boolean} automatic
   */
 tEntity.prototype.reconcileWith = function(id, automatic) {
-    this.id = id;
+    var recGroup = internalReconciler.getRecGroup(this);
+    if (recGroup.shouldMerge) {
+        recGroup.reconciledTo = id;
+        addReviewItem(recGroup);
+    }
+    else {
+        this.id = id;
+        addReviewItem(this);
+    }
     var feedback = {
         query:this['/rec_ui/recon_query'],
         reconciledWith:id,
@@ -101,7 +109,6 @@ tEntity.prototype.reconcileWith = function(id, automatic) {
         softwareTool: "/guid/9202a8c04000641f800000000df257ed"
     }
     $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
-    addReviewItem(this);
 }
 
 /** @param {!string} prop
@@ -152,6 +159,26 @@ tEntity.prototype.addParent = function(parent, prop) {
 tEntity.prototype.isCVT = function() {
     //an entity is a CVT if any of its types are CVT types
     return Arr.any($.makeArray(this['/type/object/type']), isCVTType);
+}
+
+/** @return {!string|undefined}*/
+tEntity.prototype.getID = function() {
+    var recGroup = internalReconciler.getRecGroup(this);
+    if (recGroup && recGroup.shouldMerge)
+        return recGroup.reconciledTo;
+    return this.id;
+}
+
+tEntity.prototype.getIdentifier = function() {
+    var id = this.getID();
+    if (id !== "None")
+        return id;
+    
+    var recGroup = internalReconciler.getRecGroup(this);
+    if (recGroup && recGroup.shouldMerge)
+        return "$recGroup" + recGroup.internal_id
+    else
+        return "$entity" + this['/rec_ui/id'];
 }
 
 /** @return {string} */

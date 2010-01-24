@@ -167,6 +167,7 @@ function numProperties(obj) {
 
 
 function identity(value) {return value;}
+function isUndefined(value) {return value === undefined;}
 
 function getChainedProperty(entity, prop) {
     var slots = [entity];

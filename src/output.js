@@ -127,9 +127,9 @@ function getTriples(entities, callback) {
         return id !== undefined && $.trim(id) !== "";
     }
     function getID(entity) {
-        if (entity.id === "None")
-            return "$entity" + entity['/rec_ui/id'];
-        return entity.id;
+        if (!('getIdentifier' in entity))
+            debug(entity);
+        return entity.getIdentifier();
     }
     function getValue(property, value) {
         if (getType(value) === "array") {

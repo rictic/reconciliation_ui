@@ -2,11 +2,17 @@ function onDisplayRenderScreen() {}
 
 function onHideRenderScreen() {}
 
+/** @param {!tEntity|RecGroup} entity */
 function addReviewItem(entity) {
     var container = $('.reconciliationsToReview');
     var newTemplate = $(".templates .reviewNewTemplate");
     var skippedTemplate = $(".templates .reviewSkippedTemplate");
     var reconciledTemplate = $(".templates .reviewReconciledTemplate");
+    if (entity instanceof RecGroup) {
+        addReviewRecGroup(entity);
+        return;
+    }
+    
     if (!entity) return;
     if (entity.isCVT() || null == entity.id || $.isArray(entity.id))
         return;
@@ -44,4 +50,11 @@ function addReviewItem(entity) {
         displayReconChoices(entity["/rec_ui/id"]);
         return false;})
     container.append(template);
+}
+
+function addReviewRecGroup(recGroup) {
+//     TODO: display rec groups
+//     - in place of showing the individual item that was reconciled, show that the $n items in the IR Group have been reconciled to $topic. 
+//     - allow the IR Group to be reconciled to a different topic 
+//     - allow the IR Group to be unmarked as merged and no longer treated as the same topic, but as many
 }

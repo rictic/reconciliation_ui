@@ -61,6 +61,7 @@ AutomaticQueue.prototype.peek = function() {
 /** @return {tEntity} */
 AutomaticQueue.prototype.shift = function() {
     this.length--;
+    updateUnreconciledCount();
     return this.internalQueue.shift();
 }
 
@@ -82,8 +83,14 @@ function autoReconcile() {
         finishedAutoReconciling();
         return;
     }
-    updateUnreconciledCount();
-    getCandidates(automaticQueue.peek(), autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
+
+    var entity = automaticQueue.peek();
+    if (entity.getID() !== undefined) {
+        automaticQueue.shift();
+        addTimeout(autoReconcile, 0);
+        return;
+    }
+    getCandidates(entity, autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
 }
 
 /** @param {!tEntity} entity

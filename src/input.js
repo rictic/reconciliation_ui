@@ -70,24 +70,24 @@ loader.tree;
 
 //Some globals that various components poke into
 var totalRecords = 0;
-var headers;
-var originalHeaders;
-var rows;
 var typesSeen = new Set();
 var propertiesSeen = new Set();
-var inputType;
-var headerPaths;
-
-/*
-** Parsing and munging the input
-*/
+var headers, originalHeaders, rows, inputType, headerPaths;
+/** @type {InternalReconciler} */
+var internalReconciler;
 
 function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated
     headers = originalHeaders = rows = inputType = headerPaths = undefined;
+    internalReconciler = new InternalReconciler();
     typesSeen = new Set();
     propertiesSeen = new Set();
 }
+
+
+/*
+** Parsing and munging the input
+*/
 
 /** @param {!string} input Either a tsv or a json array of trees
   * @param {!function(loader.record, function(boolean))} ambiguityResolver
@@ -544,6 +544,7 @@ function mapTreeToEntity(tree, parent, onAddProperty) {
                 if (propMeta.inverse_property)
                     innerEntity.addProperty(propMeta.inverse_property, entity);
             }
+            internalReconciler.register(innerEntity);
             return innerEntity;
         });
         entity.addProperty(prop, values);
@@ -551,6 +552,8 @@ function mapTreeToEntity(tree, parent, onAddProperty) {
             onAddProperty(prop);
     }
     
+    if (parent)
+        internalReconciler.register(entity);
     return entity;
 }
 
