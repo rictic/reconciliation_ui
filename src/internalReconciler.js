@@ -58,3 +58,6 @@ RecGroup.prototype.register = function(entity) {
     this.members.push(entity);
 }
 
+RecGroup.prototype.setID = function(id) {
+    this.reconciledTo = id;
+}

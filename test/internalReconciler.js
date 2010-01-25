@@ -1,9 +1,11 @@
+var jamesCameronRepeatedlySpreadsheet = "/type/object/name\t/type/object/type\t/film/film/directed_by\n" +
+        "Titanic\t/film/film\tJames Cameron\n" +
+        "Avatar\t/film/film\tJames Cameron";
+
+
 TestCase("internal reconciliation",{
     "test two directors with the same name": function() {
-        var s = "/type/object/name\t/type/object/type\t/film/film/directed_by\n" +
-                "Titanic\t/film/film\tJames Cameron\n" +
-                "Avatar\t/film/film\tJames Cameron";
-        justParseIt(s);
+        justParseIt(jamesCameronRepeatedlySpreadsheet);
         
         var jamesCamerons = Arr.filter(entities, function(entity) {
             return entity['/type/object/name'][0] === "James Cameron"

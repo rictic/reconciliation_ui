@@ -292,9 +292,18 @@ var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
 function fillinIds(createdEntities) {
     for (var key in createdEntities) {
-        var entity = entities[key.match(/entity(\d+)/)[1]];
-        var id = createdEntities[key];
-        entity.id = standardizeId(id);
+        var id = standardizeId(createdEntities[key]);
+        
+        var entity_match = key.match(/entity(\d+)/);
+        if (entity_match) {
+            entities[entity_match[1]].setID(id);
+            continue;
+        }
+        var recGroup_match = key.match(/recGroup(\d+)/);
+        if (recGroup_match) {
+            RecGroup.groups[recGroup_match[1]].setID(id);
+            continue;
+        }
     }
 }
 

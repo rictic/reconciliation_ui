@@ -95,7 +95,7 @@ tEntity.prototype.displayValue = function() {
 tEntity.prototype.reconcileWith = function(id, automatic) {
     var recGroup = internalReconciler.getRecGroup(this);
     if (recGroup.shouldMerge) {
-        recGroup.reconciledTo = id;
+        recGroup.setID(id);
         addReviewItem(recGroup);
     }
     else {
@@ -167,6 +167,10 @@ tEntity.prototype.getID = function() {
     if (recGroup && recGroup.shouldMerge)
         return recGroup.reconciledTo;
     return this.id;
+}
+
+tEntity.prototype.setID = function(id) {
+    this.id = id;
 }
 
 tEntity.prototype.getIdentifier = function() {
