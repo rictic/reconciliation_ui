@@ -58,8 +58,10 @@ AutomaticQueue.prototype.peek = function() {
     return this.internalQueue[0];
 }
 
-/** @return {tEntity} */
+/** @return {tEntity|undefined} */
 AutomaticQueue.prototype.shift = function() {
+    if (this.length === 0) 
+        return undefined;
     this.length--;
     return this.internalQueue.shift();
 }
