@@ -3,6 +3,8 @@
 */
 
 function addToManualQueue(entity) {
+    if (manualQueue[entity['/rec_ui/id']])
+        return;
     var wasEmpty = isObjectEmpty(manualQueue);
     var wasSingleton = getSecondValue(manualQueue) === undefined;
     manualQueue[entity["/rec_ui/id"]] = entity;
