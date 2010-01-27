@@ -22,8 +22,8 @@ InternalReconciler.prototype.setMerged = function(entity, shouldMerge) {
   * @return {(!RecGroup|undefined)}
   */
 InternalReconciler.prototype.getRecGroup = function(entity) {
-    var type = entity.get(new loader.path("/type/object/type"))[0];
-    var name = entity.get(new loader.path("/type/object/name"))[0];
+    var type = entity.get("/type/object/type")[0];
+    var name = entity.get("/type/object/name")[0];
     if (Arr.any([type, name], isUndefined))
         return undefined;
     return this._getRecGroup(type, name);
