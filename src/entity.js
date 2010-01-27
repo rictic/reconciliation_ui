@@ -55,6 +55,12 @@ tEntity.prototype.get = function(path, preservePlace) {
                 return;
             }
             
+            var prop = part.prop;
+            if (prop === "id" && ('getIdentifier' in slot)) {
+                newSlots.push(slot.getID());
+                return;
+            }
+            
             var vals = slot[part.prop];
             if (vals === undefined) {
                 newSlots.push(undefined);

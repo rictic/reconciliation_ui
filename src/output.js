@@ -121,14 +121,13 @@ function prepareTriples() {
 var tripleGetterYielder;
 function getTriples(entities, callback) {
     tripleGetterYielder = new Yielder();
-    function isValidID(id) {
+    function hasValidID(entity) {
+        var id = getID(entity);
         if ($.isArray(id))
             id = id[0];
         return id !== undefined && $.trim(id) !== "";
     }
     function getID(entity) {
-        if (!('getIdentifier' in entity))
-            debug(entity);
         return entity.getIdentifier();
     }
     function getValue(property, value) {
@@ -195,7 +194,7 @@ function getTriples(entities, callback) {
     
     var triples = [];
     politeEach(entities, function(_,subject) {
-        if (!subject || !isValidID(subject.id) || subject.isCVT())
+        if (!subject || !hasValidID(subject) || subject.isCVT())
             return;
         
         /* Assert each type and all included types exactly once */
@@ -212,7 +211,7 @@ function getTriples(entities, callback) {
         })
         
         /* If the subject is new to Freebase, give it a name as well */
-        if (subject.id === "None"){
+        if (subject.getID() === "None"){
             $.each($.makeArray(subject["/type/object/name"]), function(_, name) {
                 if (name)
                     triples.push({s:getID(subject),p:"/type/object/name",o:name});
@@ -245,7 +244,8 @@ function getTriples(entities, callback) {
                         triples.push({s:getID(subject),p:predicate,o:cvtTripleObject}); 
                 }
                 
-                if  (!isValidID(object.id))
+                
+                if  (!hasValidID(object))
                     return;
                 
                 
