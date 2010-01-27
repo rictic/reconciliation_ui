@@ -85,13 +85,13 @@ tEntity.prototype.get = function(path, preservePlace) {
 
 /** @param {string=} linkText */
 tEntity.prototype.freebaseLink = function(linkText) {
-    linkText = linkText || this.name || this.id;
-    return freebase.link(linkText,this.id);
+    linkText = linkText || this.name || this.getID();
+    return freebase.link(linkText,this.getID());
 }
 
 tEntity.prototype.displayValue = function() {
     if (!this.id)
-        return displayValue(this['/type/object/name'] || this.id);
+        return displayValue(this['/type/object/name'] || this.getID());
     return this.freebaseLink();
 };
 
