@@ -100,14 +100,14 @@ tEntity.prototype.displayValue = function() {
   */
 tEntity.prototype.reconcileWith = function(id, automatic) {
     var recGroup = internalReconciler.getRecGroup(this);
-    if (recGroup.shouldMerge) {
-        recGroup.setID(id);
-        addReviewItem(recGroup);
-    }
-    else {
-        this.id = id;
-        addReviewItem(this);
-    }
+    var self = this;
+    freebase.getCanonicalID(id, function(new_id) {
+        if (recGroup.shouldMerge) 
+            recGroup.setID(new_id);
+        else
+            self.id = new_id;
+    });
+    addReviewItem(recGroup.shouldMerge ? recGroup : this);
     var feedback = {
         query:this['/rec_ui/recon_query'],
         reconciledWith:id,

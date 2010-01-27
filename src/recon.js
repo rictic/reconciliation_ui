@@ -23,20 +23,12 @@ function handleReconChoice(entity,freebaseId) {
     delete manualQueue[entity["/rec_ui/id"]];
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
     entity.reconcileWith(freebaseId, false);
-    canonicalizeFreebaseId(entity);
     addColumnRecCases(entity);
     updateUnreconciledCount();
     manualReconcile();
 }
 
 
-function canonicalizeFreebaseId(entity) {
-    var envelope = {query:{"myId:id":entity.id, "id":null}}
-    freebase.mqlRead(envelope, function(results){
-        if (results && results.result && results.result.id)
-            entity.id = results.result.id
-    });
-}
 
 /** @params {!tEntity} entity
   * 

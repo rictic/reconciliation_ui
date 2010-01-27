@@ -212,7 +212,6 @@ function autoReconcileResults(entity) {
         }
         else {
             entity.reconcileWith(matchedResult.id, true);
-            canonicalizeFreebaseId(entity);
             entity["/rec_ui/freebase_name"] = matchedResult.name;
             addColumnRecCases(entity);
         }

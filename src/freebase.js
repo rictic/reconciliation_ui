@@ -300,4 +300,13 @@ freebase.mqlValue;
         var url = "http://www.freebase.com/private/beacon?c=spreadsheetloader" + (info || "");
         $("<img src='" + url + "'>").appendTo("body");
     }
+    
+    freebase.getCanonicalID = function(id, callback) {
+        callback(id);
+        var envelope = {query:{"myId:id":id, "id":null}}
+        freebase.mqlRead(envelope, function(results){
+            if (results && results.result && results.result.id)
+                callback(results.result.id);
+        });
+    }
 })();
