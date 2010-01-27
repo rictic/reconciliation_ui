@@ -16,6 +16,10 @@ function addToManualQueue(entity) {
 function manualReconcile() {
     if ($(".manualReconChoices:visible").length === 0) {
         var val = getFirstValue(manualQueue);
+        while (val && val.getID() !== undefined) {
+            delete manualQueue[val['/rec_ui/id']];
+            val = getFirstValue(manualQueue);
+        }
         if(val != undefined) {
             displayReconChoices(val["/rec_ui/id"])
             renderReconChoices(getSecondValue(manualQueue)); //render-ahead the next one
@@ -70,6 +74,8 @@ function renderReconChoices(entity) {
     }
     updateCandidates();
 
+    renderInternalReconciliationDialog(entity, template);
+
     $(".find_topic", template)[0].value = entity['/type/object/name'];
     $(".find_topic", template)
         .suggest({type:entity['/type/object/type'],
@@ -94,6 +100,31 @@ function renderReconChoices(entity) {
         }, function(){;});
     });
     template.insertAfter("#manualReconcileTemplate")
+}
+
+function renderInternalReconciliationDialog(entity, template) {
+    var recGroup = internalReconciler.getRecGroup(entity);
+    //don't prompt if there isn't a RecGroup to speak of
+    if (!recGroup || recGroup.members.length <= 1)
+        return;
+    
+    var context = $(".internalReconciliationPrompt", template);
+    $(".count", context).html(recGroup.members.length);
+    freebase.getName(recGroup.type, function(type_name) {
+        $(".type", context).html(type_name);
+    });
+    $(".name", context).html(recGroup.name);
+    
+    //set up the mapping between the lable and the check box, so that you can click
+    //on the label and check/uncheck the box
+    var input_id = "treat_same" + entity['/rec_ui/id'];
+    $("label.treat_the_same", context).attr("for", input_id);
+    $("input.treat_the_same", context)[0].id = input_id;
+    
+    $("input.treat_the_same", context).change(function() {
+        internalReconciler.setMerged(entity, this.checked);
+    })
+    context.removeClass("invisible");
 }
 
 function renderCandidate(result, mqlProps, entity) {

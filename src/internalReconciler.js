@@ -38,14 +38,15 @@ InternalReconciler.prototype._getRecGroup = function(type, name) {
         this.byType[type] = {};
     var byName = this.byType[type];
     if (!(name in byName))
-        byName[name] = new RecGroup();
+        byName[name] = new RecGroup(type, name);
     return byName[name];
 }
 
 RecGroup.groups = [];
 RecGroup.id_counter = 0;
 /** @constructor */
-function RecGroup() {
+function RecGroup(type, name) {
+    this.type = type; this.name = name;
     /** @type !Array.<!tEntity> */
     this.members = [];
     /** @type boolean */
@@ -56,6 +57,10 @@ function RecGroup() {
 
 RecGroup.prototype.register = function(entity) {
     this.members.push(entity);
+    if (entity['/type/object/type'][0] !== this.type)
+        error("entity with type " + entity['/type/object/type'][0] + " registered to RecGroup of type " + this.type);
+    if (entity['/type/object/name'][0] !== this.name)
+        error("entity with name " + entity['/type/object/name'][0] + " registered to RecGroup of name " + this.name);
 }
 
 RecGroup.prototype.setID = function(id) {
