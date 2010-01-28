@@ -13,8 +13,7 @@ file "build/" do
   sh "mkdir -p build"
 end
 
-
-task :run_tests do
+task :run_tests => "jsTestDriver.conf" do
   sh "jstdServer ; sleep 3 ; open http://localhost:4224/capture" unless `nc -z localhost 4224` =~ /succeeded!/
   sh "testjstd"
 end
@@ -76,6 +75,12 @@ end
 
 file "build/src_and_tests_compiled.js" => src + FileList["test/*.js"] do |t|
   compilejs(t.prerequisites, t.name, false, lib_externs + ['test/externs'])
+end
+
+file "jsTestDriver.conf" => "recon.html" do
+  contents = "server: http://localhost:4224\n\nload:\n"
+  contents += (js_files + ["test/*.js"]).map {|f| " - #{f}"}.join("\n")
+  File.open("jsTestDriver.conf", 'w') {|f| f.write(contents)}
 end
 
 task :version do
