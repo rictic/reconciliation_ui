@@ -584,3 +584,7 @@ var requiredProperties = ["/type/object/type", "/type/object/name"];
 function warnPropertyMissing(propName) {
     addInputWarning(propName + " is required for Freebase Loader to function correctly");
 }
+
+function warnTypeMissing(typeName) {
+    addInputWarning("Cannot find a type with the id " + typeName);
+}
