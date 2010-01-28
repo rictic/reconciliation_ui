@@ -25,7 +25,6 @@ TestCase("Test Reconciliation Queues",{
     }
     ,"test TOOL-105": function() {
         getToInitialization(error_sheet);
-        debug(entities[0].toJSON());
         assertEq(1, automaticQueue.length);
     }
 });
