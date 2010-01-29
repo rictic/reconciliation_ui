@@ -106,6 +106,8 @@ function renderSpreadsheet(onComplete) {
 
 
 function prepareTriples() {
+    $(".renderingTriples").show();
+    $(".triplesRendered").hide();
     getTriples(entities, function(triples) {
         politeMap(triples,function(val){return JSON.stringify(val)},
             function(encodedTriples) {
@@ -113,6 +115,8 @@ function prepareTriples() {
                 $(".triplesDisplay").html(tripleString);
                 $(".triple_count").html(encodedTriples.length);
                 $('#payload')[0].value = tripleString;
+                $(".renderingTriples").hide();
+                $(".triplesRendered").show();
             }
         );
     });
