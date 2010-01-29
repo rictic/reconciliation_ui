@@ -51,6 +51,9 @@ AutomaticQueue.prototype.push = function(entity) {
     entity['/rec_ui/rec_begun'] = true;
     this.length++;
     this.internalQueue.push(entity);
+    updateUnreconciledCount();
+    if (reconciliationBegun && !autoreconciling)
+        autoReconcile();
 }
 
 /** @return {tEntity} */
@@ -73,12 +76,15 @@ function beginAutoReconciliation() {
     autoReconcile();
 }
 
+var autoreconciling = false;
 function finishedAutoReconciling() {
     $(".nowReconciling").hide();
     $('.notReconciling').show();
+    autoreconciling = false;
 }
 
 function autoReconcile() {
+    autoreconciling = true;
     if (automaticQueue.length == 0) {
         finishedAutoReconciling();
         return;

@@ -34,7 +34,6 @@ function handleReconChoice(entity,freebaseId) {
   * 
   */
 function addColumnRecCases(entity) {
-    var autoQueueLength = automaticQueue.length;
     for (var key in entity) {
         var values = $.makeArray(entity[key]);
         $.each(values, function(_, value) {
@@ -52,9 +51,4 @@ function addColumnRecCases(entity) {
             }
         });
     }
-    
-    //The auto queue was empty when this started, so autorecon needs
-    //to be restarted.
-    if (autoQueueLength == 0)
-        beginAutoReconciliation();
 }

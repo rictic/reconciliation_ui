@@ -15,7 +15,14 @@ InternalReconciler.prototype.register = function(entity) {
 /** @param {!tEntity} entity
   * @param {!boolean} shouldMerge*/
 InternalReconciler.prototype.setMerged = function(entity, shouldMerge) {
-    this.getRecGroup(entity).shouldMerge = shouldMerge;
+    var recGroup = this.getRecGroup(entity);
+    recGroup.shouldMerge = shouldMerge;
+    if (shouldMerge === false) {
+        $.each(recGroup.members, function(_, member) {
+            //this may add duplicates, but that's ok
+            automaticQueue.push(member);
+        });
+    }
 }
 
 /** @param {!tEntity} entity 
