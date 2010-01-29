@@ -47,7 +47,7 @@ tEntity.prototype.getChainedProperty = function(prop) {
   */
 tEntity.prototype.get = function(path, preservePlace) {
     if (getType(path) === "string") 
-        return this.get(new loader.path(path), preservePlace);
+        return this.get(new loader.path(/**@type string*/(path)), preservePlace);
     var slots = [this];
     $.each(path.parts, function(_,part) {
         var newSlots = [];

@@ -109,7 +109,7 @@ function renderInternalReconciliationDialog(entity, template) {
         return;
     
     var context = $(".internalReconciliationPrompt", template);
-    $(".count", context).html(recGroup.members.length);
+    $(".count", context).html(recGroup.members.length + "");
     freebase.getName(recGroup.type, function(type_name) {
         $(".type", context).html(type_name);
     });
