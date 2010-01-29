@@ -571,6 +571,7 @@ function parseJSON(json, onComplete, yielder) {
     treesToEntities(trees, function(entities) {
         rows = entities;
         headers = rows[0]['/rec_ui/headers'];
+        headerPaths = rows[0]['/rec_ui/headerPaths'];
         onComplete();
     }, yielder);
 }
