@@ -173,7 +173,7 @@ tEntity.prototype.isCVT = function() {
 tEntity.prototype.getID = function() {
     var recGroup = internalReconciler.getRecGroup(this);
     if (recGroup && recGroup.shouldMerge)
-        return recGroup.reconciledTo;
+        return recGroup.getID();
     return this.id;
 }
 
@@ -191,6 +191,10 @@ tEntity.prototype.getIdentifier = function() {
         return "$recGroup" + recGroup.internal_id
     else
         return "$entity" + this['/rec_ui/id'];
+}
+
+tEntity.prototype.getInternalID = function() {
+    return this['/rec_ui/id'];
 }
 
 /** @return {string} */

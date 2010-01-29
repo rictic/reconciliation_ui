@@ -119,11 +119,12 @@ function renderInternalReconciliationDialog(entity, template) {
     //on the label and check/uncheck the box
     var input_id = "treat_same" + entity['/rec_ui/id'];
     $("label.treat_the_same", context).attr("for", input_id);
-    $("input.treat_the_same", context)[0].id = input_id;
+    $("input.treat_the_same", context)
+        .attr("checked", recGroup.shouldMerge)
+        .change(function() {
+            internalReconciler.setMerged(entity, this.checked);
+        })[0].id = input_id;
     
-    $("input.treat_the_same", context).change(function() {
-        internalReconciler.setMerged(entity, this.checked);
-    })
     context.removeClass("invisible");
 }
 

@@ -66,3 +66,11 @@ RecGroup.prototype.register = function(entity) {
 RecGroup.prototype.setID = function(id) {
     this.reconciledTo = id;
 }
+
+RecGroup.prototype.getID = function() {
+    return this.reconciledTo;
+}
+
+RecGroup.prototype.getInternalID = function() {
+    return this.internal_id;
+}
