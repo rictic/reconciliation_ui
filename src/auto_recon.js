@@ -61,8 +61,10 @@ AutomaticQueue.prototype.peek = function() {
     return this.internalQueue[0];
 }
 
-/** @return {tEntity} */
+/** @return {tEntity|undefined} */
 AutomaticQueue.prototype.shift = function() {
+    if (this.length === 0) 
+        return undefined;
     this.length--;
     updateUnreconciledCount();
     return this.internalQueue.shift();
@@ -72,7 +74,6 @@ function beginAutoReconciliation() {
     $(".nowReconciling").show();
     $(".notReconciling").hide();
     $("#gettingInput").remove();
-    reconciliationBegun = true;
     autoReconcile();
 }
 

@@ -37,8 +37,8 @@ function handleInput(callback) {
     inputProcessingYielder = new Yielder();
     var input = $('#initialInput')[0].value;
     function onProgressMade() {
-        $("#inputWindow .screen").hide();
         $(".inputLoading").hide();
+        $("#inputWindow .screen").hide();
         $("#inputWindow").removeClass("disabled");
         $("#inputWindow button").removeAttr("disabled");
     }
@@ -47,8 +47,7 @@ function handleInput(callback) {
         showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved);
     }
     function onComplete() {
-        onProgressMade();
-        showConfirmationSpreadsheet();
+        showConfirmationSpreadsheet(onProgressMade);
     }
     parseInput(input, onAmbiguity, onComplete, inputProcessingYielder);
 }
@@ -103,7 +102,7 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
     $('table tbody tr:even', context).addClass('even');
     context.show();
 }
-function showConfirmationSpreadsheet() {
+function showConfirmationSpreadsheet(beforeDisplay) {
     var spreadSheetData = {"aoColumns":[], "aaData":[]};
     var columnNames = $.map(headerPaths, function(header) {return header.getDisplayName();});
     for (var i = 0; i < columnNames.length; i++)
@@ -128,12 +127,13 @@ function showConfirmationSpreadsheet() {
         }
         spreadSheetData.aaData.push(row);
     }, function() {
+        if (beforeDisplay) beforeDisplay();
         updateUnreconciledCount();
         spreadSheetData["bAutoWidth"] = false;
         spreadSheetData["bSort"] = false;
         $("#spreadsheetDiv").html('<table class="display" id="spreadsheetTable"><\/table>');
         $('#spreadsheetTable').dataTable(spreadSheetData);
-        $('#spreadsheetPreview').show();                    
+        $('#spreadsheetPreview').show();
     });
 
 }
