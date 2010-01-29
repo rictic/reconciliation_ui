@@ -14,6 +14,7 @@ function initializeReconciliation(onReady) {
     }, function() {
         freebase.fetchTypeInfo(typesSeen.getAll(), function() {
             $(".initialLoadingMessage").hide();
+            reconciliationBegun = true;
             onReady();
         });
     });
@@ -69,6 +70,6 @@ function addColumnRecCases(entity) {
     
     //The auto queue was empty when this started, so autorecon needs
     //to be restarted.
-    if (autoQueueLength == 0)
+    if (autoQueueLength == 0 && reconciliationBegun)
         beginAutoReconciliation();
 }
