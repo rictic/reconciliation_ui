@@ -20,8 +20,11 @@ function manualReconcile() {
         var val = getFirstValue(manualQueue);
         while (val && val.getID() !== undefined) {
             delete manualQueue[val['/rec_ui/id']];
+            if (!internalReconciler.getRecGroup(val).shouldMerge)
+                addReviewItem(val);
             val = getFirstValue(manualQueue);
         }
+        updateUnreconciledCount();
         if(val != undefined) {
             displayReconChoices(val["/rec_ui/id"])
             renderReconChoices(getSecondValue(manualQueue)); //render-ahead the next one

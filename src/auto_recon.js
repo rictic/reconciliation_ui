@@ -95,6 +95,8 @@ function autoReconcile() {
     if (entity.getID() !== undefined) {
         automaticQueue.shift();
         addTimeout(autoReconcile, 0);
+        if (!internalReconciler.getRecGroup(entity).shouldMerge)
+            addReviewItem(entity);
         return;
     }
     getCandidates(entity, autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});

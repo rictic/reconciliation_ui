@@ -18,10 +18,15 @@ InternalReconciler.prototype.setMerged = function(entity, shouldMerge) {
     var recGroup = this.getRecGroup(entity);
     recGroup.shouldMerge = shouldMerge;
     if (shouldMerge === false) {
+        recGroup.setID(undefined);
         $.each(recGroup.members, function(_, member) {
             //this may add duplicates, but that's ok
             automaticQueue.push(member);
         });
+        removeReviewItem(recGroup);
+    }
+    else {
+        $.map(recGroup.members, removeReviewItem);
     }
 }
 

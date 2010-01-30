@@ -21,9 +21,9 @@ function addReviewItem(entity) {
         }
     }
     
-    var classSelector = "review" + (entity instanceof tEntity ? "Entity" : "RecGroup") + entity.getInternalID();
-    template.addClass(classSelector);
-    $("." + classSelector, container).remove();
+    removeReviewItem(entity);
+    template.addClass(getReviewClassSelector(entity));
+
     
     if (entity instanceof RecGroup)
         addReviewRecGroup(entity, template);
@@ -48,6 +48,15 @@ function addReviewItem(entity) {
     else freebase.getName(entity.getID(), handleName);
     
     container.append(template);
+}
+
+function removeReviewItem(item) {
+    var container = $('.reconciliationsToReview');
+    $("." + getReviewClassSelector(item), container).remove();
+}
+
+function getReviewClassSelector(item) {
+    return "review" + (item instanceof tEntity ? "Entity" : "RecGroup") + item.getInternalID();
 }
 
 function makeInternalLink(content, entity) {
