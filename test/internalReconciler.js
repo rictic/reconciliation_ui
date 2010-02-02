@@ -34,4 +34,23 @@ TestCase("internal reconciliation",{
         assertTrue(jamesCamerons[0].getIdentifier().match(/\$recGroup\d+/) !== null);
         assertEq(jamesCamerons[0].getIdentifier(), jamesCamerons[1].getIdentifier());
     }
+    ,"test two toplevel entities with the same type and name": function() {
+        justParseIt("/type/object/name\t/type/object/type\nJames Cameron\t/film/director\nJames Cameron\t/film/director");
+        
+        var jamesCamerons = Arr.filter(entities, function(entity) {
+            return entity['/type/object/name'][0] === "James Cameron"
+        });
+        
+        assertSubsetOf(internalReconciler, {
+            byType: {
+                "/film/director": {
+                    "James Cameron": {
+                        members:[{"/type/object/name": ["James Cameron"]},
+                                 {"/type/object/name": ["James Cameron"]}],
+                        shouldMerge: false
+                    }
+                }
+            }
+        });
+    }
 });

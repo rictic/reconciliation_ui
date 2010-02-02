@@ -553,7 +553,8 @@ function mapTreeToEntity(tree, parent, onAddProperty) {
             onAddProperty(prop);
     }
     
-    if (parent)
+    //otherwise it will get registered above
+    if (!parent)
         internalReconciler.register(entity);
     return entity;
 }
