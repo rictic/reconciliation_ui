@@ -107,7 +107,7 @@ tEntity.prototype.reconcileWith = function(id, automatic) {
         if (recGroup.shouldMerge) 
             recGroup.setID(new_id);
         else
-            self.id = new_id;
+            self.setID(new_id);
     });
     addReviewItem(recGroup.shouldMerge ? recGroup : this);
     var feedback = {

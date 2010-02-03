@@ -77,6 +77,9 @@ RecGroup.prototype.register = function(entity) {
 
 RecGroup.prototype.setID = function(id) {
     this.reconciledTo = id;
+    politeEach(this.members, function(_, member) {
+        addColumnRecCases(member);
+    });
 }
 
 RecGroup.prototype.getID = function() {
