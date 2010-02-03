@@ -404,7 +404,7 @@ var debug = function(val) {
 }
 
 var p = function(val) {
-    if ('toJSON' in val)
+    if (getType(val) === "object" && 'toJSON' in val)
         debug(val.toJSON());
     else
         debug(val);
