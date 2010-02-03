@@ -27,7 +27,7 @@ TestCase("internal reconciliation",{
         jamesCamerons[0].reconcileWith("/en/james_cameron");
         
         $.each(jamesCamerons, function(_, jamesCameron) {
-            assertEq(jamesCameron.getIdentifier(), "/en/james_cameron");
+            assertEq("/en/james_cameron", jamesCameron.getIdentifier());
         });
         
         jamesCamerons[0].reconcileWith("None");
