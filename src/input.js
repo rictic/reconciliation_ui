@@ -391,8 +391,7 @@ function pathPut(path, topindex, record, value) {
       */
     function putValue(currentRecord, pathIndex, currentIndex) {
         var currentPart = path.parts[pathIndex]
-        if (currentIndex === undefined)
-            currentIndex = currentPart.index || 0;
+        currentIndex = currentPart.index || currentIndex || 0;
         var atLastPath = pathIndex + 1 >= path.parts.length
 
         // if we're at the last path:
