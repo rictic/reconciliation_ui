@@ -501,6 +501,7 @@ function findAllProperties(trees, onComplete, yielder) {
   * @param {Yielder=} yielder
   */
 function mapTreesToEntities(trees, onComplete, yielder) {
+    internalReconciler = new InternalReconciler();
     politeMap(trees, function(record){return mapTreeToEntity(record)}, onComplete, yielder);
 }
 
