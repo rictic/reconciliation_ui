@@ -68,6 +68,12 @@ function RecGroup(type, name) {
 }
 
 RecGroup.prototype.register = function(entity) {
+    if (entity.getID() === "None (merged)") {
+        entity.setID(undefined);
+        this.reconciledTo = "None";
+        this.shouldMerge = true;
+    }
+    
     this.members.push(entity);
     if (entity['/type/object/type'][0] !== this.type)
         error("entity with type " + entity['/type/object/type'][0] + " registered to RecGroup of type " + this.type);
@@ -83,7 +89,10 @@ RecGroup.prototype.setID = function(id) {
 }
 
 RecGroup.prototype.getID = function() {
-    return this.reconciledTo;
+    var id = this.reconciledTo;
+    if (id === "None" && this.shouldMerge)
+        return "None (merged)";
+    return id;
 }
 
 RecGroup.prototype.getInternalID = function() {

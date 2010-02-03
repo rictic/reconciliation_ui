@@ -139,8 +139,8 @@ function constructReconciliationQuery(entity, typeless) {
     return query;
     
     function constructQueryPart(value) {
-        if (value.id != undefined && value.id != "" && value.id != "None")
-            return {"id":value.id, "name":value["/type/object/name"]}
+        if (value instanceof tEntity && !contains([undefined, "", "None", "None (merged"], value.getID()))
+            return {"id":value.getID(), "name":value["/type/object/name"]}
         if (value['/rec_ui/id'] !== undefined)
             return $.makeArray(value["/type/object/name"])[0];
         return value;

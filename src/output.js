@@ -215,7 +215,7 @@ function getTriples(entities, callback) {
         })
         
         /* If the subject is new to Freebase, give it a name as well */
-        if (subject.getID() === "None"){
+        if (Arr.contains(["None", "None (merged)"], subject.getID())){
             $.each($.makeArray(subject["/type/object/name"]), function(_, name) {
                 if (name)
                     triples.push({s:getID(subject),p:"/type/object/name",o:name});

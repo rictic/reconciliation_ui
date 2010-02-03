@@ -53,4 +53,24 @@ TestCase("internal reconciliation",{
             }
         });
     }
+    ,"test taking an internally reconciled spreadsheet and reparsing it": function() {
+        justParseIt(jamesCameronRepeatedlySpreadsheet);
+        var jamesCamerons = Arr.filter(entities, function(entity) {
+            return entity['/type/object/name'][0] === "James Cameron"
+        });
+        addIdColumns();
+        internalReconciler.setMerged(jamesCamerons[0], true);
+        jamesCamerons[0].reconcileWith("None");
+        
+        renderSpreadsheet(function(outputSheet) {            
+            justParseIt(outputSheet);
+            var jamesCamerons = Arr.filter(entities, function(entity) {
+                return entity['/type/object/name'][0] === "James Cameron"
+            });
+            var recGroup = internalReconciler.getRecGroup(jamesCamerons[0]);
+            assertEq(2, recGroup.members.length);
+            assertEq("None", recGroup.reconciledTo);
+            assertTrue(recGroup.shouldMerge);
+        });
+    }
 });

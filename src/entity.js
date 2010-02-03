@@ -183,7 +183,7 @@ tEntity.prototype.setID = function(id) {
 
 tEntity.prototype.getIdentifier = function() {
     var id = this.getID();
-    if (id !== "None")
+    if (!Arr.contains(["None", "None (merged)"], id))
         return id;
     
     var recGroup = internalReconciler.getRecGroup(this);
