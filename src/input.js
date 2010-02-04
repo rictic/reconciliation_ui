@@ -70,7 +70,6 @@ loader.tree;
 
 //Some globals that various components poke into
 var totalRecords = 0;
-var headers;
 var originalHeaders;
 var rows;
 var typesSeen = new Set();
@@ -84,7 +83,7 @@ var headerPaths;
 
 function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated
-    headers = originalHeaders = rows = inputType = headerPaths = undefined;
+    originalHeaders = rows = inputType = headerPaths = undefined;
     typesSeen = new Set();
     propertiesSeen = new Set();
 }
@@ -247,9 +246,8 @@ function buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder) {
 
     // parse headers:
     originalHeaders = spreadsheetRows.shift();
-    headers = originalHeaders;
     headerPaths = [];
-    $.each(headers, function(_, rawHeader) {
+    $.each(originalHeaders, function(_, rawHeader) {
         headerPaths.push(new loader.path($.trim(rawHeader)));
     })
 
@@ -297,7 +295,6 @@ function recordsToEntities(records, onComplete, yielder) {
 
         treesToEntities(trees, function(entities) {
             rows = entities;
-            headers = originalHeaders;
             onComplete();
         }, yielder);
     }, yielder);
@@ -569,7 +566,6 @@ function parseJSON(json, onComplete, yielder) {
     
     treesToEntities(trees, function(entities) {
         rows = entities;
-        headers = rows[0]['/rec_ui/headers'];
         headerPaths = rows[0]['/rec_ui/headerPaths'];
         onComplete();
     }, yielder);
