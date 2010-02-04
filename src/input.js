@@ -56,6 +56,9 @@
     and values are arrays of either strings or, when the key is a MQL property
     that is expected to point to a Topic in Freebase, a reified object.
     
+    The JSON input format is just an array of Trees, and just skips the input
+    pipeline up to that point.
+    
 */
 
 //A namespace for types
