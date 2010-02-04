@@ -69,7 +69,6 @@ loader.record;
 loader.tree;
 
 //Some globals that various components poke into
-var totalRecords = 0;
 var originalHeaders;
 var rows;
 var typesSeen = new Set();
