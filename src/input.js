@@ -59,7 +59,7 @@
 */
 
 //A namespace for types
-var loader = {row:null, record:null, tree:null, pathsegment:null, path:null};
+var loader = {row:null, record:null, tree:null};
 
 /** @typedef {!Array.<!string>}*/
 loader.row;
