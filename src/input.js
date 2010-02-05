@@ -574,7 +574,9 @@ function validateProperty(prop, values) {
 var literalValidationRegexes = {
     "/type/boolean": /$(true|false)^/,
     "/type/int": /$-?\d+^/,
-    "/type/float": /$-?\d+(.\d+)^/
+    "/type/float": /$-?\d+(.\d+)^/,
+    "/type/text": /$.{0,4096}^/,
+    "/type/rawstring": /$.{0,4096}^/
 }
 function validateValueForType(value, type) {
     if (type in literalValidationRegexes) {

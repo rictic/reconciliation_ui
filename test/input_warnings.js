@@ -71,13 +71,19 @@ var warningTests = {
             unmockInputWarning()
         }
     }
+    ,testLongText: function() {
+        testLiteral(stringWithLength(4097), "/type/text", true);
+    }
+    ,testLongRawString: function() {
+        testLiteral(stringWithLength(4097), "/type/rawstring", true);
+    }
 }
 
 var badBooleans = ["0", "TRUE", "truee", "obviously wrong"];
 var badInts = ["1.2", "1e4", "0odeadbeef", "0badbadbad", "o0124", "9223372036854775808", "-9223372036854775809", "obviously wrong"];
 var badFloats = ["Infinity","NaN", "obviously wrong"];
-var badString = [stringWithLength(4097)];
-var badRawString = [stringWithLength(4097)];
+
+
 
 $.each([[badBooleans, "/type/boolean"], [badInts, "/type/int"], [badFloats, "/type/float"]], function(_, pair) {
     addTests(pair[0], pair[1], true);
