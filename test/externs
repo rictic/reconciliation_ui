@@ -1,1 +1,1 @@
-var TestCase, assertEquals, expectAsserts, fail, assertTrue;
+var TestCase, assertEquals, expectAsserts, fail, assertTrue, assertFalse;
