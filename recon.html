@@ -23,12 +23,25 @@
         <div id="spreadsheetInput" class="container">
             <h3>Paste your spreadsheet here:</h3>
             <textarea name="initialInput" id="initialInput" class='spreadsheet' ></textarea><br>
-            <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Sample Data</button>
-            <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Complex Sample</button>
-            <img src='spinner.gif' class='inputLoading invisible'>
+            <div class="spinnerHolder">
+              <img src='resources/spinner.gif' class='inputLoading invisible'>
+            </div>
+            
+            <div class='examples'>
+              Try Freebase Loader with these example spreadsheets:
+              <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Load Simple Movie Example</button>
+              <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Load Complex Movie Example</button>
+
+            </div>
         </div>
         
+        
         <div id='inputWindow'>
+            <div class="inputWarnings invisible">
+                <ul>
+                </ul>
+            </div>
+            
             <!--    If the spreadsheet is ambiguous, ask for clarification     -->
             <div id="formatDisambiguation" class="container invisible screen">
                 <h3>Are these <span class='numThings'>several</span> rows about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'></span>"?</h3>
@@ -56,7 +69,7 @@
                 <div id="spreadsheetDiv" class="container">
                 </div>
                 <br>
-                <button style='float:right;' onclick='continueToReconciliation();'>Yep, Let's Continue &gt;</button>
+                <button style='float:right;' class='continue'>Yep, Let's Continue &gt;</button>
             </div>
         </div>
       </div>
@@ -102,7 +115,7 @@
                     <thead><tr><th></th></tr></thead>
                     <tbody><tr><td></td></tr></tbody>
                   </table>
-                  <button class="moreButton">More candidates &darr;</button><img src="spinner.gif" class="invisible loadingMoreCandidates">
+                  <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
                   <h4>Or:</h4>
                   <button class="skipButton otherSelection" name="">Skip This Item</button>
                   <button class="newButton otherSelection" name="None">Not in Freebase</button>
@@ -139,37 +152,84 @@
               <h3>Copy your updated spreadsheet from here:</h3>
               <textarea name="outputSpreadSheet" id="outputSpreadSheet" class='spreadsheet'></textarea><br>
               
-
+              
+              
               <h3>Upload your data to Freebase:</h3>
-              <div class='uploadLogin invisible'>
-                  You need to <a href='http://www.freebase.com/signin/login' target='_blank'>login at Freebase.com</a> before uploading.  <button onclick='checkLogin();'>Then Click Here To Continue</button>
-              </div>
-              <div class='uploadForm invisible'>
-                  We've found <span class='triple_count'></span> assertions that you can upload.
-                  <br>
-                  <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
-                  <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
+              <div class="uploadToFreeQ">
+                  <div class='uploadLogin invisible'>
+                      You need to <a href='http://www.freebase.com/signin/login' target='_blank'>login at Freebase.com</a> before uploading.  <button class="checkLogin">Then Click Here To Continue</button>
+                  </div>
+                  <div class='uploadForm invisible'> 
+                      <div class="renderingTriples invisible">
+                          One moment, preparing your data for upload... <img src="resources/spinner.gif">
+                      </div>
+                      
+                      <div class="triplesRendered invisible">
+                          We've found <span class='triple_count'></span> assertions that you can upload.
+                          <button class="displayTriples">Detailed view &darr;</button>
+                          <div>
+                              <pre class='triplesDisplay invisible'></pre>
+                          </div>
+                  
+                          <br>
+                          <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
+                          <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
               
               
-                  <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
-                  <form action="http://data.labs.freebase.com/freeq/spreadsheet/" target="_blank" method="POST" accept-charset="utf-8">
-                      <input type='hidden' name='user' value='' id='user'>
-                      <input type='hidden' name="action_type" value="LOAD_TRIPLE" id="action_type">
-                      <input type="hidden" name="operator" value="/user/spreadsheet_bot" id="operator">
-                      <input type="hidden" name="check_params" value="false" id="check_params">
-                      <input type='hidden' name='mdo_info' value='' id='mdo_info'>
-                      <input type="hidden" name="payload" value="" id="payload">
-                      Upload to: <label for='sandbox'>Sandbox</label><input type="radio" name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" name="graphport" id='otg' value="otg"><br>
-                      <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
-                      <input type="submit" value="Upload">
-                  </form>
-                  <br>
+                          <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
+                          <form id="freeq_form" action="http://data.labs.freebase.com/freeq/spreadsheet/" target="_blank" method="POST" accept-charset="utf-8">
+                              <input type='hidden' name='user' value='' id='user'>
+                              <input type='hidden' name="action_type" value="LOAD_TRIPLE" id="action_type">
+                              <input type="hidden" name="operator" value="/user/spreadsheet_bot" id="operator">
+                              <input type="hidden" name="check_params" value="false" id="check_params">
+                              <input type='hidden' name='mdo_info' value='' id='mdo_info'>
+                              <input type="hidden" name="payload" value="" id="payload">
+                              Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
+                              <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
+                              <input type="submit" value="Upload">
+                      
+                              <div class="loginUnknown invisible">
+                                  Unable to tell if you're logged in or not.<br>
+                                  If you get a 401 Unauthenticated error when uploading, be sure that you're <a href='http://www.freebase.com/signin/login' target='_blank'>logged in on freebase.com</a>.
+                              </div>
+                              <div class="error invisible">
+                              
+                              </div>
+                          </form>
+                      </div>
+                      <br>
+                  </div>
+              </div>
+              <div class="freeqLoad invisible">
+                  <div class="freeqLoadInProgress invisible">
+                      <div>
+                          Your data is loading now:
+                      </div>
+                      <div id="upload_progressbar"></div>
+                  </div>
+
+                  <div class="uploadToSandboxComplete invisible">
+                      Your data is finished loading into sandbox!  Check the data on sandbox to ensure its quality, then click here: <button class="loadAgainButton">Upload with different settings</button>
+                  </div>
+
+                  <div class="uploadToOTGComplete invisible">
+                      Your data has been uploaded to Freebase.  
+                      
+                      <div class="fetchingFreeqIds">
+                          Fetching the ids of newly created topics... <img src="resources/spinner.gif">
+                      </div>
+                      
+                      <div class="idsFetched invisible">
+                          The ids of any new topics that were created have been added into to your spreadsheet.
+                      </div>
+                  </div>
+
+                  <a class="peacock_link" target="_blank">View the status of your data on Peacock</a><br/>
               </div>
               
-              <button class="triplesDisplayButton">Display Triples</button>
-              <div>
-                  <pre class='triplesDisplay invisible'></pre>
-              </div>
+              <div class='uploadSpinner invisible'>
+                  <img src="resources/spinner.gif">
+              </div>              
           </div>
       </div>
       
@@ -184,15 +244,17 @@
       <a href="http://wiki.freebase.com/wiki/Freebase_Loader" target='_blank' class="documentation">Documentation</a>
       | <a href="http://github.com/freebase/reconciliation_ui/" target='_blank' class='view_source'>Source Code</a> 
       | <a href="http://github.com/rictic/reconciliation_ui/tree/development" class='versionLink' target='_blank'>Version</a> 
-      | <a href="https://bugs.freebase.com/secure/CreateIssueDetails!init.jspa?pid=10148&issuetype=1&priority=3&components=10402&assignee=peter" class='bugReportLink' target="_blank">Found a Bug?</a>
+      | <a href="https://bugs.freebase.com/secure/CreateIssueDetails!init.jspa?pid=10148&amp;issuetype=1&amp;priority=3&amp;components=10402&amp;assignee=peter" class='bugReportLink' target="_blank">Found a Bug?</a>
       </span>
       
       <a href="#optionsPanel" class='optionsButton' onclick='$("#main_app").hide();$("#optionsPanel").show(); return false;'>Options</a>
     </div>
 
     <div id="optionsPanel" class='invisible container'>
+      <label for="require_exact_name_match">Require Exact Name Match to Autoreconcile</label><input type="checkbox" name="require_exact_name_match" id="require_exact_name_match"><br>
       <label for="reconciliation_url">Reconciliation URL: </label><input type="text" name="reconciliation_url" value="" id="reconciliation_url" size='60'><br>
       <label for="freebase_url">Freebase URL: </label><input type="text" name="freebase_url" value="" id="freebase_url" size='60'><br>
+      
       <button onclick='$("#optionsPanel").hide();$("#main_app").show();'>Ok</button>
     </div>
     
@@ -211,40 +273,46 @@
     <div class='invisible'>
       
 <!--  Begin scripts to compile -->
-        <script language="javascript" charset="utf-8" src="lib/json2.js"></script>
-        <script language="javascript" charset="utf-8" src="lib/jquery.js"></script>
-        <script language="javascript" charset="utf-8" src="lib/jquery.ui/ui/ui.core.js"></script>
-        <script language="javascript" charset="utf-8" src="lib/jquery.ui/ui/ui.tabs.js"></script>
-        <script language="javascript" charset="utf-8" src="lib/jquery.ui/ui/ui.progressbar.js"></script>
-        <script language="javascript" charset="utf-8" src="lib/jquery.event.hover.js"></script>
-        <script language="javascript" charset="utf-8" src="lib/jsobjdump.js"></script>
-        
-        <script language="javascript" charset="utf-8" src="lib/dataTables/media/js/jquery.dataTables.js"></script>
-
-
-        <script language="javascript" charset="utf-8" src="lib/suggest/jquery.freebase.minitopic.js"></script>
-        <script language="javascript" charset="utf-8" src="lib/suggest/freebase.suggest.js"></script>
-
-        <script language="javascript" charset="utf-8" src="src/utility.js"></script>
-        <script language="javascript" charset="utf-8" src="src/util/array.js"></script>
-        <script language="javascript" charset="utf-8" src="src/util/ui.js"></script>
-        <script language="javascript" charset="utf-8" src="src/input.js"></script>
-        <script language="javascript" charset="utf-8" src="src/auto_recon.js"></script>
-        <script language="javascript" charset="utf-8" src="src/manual_recon.js"></script>
-        <script language="javascript" charset="utf-8" src="src/recon.js"></script>
-        <script language='javascript' charset="utf-8" src="src/review.js"></script>
-        <script language="javascript" charset="utf-8" src="src/output.js"></script>
-        <script language="javascript" charset="utf-8" src="src/yielder.js"></script>
-        <script language="javascript" charset="utf-8" src="src/entity.js"></script>
-        <script language="javascript" charset="utf-8" src="src/freebase.js"></script>
-
-        <script language="javascript" charset="utf-8" src="src/ui.js"></script>
+        <script charset="utf-8" src="lib/json2.js"></script>
+        <script charset="utf-8" src="lib/jquery.js"></script>
+        <script charset="utf-8" src="lib/jquery.ui/ui/ui.core.js"></script>
+        <script charset="utf-8" src="lib/jquery.ui/ui/ui.tabs.js"></script>
+        <script charset="utf-8" src="lib/jquery.ui/ui/ui.progressbar.js"></script>
+        <script charset="utf-8" src="lib/jquery.insertAtCaret.js"></script>
+        <script charset="utf-8" src="lib/jquery.event.hover.js"></script>
+        <script charset="utf-8" src="lib/jquery.form.js"></script>
+        <script charset="utf-8" src="lib/jsobjdump.js"></script>
+                
+        <script charset="utf-8" src="lib/dataTables/media/js/jquery.dataTables.js"></script>
+                
+                
+        <script charset="utf-8" src="lib/suggest/jquery.freebase.minitopic.js"></script>
+        <script charset="utf-8" src="lib/suggest/freebase.suggest.js"></script>
+                
+        <script charset="utf-8" src="src/yielder.js"></script>
+        <script charset="utf-8" src="src/utility.js"></script>
+        <script charset="utf-8" src="src/util/array.js"></script>
+        <script charset="utf-8" src="src/util/ui.js"></script>
+        <script charset="utf-8" src="src/input.js"></script>
+        <script charset="utf-8" src="src/auto_recon.js"></script>
+        <script charset="utf-8" src="src/manual_recon.js"></script>
+        <script charset="utf-8" src="src/recon.js"></script>
+        <script charset="utf-8" src="src/review.js"></script>
+        <script charset="utf-8" src="src/output.js"></script>
+                
+        <script charset="utf-8" src="src/entity.js"></script>
+        <script charset="utf-8" src="src/path.js"></script>
+        <script charset="utf-8" src="src/freebase.js"></script>
+        <script charset="utf-8" src="src/options.js"></script>
+                
+                
+        <script charset="utf-8" src="src/ui.js"></script>
 <!--  End scripts to compile -->
 
-        <script language="javascript" charset="utf-8" src="examples/sampledata.js" defer async></script>
-        <script language="javascript" charset="utf-8" src="examples/complexdata.js" defer async></script>
-
-        <script language="javascript" charset="utf-8" src="version.js"></script>
+        <script charset="utf-8" src="examples/sampledata.js" defer async></script>
+        <script charset="utf-8" src="examples/complexdata.js" defer async></script>
+                
+        <script charset="utf-8" src="version.js"></script>
         
 <!--    POSTed data goes here      -->
     </div>

@@ -1,19 +1,23 @@
-function initializeReconciliation(callback) {
-    function isUnreconciled(entity) {
-        if (entity.isCVT())
-            return false;
-        return Arr.contains([undefined,null,"indeterminate",""], entity.id);
-    }
+var totalRecords = 0;
 
+function isUnreconciled(entity) {
+    if (entity.isCVT())
+        return false;
+    return Arr.contains([undefined,null,""], entity.id);
+}
+
+function initializeReconciliation(onReady) {
     totalRecords = rows.length;
     var rec_partition = Arr.partition(rows,isUnreconciled);
-    automaticQueue = rec_partition[0];
+    automaticQueue = new AutomaticQueue(rec_partition[0]);
     politeEach(rec_partition[1],function(_,reconciled_row){
+        reconciled_row['/rec_ui/rec_begun'] = true;
         addColumnRecCases(reconciled_row);
     }, function() {
         freebase.fetchTypeInfo(typesSeen.getAll(), function() {
             $(".initialLoadingMessage").hide();
-            callback();
+            reconciliationBegun = true;
+            onReady();
         });
     });
 }
@@ -37,20 +41,37 @@ function canonicalizeFreebaseId(entity) {
     });
 }
 
+/** @params {!tEntity} entity
+  * 
+  */
 function addColumnRecCases(entity) {
-    if (entity["/rec_ui/toplevel_entity"]) {
-        var autoQueueLength = automaticQueue.length;
-        for (var i = 0; i < mqlProps.length; i++) {
-            var values = $.makeArray(getChainedProperty(entity,mqlProps[i]));
-            for (var j = 0; j < values.length; j++) {
-                if (values[j] && values[j]['/type/object/name'] != undefined){
-                    if (!values[j].id)
-                        automaticQueue.push(values[j]);
-                    totalRecords++;
-                }
+    var autoQueueLength = automaticQueue.length;
+    for (var key in entity) {
+        var values = $.makeArray(entity[key]);
+        $.each(values, function(_, value) {
+            //skip it if it's not an entity
+            if (!(value instanceof tEntity))
+                return;
+            //skip it if it's already gone through the queue
+            if (value['/rec_ui/rec_begun'])
+                return;
+            
+            value['/rec_ui/rec_begun'] = true;
+            if (isUnreconciled(value) && value['/type/object/name']) {
+                automaticQueue.push(value);
             }
-        }
-        if (autoQueueLength == 0)
-            beginAutoReconciliation();
+            else {
+                //if we're not going to reconcile it, add its children
+                //to be reconciled
+                addColumnRecCases(value);
+                return;
+            }
+            totalRecords++;
+        });
     }
+    
+    //The auto queue was empty when this started, so autorecon needs
+    //to be restarted.
+    if (autoQueueLength == 0 && reconciliationBegun)
+        beginAutoReconciliation();
 }

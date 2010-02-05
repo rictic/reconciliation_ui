@@ -1,6 +1,15 @@
-var freebase = (function() {
-    var freebase = {};
+var freebase = {mqlValue:null, mqlTree:null}; //some types
+/** @typedef {Object.<string, freebase.mqlValue>} */
+freebase.mqlTree;
+    
+/** @typedef {(null, number, string, freebase.mqlTree, Array.<freebase.mqlValue>)} */
+freebase.mqlValue;
+
+(function() {
     var miniTopicFloaterEl = $("#miniTopicFloater");
+    /** @param {!string} name
+      * @param {!string} id
+      */
     freebase.link = function(name, id) {
         var linkVal = node("a", name, {target:'_blank',href:freebase_url + '/view' + id})
         return miniTopicFloater(linkVal, id);
@@ -28,12 +37,21 @@ var freebase = (function() {
         }
     };
     
-    // Simple mql read
+    
+    /** Simple mql read
+      * 
+      * @param {freebase.mqlTree} envelope
+      * @param {function(freebase.mqlTree)} handler
+      */
     freebase.mqlRead = function mqlRead(envelope, handler) {
         $.getJSON(getMqlReadURL(envelope), null, handler);
     };
     
-    /* Used below, thus the odd style above */
+    /** Used below, thus the odd style above 
+      *
+      * @param {freebase.mqlTree} envelope
+      * @returns {!string} 
+      */
     function getMqlReadURL(envelope) {
         var param = {query:JSON.stringify(envelope)};
         if (!('query' in envelope))
@@ -41,17 +59,26 @@ var freebase = (function() {
         return freebase_url + "/api/service/mqlread?callback=?&" + $.param(param);
     }
     
-    /* Maps a freebase ID into a valid MQL query id */
+    /** Maps a freebase ID into a valid MQL query id 
+      * @param {string} id
+      * @return {string}
+      */
     function idToQueryName(id) {
         return id.replace(/\//g,'ZZZZ');
     }
     
-    /* freebase.mqlReads takes a list of pairs of [fb_key, query] and wraps them in a minimal
-       number of HTTP GET requests needed to perform them.  For each query result
-       it calls handler(fb_key, result) if the query is successful, and onError(fb_key, response)
-       if the mql query fails.  After all of the queries have been handled, it calls onComplete()
-    */
     var maxURLLength = 2048;
+    
+    /** freebase.mqlReads takes a list of pairs of [fb_key, query] and wraps them in a minimal
+        number of HTTP GET requests needed to perform them.  For each query result
+        it calls handler(fb_key, result) if the query is successful, and onError(fb_key, response)
+        if the mql query fails.  After all of the queries have been handled, it calls onComplete()
+        
+        @param {!Array.<!Array.<!string>>} q_pairs
+        @param {!function(!string, !freebase.mqlTree)} handler
+        @param {!function()} onComplete
+        @param {function(!string, !freebase.mqlTree)=} errorHandler
+    */
     freebase.mqlReads = function(q_pairs, handler, onComplete, errorHandler) {
         if (q_pairs.length === 0){
             onComplete();
@@ -101,7 +128,7 @@ var freebase = (function() {
                     if (errorHandler)
                         errorHandler(key, response);
                     else
-                        error(value);
+                        error(response);
                 }
                 else
                     handler(key, response.result);
@@ -112,13 +139,16 @@ var freebase = (function() {
     }
     
     
-    
-    /* Given an id and a callback, immediately calls the callback with the freebase name
-      if it has been looked up before.
-      
-      If it hasn't, then the callback is called once with the id immediately, and once again
-      with the name after it has been looked up.*/
     var nameCache = {};
+    /** Given an id and a callback, immediately calls the callback with the freebase name
+        if it has been looked up before.
+      
+        If it hasn't, then the callback is called once with the id immediately, and once again
+        with the name after it has been looked up.
+    
+        @param {!string} id
+        @param {!function(string)} callback
+    */
     freebase.getName = function(id, callback) {
         if (id in nameCache){
             callback(nameCache[id]);
@@ -130,6 +160,8 @@ var freebase = (function() {
             callback(nameCache[id]);
         });
     }
+    
+    /** @param {!string} id */
     freebase.makeLink = function(id) {
         var simpleEl = node("span",id);
         var link = freebase.link(simpleEl, id);
@@ -139,25 +171,37 @@ var freebase = (function() {
         return link;
     }
     
+    /** @param {string=} type
+      * @return {freebase.mqlTree}
+      */
+    function getTypeQuery(type) {
+        return {
+            id:type || null,
+            type:'/type/type',
+            "/freebase/type_hints/included_types":[],
+            "/freebase/type_hints/mediator":{"optional": true, "value":null},
+            "extends" : []
+        }
+    }
+    
+    /** @type {Object.<string, freebase.mqlTree>} */
     var typeMetadata = {};
+    /** @param {!Array.<!string>} types
+      * @param {!function(!string, !freebase.mqlTree)} onComplete
+      * @param {function(!string, !freebase.mqlTree)=} onError
+      */
     freebase.fetchTypeInfo = function(types, onComplete, onError) {
         var q_pairs = [];
         $.each(types, function(_,type) {
             if (freebase.getTypeMetadata(type))
                 return;
-            q_pairs.push([type, {query:getQuery(type)}]);
+            q_pairs.push([type, {query:getTypeQuery(type)}]);
         })
         
         var errorTypes = [];
         freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
         
-        function getQuery(type) {
-            return {
-                id:type,
-                type:'/type/type',
-                "/freebase/type_hints/included_types":[]
-            }
-        }
+        
         
         function handler(type, result) {
             typeMetadata[type] = result;
@@ -177,12 +221,21 @@ var freebase = (function() {
     }
     freebase.getTypeMetadata = function(type) {return typeMetadata[type];}
     
+    /** @type {Object.<string, (freebase.mqlTree|undefined)>} */
     var propMetadata = {};
+    /** @param {!Array.<!string>} properties
+      * @param {!function(string, freebase.mqlTree)} onComplete
+      * @param {function(string, freebase.mqlTree)=} onError
+      */
     freebase.fetchPropertyInfo = function(properties, onComplete, onError) {
         var simpleProps = [];
+        var errorProps = [];
+        
         $.each(properties, function(_, mqlProp) {
             $.each(mqlProp.split(":"), function(i, simpleProp) {
-                if (simpleProp == "id" || freebase.getPropMetadata(simpleProp))
+                if (simpleProp in propMetadata && propMetadata[simpleProp] === undefined)
+                    errorProps.push(simpleProp);
+                if (simpleProp == "id" || simpleProp in propMetadata)
                     return;
                 simpleProps.push(simpleProp);
             });
@@ -194,52 +247,62 @@ var freebase = (function() {
             q_pairs.push([simpleProp, {query: getQuery(simpleProp)}]);
         });
         
-        var errorProps = [];
         freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
         
         function getQuery(prop) {
-            return {
-                "expected_type" : {
-                    "extends" : [],
-                    "id" : null,
-                    "/freebase/type_hints/mediator" : {"optional":true, "value":null}
-                },
+            var query =  {
                 "reverse_property" : null,
                 "master_property"  : null,
                 "type" : "/type/property",
                 "name":null,
                 "id" : prop
             }
+            query.expected_type = getTypeQuery();
+            return query;
         }
 
         function handler(mqlProp, result){
-            if (result.expected_type.id) 
-                typesSeen.add(result.expected_type.id)
+            if (result.expected_type.id)
+                typeMetadata[result.expected_type.id] = result.expected_type
             result.inverse_property = result.reverse_property || result.master_property;
+            if (result.inverse_property)
+                propertiesSeen.add(result.inverse_property);
             propMetadata[mqlProp] = result;
         }
         
-        function onErrorHandler(key, response) { 
-            errorProps.push(key); 
+        function onErrorHandler(mqlProp, response) { 
+            propMetadata[mqlProp] = undefined;
+            errorProps.push(mqlProp);
         }
         
         function onCompleteHandler() {
-            if (errorProps.length > 0)
+            if (onError && errorProps.length > 0)
                 onError(errorProps);
             else
                 onComplete();
+            if (q_pairs.length > 0)
+                freebase.fetchPropertyInfo(propertiesSeen.getAll(), function(){}, function(){});
         }
         
     }
-    freebase.getPropMetadata = function(prop) {return propMetadata[prop];}
+    freebase.getPropMetadata = function(prop) {
+        var meta = propMetadata[prop];
+        if (meta instanceof Function)
+            return undefined;
+            
+        return meta;
+    }
 
+    /** @param {freebase.mqlTree} mqlResult
+        @result {boolean} */
     freebase.isBadOrEmptyResult = function(mqlResult) {
         return mqlResult.code != "/api/status/ok" || mqlResult.result === null;
     }
-    
+
+    /** @param {string=} info */
     freebase.beacon = function(info) {
         var url = "http://www.freebase.com/private/beacon?c=spreadsheetloader" + (info || "");
-        $("<img src='" + url + "'>").appendTo($("body"));
+        $("<img src='" + url + "'>").appendTo("body");
     }
     
     /** @param {string} s
@@ -250,4 +313,4 @@ var freebase = (function() {
     }
     
     return freebase;
-}());
+}());})();

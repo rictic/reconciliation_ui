@@ -272,3 +272,33 @@ td {
     cursor: default;
     background-color: #fff;
 }
+
+.inputWarnings {
+    background-color: #F84;
+    left: 12.5%;
+    padding: 4px;
+    position: relative;
+    width: 75%;
+}
+
+.inputWarnings li {
+}
+
+.spinnerHolder {
+    height: 30px;
+}
+
+.examples {
+    font-size: 90%;
+}
+
+.triplesDisplay {
+    max-height: 200px;
+    overflow: auto;
+}
+
+.loginUnknown {
+    padding-left: 10px;
+    padding-top: 2px;
+    font-size: 95%;
+}

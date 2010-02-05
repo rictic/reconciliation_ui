@@ -38,8 +38,11 @@ function clone(obj) {
     return copy;
 }
 
-//constructs a DOM node
-function node(kind) {
+/**constructs a DOM node
+  * @param {!string} kind The tag of the created node
+  * @param {...*} var_args
+  */
+function node(kind, var_args) {
     var node = $(document.createElement(arguments[0]));
     var options = arguments[arguments.length-1]
     var len = arguments.length - 1;
@@ -59,22 +62,33 @@ function node(kind) {
 }
 
 
-//Maps MQL ids to valid CSS class names
+/** Maps MQL ids to valid CSS class names
+  * @param {!string} idName the MQL id
+ */
 function idToClass(idName) {
     return idName.replace(/\//g,"_").replace(":","___");
 }
 
 function startsWith(needle, haystack) {
-    if (needle.substr(0,haystack.length) == haystack)
+    if (haystack.substr(0,needle.length) === needle)
         return true;
     return false;
 }
+
+function endsWith(needle, haystack) {
+    if (haystack.substr(haystack.length-needle.length) === needle)
+        return true;
+    return false;
+}
+
 
 function charIn(string, chr) {
     return string.indexOf(chr) !== -1;
 }
 
 function isValueProperty(propName) {
+    if (Arr.contains(["/type/object/type", "/type/object/name", "id"], propName))
+        return true;
     if (freebase.getPropMetadata(propName))
         return isValueType(freebase.getPropMetadata(propName).expected_type);
     return undefined;
@@ -86,16 +100,38 @@ function isValueType(type) {
 
 function isCVTProperty(propName) {
     var prop = freebase.getPropMetadata(propName);
-    if (freebase.getPropMetadata(propName))
+    if (prop)
         return isCVTType(prop.expected_type);
     return undefined;
 }
 
+/** @param {!(string|Object)} type
+  * @return {(boolean|undefined)}
+  */
 function isCVTType(type) {
+    if (getType(type) === "string")
+        type = freebase.getTypeMetadata(type);
+    if (type === undefined) {
+        error("type undefined in isCVTType");
+        return;
+    }
+        
     return type["/freebase/type_hints/mediator"] 
         && type["/freebase/type_hints/mediator"].value;
 }
 
+function toJSON(value) {
+    if (typeof value === "object" && 'toJSON' in value)
+        return value.toJSON();
+    switch(getType(value)){
+    case "array": 
+        return $.map(value, toJSON);
+    case "function":
+        return undefined;
+    default:
+        return value;
+    }
+}
 
 //I can't believe I can't find a better way of doing these
 /* Functions for treating an object kinda like a list */
@@ -156,16 +192,17 @@ var isMqlProp = (function(){
     }
 })();
 
-function getMqlProperties(headers) {
-    return Arr.filter(getProperties(headers), isMqlProp);
-}
-
-function getProperties(headers) {
-    return Arr.filter(headers, function(header) {
+/** @param {!Array.<!loader.path>} headerPaths
+  * @return !Array.<!string>
+  */
+function getProperties(headerPaths) {
+    var candidates = Arr.unique(Arr.concat($.map(headerPaths, function(headerPath){return headerPath.getProps();})));
+    return Arr.filter(candidates, function(header) {
         return header.charAt(0) == "/"
     })
 }
 
+/** @constructor */
 function OrderedMap() {
     var properties = [];
     var map = {};
@@ -200,7 +237,10 @@ function OrderedMap() {
     }
 }
 
-var Set = function() {
+/** @constructor 
+  * @param {...*} var_args the initial elements of the set
+  */
+var Set = function(var_args) {
     var set = {};
     this.add = function(val) {set[val] = true;};
     this.addAll = function(array) {
@@ -213,6 +253,22 @@ var Set = function() {
     this.addAll(arguments);
 }
 
+
+/** Wrapper function for setTimeout.  Todo: add error handling
+  * @param {function()} f
+  * @param {number} millis
+  */
+function addTimeout(f, millis) {
+    return setTimeout(f,millis,"JavaScript");
+}
+
+function addInterval(f, millis) {
+    return setInterval(f,millis,"JavaScript");
+}
+
+/**
+  @return {string} 
+*/
 function getType(v) {
     if (typeof v !== "object") return typeof v;
     if ($.isArray(v)) return "array";
@@ -220,12 +276,21 @@ function getType(v) {
     if (v === undefined) return "undefined";
     if (v instanceof Date) return "date";
     if (v instanceof RegExp) return "regexp";
+    if (v instanceof String) return "string";
+    if (v instanceof Function) return "function";
     return "object";
 }
 
 //This set implementation preserves order, but just in case
 var OrderedSet = Set; 
 
+/**
+ * @param {string} url
+ * @param {Object} params
+ * @param {function(Object)} onSuccess
+ * @param {function()} onTimeout
+ * @param {number=} millis milliseconds until query times out
+ */
 function getJSON(url, params, onSuccess, onTimeout, millis) {
     millis = millis || 120000; //default of 2 minute timeout
     var timedOut = false;
@@ -236,7 +301,7 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
         timedOut = true;
         if (onTimeout) onTimeout();
     }
-    var timer = setTimeout(timeout, millis);
+    var timer = addTimeout(timeout, millis);
     function responseHandler(response) {
         if (timedOut) {
             warn("got response after timeout")
@@ -247,10 +312,59 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
         onSuccess(response);
     }
 
-    if (location.host === "data.labs.freebase.com")
+    if (window.location.host === "data.labs.freebase.com")
         $.post(url, params, responseHandler, "jsonp")
     else 
         $.getJSON(url, params, responseHandler);
+}
+
+function onSameDomain() {
+    return window.location.host === "data.labs.freebase.com";
+}
+
+/** Returns the standard form that an id should take.
+  * Useful for interfacing with other tools.
+  * 
+  * @param {!string} id
+  * @returns {!string}
+  */
+function standardizeId(id) {
+    return id.replace(/\#([0-9a-f]{32})/, "/guid/$1");
+}
+
+/** A wrapper around setInterval that can be reset, so that
+  * onTick fires at most once every interval millis.
+  *
+  * @constructor
+  * @param {!number} interval
+  * @param {!function()} onTick
+  */
+function RepeatingTimer(interval, onTick) {
+    /** @const */
+    this.interval = interval;
+    /** @const */
+    this.onTick = onTick;
+    this.stopped = false;
+    this.reset();
+}
+
+RepeatingTimer.prototype.reset = function() {
+    if (this.stopped) 
+        return;
+    this.clear();
+    this.id = addInterval(this.onTick, this.interval);
+}
+
+RepeatingTimer.prototype.stop = function() {
+    this.clear();
+    this.stopped = true;
+}
+
+RepeatingTimer.prototype.clear = function() {
+    if (this.id) {
+        clearTimeout(this.id)
+        this.id = undefined;
+    }
 }
 
 /*
@@ -282,3 +396,8 @@ var assert = function() {
         return function(bool, message) {return console.assert(bool,message);};
     return function(bool,message){if (!bool) error(message)};
 }()
+
+
+var debug = function(val) {
+    log(JSON.stringify(JsObjDump.annotate(val), null, 2))
+}

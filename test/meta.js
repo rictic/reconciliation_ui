@@ -6,6 +6,10 @@ function pass() {
     assertTrue(true);
 }
 
+/** @param {*} msg
+  * @param {*} a1
+  * @param {*=} a2
+  */
 function assertEq(msg, a1, a2) {
     if (arguments.length == 2){
         a2 = a1;
@@ -14,15 +18,19 @@ function assertEq(msg, a1, a2) {
     }
     var message = areNotEq(a1,a2);
     if (message){
-        log(a1);
+        debug(a1);
         log("expected, but found");
-        log(a2);
+        debug(a2);
         fail(msg + " " + message);
     }
     else
         pass();
 }
 
+/** @param {*} msg
+  * @param {*} a1
+  * @param {*=} a2
+  */
 function assertNotEq(msg, a1, a2) {
     if (arguments.length == 2){
         a2 = a1;
@@ -34,9 +42,9 @@ function assertNotEq(msg, a1, a2) {
         pass();
     }
     else {
-        log(a1);
+        debug(a1);
         log("should not be equal to");
-        log(a2);
+        debug(a2);
         fail();
     }
 }
@@ -47,7 +55,10 @@ function isObject(val) {
     return true;
 }
 
-
+/** @param {*} msg
+  * @param {*} o1
+  * @param {*=} o2
+  */
 function assertSubsetOf(msg, o1, o2) {
     if (arguments.length == 2){
         o2 = o1;
@@ -76,7 +87,11 @@ function isNotSubsetOf(o1,o2) {
     }
 }
 
-
+/** @param {*} a1
+  * @param {*} a2
+  * @param {function(*,*):string=} cmpFunc
+  * @param {function(*,*):string=} objCompFunc
+  */
 function areNotEq(a1,a2, cmpFunc, objCompFunc){
     cmpFunc = cmpFunc || areNotEq;
     objCompFunc = objCompFunc || objComp;
@@ -84,9 +99,13 @@ function areNotEq(a1,a2, cmpFunc, objCompFunc){
         if (!($.isArray(a1) && $.isArray(a2)))
             return "one is an array, the other isn't: " + a1 + " " + a2;
 
-        if (a1.length != a2.length) return "lengths of arrays were different, expected " + a1.length + " got " + a2.length + ": " + a1 + " " + a2;
-        for (var i = 0; i < a1.length; i++){
-            var message = cmpFunc(a1[i], a2[i], cmpFunc, objCompFunc);
+        var ar1 = /** @type {Array} */ (a1);
+        var ar2 = /** @type {Array} */ (a2); 
+
+
+        if (ar1.length != ar2.length) return "lengths of arrays were different, expected " + ar1.length + " got " + ar2.length + ": " + ar1 + " " + ar2;
+        for (var i = 0; i < ar1.length; i++){
+            var message = cmpFunc(ar1[i], ar2[i], cmpFunc, objCompFunc);
             if (message)
                 return i + "th value different in arrays: " + message;
         }
@@ -118,11 +137,6 @@ function objComp(a1, a2, cmpFunc, objCompFunc) {
             return a1 + " and " + a2 + " differ in prop `" + prop + "': " + message;
     }
 }
-
-function Yielder() {
-	return {shouldYield: function(){return false;}}
-}
-
 
 TestCase("MetaTest",{
     testIntEq: function() {

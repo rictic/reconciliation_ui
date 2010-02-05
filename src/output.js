@@ -32,9 +32,9 @@
 */
 
 function onDisplayOutputScreen() {
-    setTimeout(checkLogin,0);
-    setTimeout(displaySpreadsheet,0);
-    setTimeout(prepareTriples,0);
+    addTimeout(checkLogin,0);
+    addTimeout(displaySpreadsheet,0);
+    addTimeout(prepareTriples,0);
 }
 function onHideOutputScreen() {
     if (spreadsheetRendererYielder)
@@ -44,11 +44,14 @@ function onHideOutputScreen() {
     $("#outputSpreadSheet")[0].value = "";
 }
 
+/** @param {!Array.<(string|undefined)>} arr
+  * @returns {!string}
+  */
 function encodeLine(arr) {
     var values = [];
-    for(var i = 0; i < headers.length; i++){
+    for(var i = 0; i < headerPaths.length; i++){
         var val = arr[i];
-        if (typeof val == "undefined")
+        if (typeof val === "undefined")
             values.push("");
         else if (!val.match(/(\t|\"|\n)/))
             values.push(arr[i])
@@ -60,28 +63,14 @@ function encodeLine(arr) {
     return values.join("\t");
 }
 
-//Like getChainedProperty, only it preserves array placement
-function getChainedPropertyPreservingPlace(entity, prop) {
-    var slots = [entity];
-    $.each(prop.split(":"), function(_,part) {
-        var newSlots = [];
-        $.each(slots, function(_,slot) {
-            if (!slot || !slot[part])
-                newSlots.push(undefined);
-            else
-                newSlots = newSlots.concat($.makeArray(slot && slot[part]))
-        })
-        slots = newSlots;
-    });
-    if (slots === []) return undefined;
-    return slots;
-}
-
-
+/**
+  * @param {!tEntity} row
+  * @return {!Array.<!string>}
+  */
 function encodeRow(row) {
     var lines = [[]];
-    for (var i = 0; i < headers.length; i++){
-        var val = getChainedPropertyPreservingPlace(row, headers[i]);
+    $.each(headerPaths, function(i, headerPath) {
+        var val = row.get(headerPath, true);
         if ($.isArray(val)) {
             for (var j = 0; j < val.length; j++) {
                 if (lines[j] == undefined) lines[j] = [];
@@ -90,7 +79,7 @@ function encodeRow(row) {
         }
         else
             lines[0][i] = textValue(val);
-    }
+    });
     return $.map(lines,encodeLine);
 }
 
@@ -105,7 +94,7 @@ function displaySpreadsheet() {
 var spreadsheetRendererYielder;
 function renderSpreadsheet(onComplete) {
     var lines = [];
-    lines.push(encodeLine(headers));
+    lines.push(encodeLine($.map(headerPaths, function(headerPath){return headerPath.toString()})));
     spreadsheetRendererYielder = new Yielder();
     politeEach(rows, function(idx, row) {
         lines = lines.concat(encodeRow(row));
@@ -117,6 +106,8 @@ function renderSpreadsheet(onComplete) {
 
 
 function prepareTriples() {
+    $(".renderingTriples").show();
+    $(".triplesRendered").hide();
     getTriples(entities, function(triples) {
         politeMap(triples,function(val){return JSON.stringify(val)},
             function(encodedTriples) {
@@ -124,6 +115,8 @@ function prepareTriples() {
                 $(".triplesDisplay").html(tripleString);
                 $(".triple_count").html(encodedTriples.length);
                 $('#payload')[0].value = tripleString;
+                $(".renderingTriples").hide();
+                $(".triplesRendered").show();
             }
         );
     });
@@ -148,6 +141,10 @@ function getTriples(entities, callback) {
                 return getValue(property, value[0]);
             return $.map(value, function(val){return getValue(property, val)});
         }
+        if (getType(value) === "object") {
+            error("found an object for the value property " + property + "!");
+            return undefined;
+        }
         var stringValue = value;
         var expectedType = freebase.getPropMetadata(property).expected_type.id;
         if (Arr.contains(["/type/int","/type/float"], expectedType))
@@ -164,13 +161,14 @@ function getTriples(entities, callback) {
     }
     function cvtObject(cvt) {
         var result = {};
-        var props = cvt['/rec_ui/cvt_props'];
+        var props = cvt['/rec_ui/headers'];
         var empty = true;
         var type = $.makeArray(cvt['/type/object/type'])[0];
         for (var i = 0; i < props.length; i++){
             var predicate = props[i];
             if (predicate.indexOf(type) != 0){
-                warn("bad predicate " + predicate + " in CVT with type" + type);
+                if (predicate !== "/type/object/type")
+                    warn("bad predicate " + predicate + " in CVT with type" + type);
                 continue;
             }
             var value = cvt[predicate];
@@ -183,9 +181,9 @@ function getTriples(entities, callback) {
                 }
             }
             else {
-                var value = $.makeArray(value);
+                value = $.makeArray(value);
                 value = Arr.filter(value, function(val){return !val['/rec_ui/toplevel_entity']});
-                ids = $.map(value, getID);
+                var ids = $.map(value, getID);
                 if (ids.length === 0)
                     continue;
                 if (ids.length === 1)
@@ -238,9 +236,14 @@ function getTriples(entities, callback) {
                     return;
                 }
                 
-                if (object['/rec_ui/is_cvt']){
+                if (getType(object) !== "object") {
+                    error("expected the target of the property " + predicate + " to be an object, but it was a " + getType(object));
+                    return;
+                }
+                
+                if (object.isCVT()){
                     if (!(object['/rec_ui/parent']['/rec_ui/id'] === subject['/rec_ui/id']))
-                        return; //only create cvt once, from the 'root' of the parent
+                        return; //only create the cvt once, from the 'root' of the parent
                     var cvtTripleObject = cvtObject(object);
                     if (cvtTripleObject)
                         triples.push({s:getID(subject),p:predicate,o:cvtTripleObject}); 
@@ -249,6 +252,7 @@ function getTriples(entities, callback) {
                 if  (!isValidID(object.id))
                     return;
                 
+                
                 triples.push({s:getID(subject),p:predicate,o:getID(object)});
             })
         });
@@ -256,12 +260,20 @@ function getTriples(entities, callback) {
 }
 
 function checkLogin() {
+    if (!onSameDomain()) {
+        $(".uploadForm").show();
+        $(".loginUnknown").show();
+        return;
+    }
+    
+    $(".uploadSpinner").show();
     $(".uploadLogin").hide();
     $(".uploadForm").hide();
     $.ajax({
         url:"http://data.labs.freebase.com/freeq/spreadsheet/",
         type:"GET",
         complete:function(response){
+            $(".uploadSpinner").hide();
             if (!response || !response.status){
                 error(response);
                 return;
@@ -276,5 +288,166 @@ function checkLogin() {
             }
             else
                 error(response);
-        }});
+        }
+    });
 }
+
+var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
+
+/** @param {!number} job_id
+  * @param {function()=} onComplete
+  */
+function populateCreatedIds(job_id, onComplete) {
+    getCreatedIds(freeq_url + job_id + "?view=list", function(createdEntities) {
+        for (var key in createdEntities) {
+            var entity = entities[key.match(/entity(\d+)/)[1]];
+            var id = createdEntities[key];
+            entity.id = standardizeId(id);
+        }
+        if (onComplete) onComplete();
+    });
+}
+
+function getCreatedIds(url, callback) {
+    //this request is idempotent, and sometimes fails, so repeat until it works
+    var repeatingTimer = new RepeatingTimer(30 * 1000, fetchIds);
+    
+    function fetchIds() {
+        $.getJSON(url, null, function(result) {
+            repeatingTimer.reset();
+            //this request should succeed, so retry
+            if (!result || !result.status || result.status.code !== 200) {
+                addTimeout(function() {
+                    getCreatedIds(url, callback);
+                }, 2000);
+            }
+            $(".fetchingFreeqIds").hide();
+            $(".idsFetched").show();
+            var actions=result.result.actions;
+            var res={};
+            $.each(actions, function(_,i) {
+                var o = JSON.parse(i.result);
+                for (var j in o) {
+                    if (j.indexOf("entity")==0){
+                        res[j]=o[j];
+                    }
+                }
+            });
+            repeatingTimer.stop();
+            callback(res);
+        });
+    }
+}
+
+
+/** @constructor
+  * @param {!number} job_id
+  * @param {function(!number)=} onComplete
+  */
+function FreeQMonitor(job_id, onComplete) {
+    /** @const */
+    this.job_id = job_id;
+    /** @const */
+    this.url = freeq_url + job_id;
+    this.onComplete = onComplete;
+    var self = this;
+    this.repeatingTimer = new RepeatingTimer(30 * 1000, function() {self.checkProgress();})
+    this.checkProgress();
+}
+
+FreeQMonitor.prototype.checkProgress = function() {
+    var self = this;
+    function handler(result){
+        self.repeatingTimer.reset();
+        var totalActions = result.result.count;
+        var actionsRemaining = 0;
+        $.each(result.result.details, function(_,i){
+            if (Arr.contains([null, "proc", "queued"], i.status))
+                actionsRemaining += parseInt(i.count,10);
+        });
+        $('#upload_progressbar').progressbar('option', 'value', (totalActions-actionsRemaining)*100/totalActions);
+        
+        if (actionsRemaining === 0) {
+            self.repeatingTimer.stop();
+            if (self.onComplete) {
+                //ensures that onComplete is called at most once
+                var onComplete = self.onComplete;
+                self.onComplete = undefined;
+                onComplete(self.job_id);
+            }
+        }
+        else {
+            addTimeout(function() {self.checkProgress()}, 1000);
+        }
+    }
+    $.getJSON(this.url, null, handler);
+}
+
+$(document).ready(function () {
+    if (onSameDomain()) {
+        $('#freeq_form').ajaxForm({
+            dataType:'json'
+            ,beforeSend: function() {
+                $(".uploadToFreeQ").hide();
+                $(".uploadForm .error").hide();
+                $(".uploadSpinner").show();
+            }
+            ,error: function(x, msg, error) {
+                $(".uploadToFreeQ").show();
+                $(".uploadForm .error").show().html(escape(msg));
+            }
+            ,success: function(result) {
+                var job_id=result.result.job_id;
+                var peacock_url="http://peacock.freebaseapps.com/stats/data.labs/spreadsheet/"+job_id;
+                $(".freeqLoad").show();
+                $(".freeqLoadInProgress").show();
+                $("#upload_progressbar").progressbar({value:0});
+                $(".peacock_link").attr("href",peacock_url);
+                
+                var url=freeq_url+job_id;
+                var freeqMonitor = new FreeQMonitor(job_id, function(job_id) {
+                    $(".freeqLoadInProgress").hide();
+                    
+                    if ($("input.graphport:checked")[0].value === "otg") {
+                        populateCreatedIds(job_id, function() {
+                            displaySpreadsheet();
+                        });
+                        $(".uploadToOTGComplete").show();
+                    }
+                    else {
+                        $(".uploadToSandboxComplete").show();
+                    }
+                });
+            }
+            ,complete: function() {
+                $(".uploadSpinner").hide();
+            }
+        });
+    }
+        
+        
+    $(".displayTriples").click(function(){$(".triplesDisplay").slideToggle(); return false;});
+    $(".uploadLogin button.checkLogin").click(checkLogin);
+    $(".loadAgainButton").click(function() {
+        $(".freeqLoad").hide();
+        $(".uploadToSandboxComplete").hide();
+        $(".uploadToFreeQ").show();
+    });
+    
+    
+    $("#mdo_data_source").suggest({type:"/dataworld/information_source",
+                               flyout:true,type_strict:"should"})
+                         .bind("fb-select", function(e, data) { 
+                               $("#mdo_data_source_id")[0].value = data.id;
+                               updateMdoInfo();
+                         });
+    $("#mdo_name")[0].value = defaultMDOName;
+    $("#mdo_name").change(updateMdoInfo);
+	$("input.graphport").change(function(){
+        var warning = $("#otg_upload_warning"); 
+        if (this.value === "otg") 
+            warning.show(); 
+        else 
+            warning.hide();
+    });
+});

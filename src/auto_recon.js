@@ -31,13 +31,45 @@
 **  Automatic reconciliation
 */
 var manualQueue = {};
-var automaticQueue = [];
+var automaticQueue = new AutomaticQueue();
+
+
+/** @constructor
+  * @param {Array.<tEntity>=} initialValues
+  */
+function AutomaticQueue(initialValues) {
+    /** @const
+        @type {Array.<tEntity>}*/
+    this.internalQueue = initialValues || [];
+    /** @type {number} */
+    this.length = this.internalQueue.length;
+}
+
+/** @param {tEntity} entity
+  */
+AutomaticQueue.prototype.push = function(entity) {
+    entity['/rec_ui/rec_begun'] = true;
+    this.length++;
+    this.internalQueue.push(entity);
+}
+
+/** @return {tEntity} */
+AutomaticQueue.prototype.peek = function() {
+    return this.internalQueue[0];
+}
+
+/** @return {tEntity|undefined} */
+AutomaticQueue.prototype.shift = function() {
+    if (this.length === 0) 
+        return undefined;
+    this.length--;
+    return this.internalQueue.shift();
+}
 
 function beginAutoReconciliation() {
     $(".nowReconciling").show();
     $(".notReconciling").hide();
     $("#gettingInput").remove();
-    reconciliationBegun = true;
     autoReconcile();
 }
 
@@ -52,9 +84,12 @@ function autoReconcile() {
         return;
     }
     updateUnreconciledCount();
-    getCandidates(automaticQueue[0], autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
+    getCandidates(automaticQueue.peek(), autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
 }
 
+/** @param {!tEntity} entity
+    @param {boolean=} typeless
+*/
 function constructReconciliationQuery(entity, typeless) {
     var query = {}
     var headers = entity["/rec_ui/headers"];
@@ -127,6 +162,12 @@ function constructReconciliationQuery(entity, typeless) {
     }
 }
 
+/**
+ *  @param {tEntity} entity
+ *  @param {function(tEntity)} callback
+ *  @param {function(...)} onError
+ *  @param {boolean=} typeless
+ */
 function getCandidates(entity, callback, onError,typeless) {
     function handler(results) {
         entity.reconResults = results;
@@ -144,6 +185,7 @@ function getCandidates(entity, callback, onError,typeless) {
     getJSON(reconciliation_url + "query?jsonp=?", {q:JSON.stringify(query), limit:limit}, handler, onError);
 }
 
+/** @param {tEntity} entity */
 function autoReconcileResults(entity) {
     automaticQueue.shift();
     // no results, set to None:
@@ -158,10 +200,16 @@ function autoReconcileResults(entity) {
     }        
     // match found:
     else if(entity.reconResults[0]["match"] == true) {
-        entity.reconcileWith(entity.reconResults[0].id, true);
-        canonicalizeFreebaseId(entity);
-        entity["/rec_ui/freebase_name"] = entity.reconResults[0].name;
-        addColumnRecCases(entity);
+        var matchedResult = entity.reconResults[0];
+        if (require_exact_name_match && !Arr.contains($.makeArray(entity['/type/object/name']),$.makeArray(matchedResult.name)[0])) {
+            addToManualQueue(entity);
+        }
+        else {
+            entity.reconcileWith(matchedResult.id, true);
+            canonicalizeFreebaseId(entity);
+            entity["/rec_ui/freebase_name"] = matchedResult.name;
+            addColumnRecCases(entity);
+        }
     }
     else
         addToManualQueue(entity)
