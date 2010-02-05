@@ -558,7 +558,7 @@ function mapTreeToEntity(tree, parent) {
 function validateProperty(prop, values) {
     if (prop === '/type/object/type') {
         freebase.fetchTypeInfo(values, function(){}, function(invalidTypes) {
-            $.map(invalidTypes, warnTypeMissing);
+            $.map(invalidTypes, warnUnknownType);
         });
     }
 }
@@ -619,6 +619,10 @@ function warnPropertyMissing(propName) {
     addInputWarning(propName + " is required for Freebase Loader to function correctly");
 }
 
-function warnTypeMissing(typeName) {
+function warnUnknownType(typeName) {
     addInputWarning("Cannot find a type with the id " + typeName);
+}
+
+function warnInvalidLiteral(value, type) {
+    addInputWarning("`" + value + "` is not a valid value of type " + type);
 }

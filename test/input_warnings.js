@@ -43,8 +43,8 @@ TestCase("input warnings",{
             unmockWarnPropMissing();
         }
     }
-    ,testWarnTypeMissing: function() {
-        var unmockWarnTypeMissing = temporaryMock(window, 'warnTypeMissing', pass);
+    ,testWarnUnknownType: function() {
+        var unmockWarnTypeMissing = temporaryMock(window, 'warnUnknownType', pass);
         var unmockFetch = temporaryMock(freebase, 'fetchTypeInfo', function(types, onComplete, onError) {
             if (onError)
                 onError(types);
