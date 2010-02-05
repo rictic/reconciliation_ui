@@ -20,6 +20,7 @@ end
 
 task :clean do
   sh "rm -rf build"
+  sh "rm -f .jsTestDriver.conf"
 end
 
 task :clean_again do
