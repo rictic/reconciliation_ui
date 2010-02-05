@@ -505,9 +505,8 @@ function mapTreesToEntities(trees, onComplete, yielder) {
   * already exists.  See findAllProperties() and freebase.fetchPropertyInfo
   * @param {!Object} tree
   * @param {tEntity=} parent
-  * @param {function(string)=} onAddProperty
 */
-function mapTreeToEntity(tree, parent, onAddProperty) {
+function mapTreeToEntity(tree, parent) {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity.addParent(parent);
@@ -542,14 +541,43 @@ function mapTreeToEntity(tree, parent, onAddProperty) {
                 if (propMeta.inverse_property)
                     innerEntity.addProperty(propMeta.inverse_property, entity);
             }
+            
+            if (innerEntity.isCVT())
+                connectCVTProperties(innerEntity);
+            
             return innerEntity;
         });
         entity.addProperty(prop, values);
-        if (onAddProperty)
-            onAddProperty(prop);
     }
     
     return entity;
+}
+
+function connectCVTProperties(entity) {
+    for (var prop in entity) {
+        var propMeta = freebase.getPropMetadata(prop);
+        if (!propMeta) {
+            debugger;
+            continue;
+        }
+        var inverseProp = propMeta.inverse_property;
+        if (!inverseProp)
+            continue;
+
+        $.each(entity[prop], function(_, value) {
+            if (!(value instanceof tEntity)) return;
+            if (value === entity['/rec_ui/parent']) return;
+            
+            var otherProps = entity['/rec_ui/mql_props'];
+
+            $.each(otherProps, function(_, otherProp) {
+                if (otherProp === prop) return;
+
+                value.propSeen(inverseProp + ":" + otherProp);
+            })
+        });
+    }
+    
 }
 
 /** @param {!string} json
