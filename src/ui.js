@@ -54,6 +54,8 @@ function handleInput(callback) {
 
 
 function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
+    //an ugly hack, should rework groupProperties and friends to understand headerPaths
+    var headers = $.map(headerPaths, function(headerPath) {return headerPath.toComplexProp()});
     var groupedHeaders = groupProperties(headers);
     var context = $("#formatDisambiguation");
     $("table thead",context).replaceWith(buildTableHeaders(groupedHeaders));
@@ -109,7 +111,7 @@ function showConfirmationSpreadsheet(beforeDisplay) {
         spreadSheetData.aoColumns.push({"sTitle":columnNames[i]});
     politeEach(rows, function(_,entity) {
         var row = [];
-        for (var j = 0; j < headers.length; j++){
+        for (var j = 0; j < headerPaths.length; j++){
             var val = entity.get(headerPaths[j]);
             if (val == undefined)
                 val = "";

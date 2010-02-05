@@ -1,3 +1,5 @@
+var totalRecords = 0;
+
 function isUnreconciled(entity) {
     if (entity.isCVT())
         return false;

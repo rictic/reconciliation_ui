@@ -56,10 +56,13 @@
     and values are arrays of either strings or, when the key is a MQL property
     that is expected to point to a Topic in Freebase, a reified object.
     
+    The JSON input format is just an array of Trees, and just skips the input
+    pipeline up to that point.
+    
 */
 
 //A namespace for types
-var loader = {row:null, record:null, tree:null, pathsegment:null, path:null};
+var loader = {row:null, record:null, tree:null};
 
 /** @typedef {!Array.<!string>}*/
 loader.row;
@@ -69,16 +72,15 @@ loader.record;
 loader.tree;
 
 //Some globals that various components poke into
-var totalRecords = 0;
 var typesSeen = new Set();
 var propertiesSeen = new Set();
-var headers, originalHeaders, rows, inputType, headerPaths;
+var originalHeaders, rows, inputType, headerPaths;
 /** @type {InternalReconciler} */
 var internalReconciler;
 
 function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated
-    headers = originalHeaders = rows = inputType = headerPaths = undefined;
+    originalHeaders = rows = inputType = headerPaths = undefined;
     internalReconciler = new InternalReconciler();
     resetEntities();
     typesSeen = new Set();
@@ -248,9 +250,8 @@ function buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder) {
 
     // parse headers:
     originalHeaders = spreadsheetRows.shift();
-    headers = originalHeaders;
     headerPaths = [];
-    $.each(headers, function(_, rawHeader) {
+    $.each(originalHeaders, function(_, rawHeader) {
         headerPaths.push(new loader.path($.trim(rawHeader)));
     })
 
@@ -298,7 +299,6 @@ function recordsToEntities(records, onComplete, yielder) {
 
         treesToEntities(trees, function(entities) {
             rows = entities;
-            headers = originalHeaders;
             onComplete();
         }, yielder);
     }, yielder);
@@ -392,8 +392,7 @@ function pathPut(path, topindex, record, value) {
       */
     function putValue(currentRecord, pathIndex, currentIndex) {
         var currentPart = path.parts[pathIndex]
-        if (currentIndex === undefined)
-            currentIndex = currentPart.index || 0;
+        currentIndex = currentPart.index || currentIndex || 0;
         var atLastPath = pathIndex + 1 >= path.parts.length
 
         // if we're at the last path:
@@ -509,9 +508,8 @@ function mapTreesToEntities(trees, onComplete, yielder) {
   * already exists.  See findAllProperties() and freebase.fetchPropertyInfo
   * @param {!Object} tree
   * @param {tEntity=} parent
-  * @param {function(string)=} onAddProperty
 */
-function mapTreeToEntity(tree, parent, onAddProperty) {
+function mapTreeToEntity(tree, parent) {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity.addParent(parent);
@@ -546,18 +544,47 @@ function mapTreeToEntity(tree, parent, onAddProperty) {
                 if (propMeta.inverse_property)
                     innerEntity.addProperty(propMeta.inverse_property, entity);
             }
+            
+            if (innerEntity.isCVT())
+                connectCVTProperties(innerEntity);
+            
             internalReconciler.register(innerEntity);
             return innerEntity;
         });
         entity.addProperty(prop, values);
-        if (onAddProperty)
-            onAddProperty(prop);
     }
     
     //otherwise it will get registered above
     if (!parent)
         internalReconciler.register(entity);
     return entity;
+}
+
+function connectCVTProperties(entity) {
+    for (var prop in entity) {
+        var propMeta = freebase.getPropMetadata(prop);
+        if (!propMeta) {
+            debugger;
+            continue;
+        }
+        var inverseProp = propMeta.inverse_property;
+        if (!inverseProp)
+            continue;
+
+        $.each(entity[prop], function(_, value) {
+            if (!(value instanceof tEntity)) return;
+            if (value === entity['/rec_ui/parent']) return;
+            
+            var otherProps = entity['/rec_ui/mql_props'];
+
+            $.each(otherProps, function(_, otherProp) {
+                if (otherProp === prop) return;
+
+                value.propSeen(inverseProp + ":" + otherProp);
+            })
+        });
+    }
+    
 }
 
 /** @param {!string} json
@@ -576,7 +603,6 @@ function parseJSON(json, onComplete, yielder) {
     
     treesToEntities(trees, function(entities) {
         rows = entities;
-        headers = rows[0]['/rec_ui/headers'];
         headerPaths = rows[0]['/rec_ui/headerPaths'];
         onComplete();
     }, yielder);
