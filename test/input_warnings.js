@@ -89,11 +89,7 @@ var goodInts = ["0","1","-1","128"];//,"9223372036854775807", "-9223372036854775
 var goodFloats = ["1.0", "1", ".0", "-1", "1E5", "1E-5", "5.98e24"];
 var goodDateTimes = ["2001","2001-01","2001-01-01","2001-01-01T01Z",
                       "2000-12-31T23:59Z","2000-12-31T23:59:59Z",
-                      "2000-12-31T23:59:59.9Z"];
-
-//todo: look into accepting times:
-var shouldParseButDoesnt = ["00:00:00Z","12:15","17-05:00"];
-
+                      "2000-12-31T23:59:59.9Z", "00:00:00Z","12:15","17-05:00"];
 
 $.each([[badBooleans,  goodBooleans,  "/type/boolean"], 
         [badInts,      goodInts,      "/type/int"], 

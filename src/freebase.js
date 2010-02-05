@@ -309,7 +309,7 @@ freebase.mqlValue;
         @return {boolean}
      */
     freebase.isMqlDatetime = function(s) {
-        return !isNaN(mjt.freebase.date_from_iso(s));
+        return isISO8601(s);
     }
     
     return freebase;
