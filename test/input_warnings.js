@@ -82,15 +82,25 @@ var warningTests = {
 var badBooleans = ["0", "TRUE", "truee", "obviously wrong"];
 var badInts = ["1.2", "1e4", "0odeadbeef", "0badbadbad", "o0124", "obviously wrong"];//"9223372036854775808", "-9223372036854775809"
 var badFloats = ["Infinity","NaN", "obviously wrong"];
+var badDateTimes = ["Jun 27 2009"];
 
 var goodBooleans = ["true", "false"];
 var goodInts = ["0","1","-1","128"];//,"9223372036854775807", "-9223372036854775808"];
 var goodFloats = ["1.0", "1", ".0", "-1", "1E5", "1E-5", "5.98e24"];
+var goodDateTimes = ["2001","2001-01","2001-01-01","2001-01-01T01Z",
+                      "2000-12-31T23:59Z","2000-12-31T23:59:59Z",
+                      "2000-12-31T23:59:59.9Z"];
+
+//todo: look into accepting times:
+var shouldParseButDoesnt = ["00:00:00Z","12:15","17-05:00"];
 
 
-$.each([[badBooleans, goodBooleans, "/type/boolean"], [badInts, goodInts, "/type/int"], [badFloats, goodFloats, "/type/float"]], function(_, pair) {
-    addTests(pair[0], pair[2], true);
-    addTests(pair[1], pair[2], false);
+$.each([[badBooleans,  goodBooleans,  "/type/boolean"], 
+        [badInts,      goodInts,      "/type/int"], 
+        [badFloats,    goodFloats,    "/type/float"],
+        [badDateTimes, goodDateTimes, "/type/datetime"]], function(_, triple) {
+    addTests(triple[0], triple[2], true);
+    addTests(triple[1], triple[2], false);
 });
 
 function addTests(values, type, expectedToFail) {

@@ -582,6 +582,11 @@ function validateValueForType(value, type) {
     var regex = literalValidationRegexes[type];
     if (regex && !value.match(regex))
         warnInvalidLiteral(value, type);
+    if (type === "/type/datetime") {
+        if (!freebase.isMqlDatetime(value)) {
+            warnInvalidLiteral(value, type);
+        }
+    }
 }
 
 /** @param {tEntity} entity */
