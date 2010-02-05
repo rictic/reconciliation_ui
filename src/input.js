@@ -561,6 +561,28 @@ function validateProperty(prop, values) {
             $.map(invalidTypes, warnUnknownType);
         });
     }
+    var propMetadata = freebase.getPropMetadata(prop);
+    if (propMetadata && propMetadata.expected_type && propMetadata.expected_type.id) {
+        var type = propMetadata.expected_type;
+        $.each(values, function(_, value) {
+            validateValueForType(value, type);
+        })
+    }
+}
+
+/** @const */
+var literalValidationRegexes = {
+    "/type/boolean": /$(true|false)^/,
+    "/type/int": /$-?\d+^/,
+    "/type/float": /$-?\d+(.\d+)^/
+}
+function validateValueForType(value, type) {
+    if (type in literalValidationRegexes) {
+        log('\n\n\n\n\n\n');
+        if (!value.match(literalValidationRegexes[type])) {
+            warnInvalidLiteral(value, type);
+        }
+    }
 }
 
 function connectCVTProperties(entity) {

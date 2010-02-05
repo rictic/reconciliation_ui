@@ -2,7 +2,7 @@ function justParseIt(spreadsheet) {
     parseInput(spreadsheet, function(_,f) {f(true)}, function() {});
 }
 
-TestCase("input warnings",{
+var warningTests = {
     testUnknownProp: function() {
         var unmockFetch = temporaryMock(freebase, 'fetchPropertyInfo', function(properties,onComplete,onError) {
             if (onError)
@@ -71,4 +71,53 @@ TestCase("input warnings",{
             unmockInputWarning()
         }
     }
+}
+
+var badBooleans = ["0", "TRUE", "truee", "obviously wrong"];
+var badInts = ["1.2", "1e4", "0odeadbeef", "0badbadbad", "o0124", "9223372036854775808", "-9223372036854775809", "obviously wrong"];
+var badFloats = ["Infinity","NaN", "obviously wrong"];
+var badString = [stringWithLength(4097)];
+var badRawString = [stringWithLength(4097)];
+
+$.each([[badBooleans, "/type/boolean"], [badInts, "/type/int"], [badFloats, "/type/float"]], function(_, pair) {
+    addTests(pair[0], pair[1], true);
 });
+
+function addTests(values, type, expectedToFail) {
+    $.each(values, function(_, value) {
+        var testName = "test " + value + " as " + (expectedToFail ? "an invalid" : "a valid") + " " + type;
+        warningTests[testName] = function() {testLiteral(value, type, expectedToFail)}; 
+    });
+}
+
+function testLiteral(value, type, expectedToFail) {
+    var called = false;
+    var unmockBadLiteral = temporaryMock(window, "addInputWarning", function() {
+        called = true;
+    });
+    try {
+        validateValueForType(value, type);
+    }
+    finally {
+        unmockBadLiteral();
+    }
+    assertEq(expectedToFail, called);
+}
+
+
+
+
+
+
+
+
+function stringWithLength(n) {
+    var s = "";
+    for (var i = 0; i < n; i++) 
+        s += "F";
+    return s;
+}
+
+
+
+TestCase("input warnings",warningTests);
