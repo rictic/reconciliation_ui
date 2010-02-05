@@ -572,20 +572,19 @@ function validateProperty(prop, values) {
 
 /** @const */
 var literalValidationRegexes = {
-    "/type/boolean": /$(true|false)^/,
-    "/type/int": /$-?\d+^/,
-    "/type/float": /$-?\d+(.\d+)^/,
-    "/type/text": /$.{0,4096}^/,
-    "/type/rawstring": /$.{0,4096}^/
+    "/type/boolean": /^(true|false)$/,
+    "/type/int": /^-?\d+$/,
+    "/type/float": /^-?(\d+)?(.\d+)?([eE]-?\d+)?$/,
+    "/type/text": /^.{0,4096}$/,
+    "/type/rawstring": /^.{0,4096}$/
 }
 function validateValueForType(value, type) {
-    if (type in literalValidationRegexes) {
-        if (!value.match(literalValidationRegexes[type])) {
-            warnInvalidLiteral(value, type);
-        }
-    }
+    var regex = literalValidationRegexes[type];
+    if (regex && !value.match(regex))
+        warnInvalidLiteral(value, type);
 }
 
+/** @param {tEntity} entity */
 function connectCVTProperties(entity) {
     for (var prop in entity) {
         var propMeta = freebase.getPropMetadata(prop);
