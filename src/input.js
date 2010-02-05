@@ -580,7 +580,6 @@ var literalValidationRegexes = {
 }
 function validateValueForType(value, type) {
     if (type in literalValidationRegexes) {
-        log('\n\n\n\n\n\n');
         if (!value.match(literalValidationRegexes[type])) {
             warnInvalidLiteral(value, type);
         }
