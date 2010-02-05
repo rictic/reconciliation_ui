@@ -171,6 +171,9 @@ freebase.mqlValue;
         return link;
     }
     
+    /** @param {string=} type
+      * @return {freebase.mqlTree}
+      */
     function getTypeQuery(type) {
         return {
             id:type || null,
