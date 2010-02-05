@@ -37,8 +37,8 @@ function handleInput(callback) {
     inputProcessingYielder = new Yielder();
     var input = $('#initialInput')[0].value;
     function onProgressMade() {
-        $("#inputWindow .screen").hide();
         $(".inputLoading").hide();
+        $("#inputWindow .screen").hide();
         $("#inputWindow").removeClass("disabled");
         $("#inputWindow button").removeAttr("disabled");
     }
@@ -47,14 +47,15 @@ function handleInput(callback) {
         showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved);
     }
     function onComplete() {
-        onProgressMade();
-        showConfirmationSpreadsheet();
+        showConfirmationSpreadsheet(onProgressMade);
     }
     parseInput(input, onAmbiguity, onComplete, inputProcessingYielder);
 }
 
 
 function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
+    //an ugly hack, should rework groupProperties and friends to understand headerPaths
+    var headers = $.map(headerPaths, function(headerPath) {return headerPath.toComplexProp()});
     var groupedHeaders = groupProperties(headers);
     var context = $("#formatDisambiguation");
     $("table thead",context).replaceWith(buildTableHeaders(groupedHeaders));
@@ -103,14 +104,14 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
     $('table tbody tr:even', context).addClass('even');
     context.show();
 }
-function showConfirmationSpreadsheet() {
+function showConfirmationSpreadsheet(beforeDisplay) {
     var spreadSheetData = {"aoColumns":[], "aaData":[]};
     var columnNames = $.map(headerPaths, function(header) {return header.getDisplayName();});
     for (var i = 0; i < columnNames.length; i++)
         spreadSheetData.aoColumns.push({"sTitle":columnNames[i]});
     politeEach(rows, function(_,entity) {
         var row = [];
-        for (var j = 0; j < headers.length; j++){
+        for (var j = 0; j < headerPaths.length; j++){
             var val = entity.get(headerPaths[j]);
             if (val == undefined)
                 val = "";
@@ -128,12 +129,13 @@ function showConfirmationSpreadsheet() {
         }
         spreadSheetData.aaData.push(row);
     }, function() {
+        if (beforeDisplay) beforeDisplay();
         updateUnreconciledCount();
         spreadSheetData["bAutoWidth"] = false;
         spreadSheetData["bSort"] = false;
         $("#spreadsheetDiv").html('<table class="display" id="spreadsheetTable"><\/table>');
         $('#spreadsheetTable').dataTable(spreadSheetData);
-        $('#spreadsheetPreview').show();                    
+        $('#spreadsheetPreview').show();
     });
 
 }

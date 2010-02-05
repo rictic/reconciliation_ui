@@ -248,6 +248,7 @@ freebase.mqlValue;
                 "expected_type" : {
                     "extends" : [],
                     "id" : null,
+                    "/freebase/type_hints/included_types":[],
                     "/freebase/type_hints/mediator" : {"optional":true, "value":null}
                 },
                 "reverse_property" : null,
@@ -259,8 +260,8 @@ freebase.mqlValue;
         }
 
         function handler(mqlProp, result){
-            if (result.expected_type.id) 
-                typesSeen.add(result.expected_type.id)
+            if (result.expected_type.id)
+                typeMetadata[result.expected_type.id] = result.expected_type
             result.inverse_property = result.reverse_property || result.master_property;
             if (result.inverse_property)
                 propertiesSeen.add(result.inverse_property);
@@ -286,6 +287,7 @@ freebase.mqlValue;
         var meta = propMetadata[prop];
         if (meta instanceof Function)
             return undefined;
+            
         return meta;
     }
 
