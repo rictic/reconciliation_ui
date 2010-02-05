@@ -566,10 +566,8 @@ function validateProperty(prop, values) {
 function connectCVTProperties(entity) {
     for (var prop in entity) {
         var propMeta = freebase.getPropMetadata(prop);
-        if (!propMeta) {
-            debugger;
+        if (!propMeta)
             continue;
-        }
         var inverseProp = propMeta.inverse_property;
         if (!inverseProp)
             continue;
