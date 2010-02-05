@@ -565,7 +565,7 @@ function validateProperty(prop, values) {
     if (propMetadata && propMetadata.expected_type && propMetadata.expected_type.id) {
         var type = propMetadata.expected_type;
         $.each(values, function(_, value) {
-            validateValueForType(value, type);
+            validateValueForType(value, type.id);
         })
     }
 }
@@ -584,7 +584,7 @@ function validateValueForType(value, type) {
         warnInvalidLiteral(value, type);
     if (type === "/type/datetime") {
         if (!freebase.isMqlDatetime(value)) {
-            warnInvalidLiteral(value, type);
+            warnInvalidLiteral(value, type, "Freebase Loader needs dates to be formatted according to ISO8601, see <a href='http://www.freebase.com/docs/mql/ch02.html#typedatetime' target='_blank'>the MQL documentation here</a> for more information.");
         }
     }
 }
@@ -650,6 +650,10 @@ function warnUnknownType(typeName) {
     addInputWarning("Cannot find a type with the id " + typeName);
 }
 
-function warnInvalidLiteral(value, type) {
-    addInputWarning("`" + value + "` is not a valid value of type " + type);
+/** @param {!string} value
+  * @param {!string} type
+  * @param {string=} msg
+  */
+function warnInvalidLiteral(value, type, msg) {
+    addInputWarning("`" + value + "` is not a valid " + type + ". " + (msg || ""));
 }
