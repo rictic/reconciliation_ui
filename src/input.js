@@ -547,10 +547,20 @@ function mapTreeToEntity(tree, parent) {
             
             return innerEntity;
         });
+        
+        validateProperty(prop, values);
         entity.addProperty(prop, values);
     }
     
     return entity;
+}
+
+function validateProperty(prop, values) {
+    if (prop === '/type/object/type') {
+        freebase.fetchTypeInfo(values, function(){}, function(invalidTypes) {
+            $.map(invalidTypes, warnTypeMissing);
+        });
+    }
 }
 
 function connectCVTProperties(entity) {
