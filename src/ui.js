@@ -245,12 +245,20 @@ function handlePOSTdata(data) {
 
 var inputWarnings = {};
 function addInputWarning(text) {
-    if (text in inputWarnings) 
-        return;
+    if (numProperties(inputWarnings) >= 4)
+        displayInputWarning("Additional warnings hidden");
     else
-        inputWarnings[text] = true;
-    $(".inputWarnings").show()
-    $(".inputWarnings ul").append(node("li", text));
+        displayInputWarning(text);
+    
+    function displayInputWarning(text) {
+        if (text in inputWarnings) 
+            return;
+        else
+            inputWarnings[text] = true;
+        
+        $(".inputWarnings").show()
+        $(".inputWarnings ul").append(node("li", text));
+    }
 }
 
 function clearInputWarnings() {
