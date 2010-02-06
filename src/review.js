@@ -15,7 +15,8 @@ function addReviewItem(entity, reconciliationMethod) {
             container = $(".oldReconciliationsToReview");
             break;
         default:
-            $('.reconciliationsToReview');
+            error("unknown reconciliationMethod in addReviewItem: " + reconciliationMethod);
+            return;
     }
 
     
