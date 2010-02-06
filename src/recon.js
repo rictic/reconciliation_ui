@@ -12,6 +12,7 @@ function initializeReconciliation(onReady) {
     automaticQueue = new AutomaticQueue(rec_partition[0]);
     politeEach(rec_partition[1],function(_,reconciled_row){
         reconciled_row['/rec_ui/rec_begun'] = true;
+        addReviewItem(reconciled_row, "previously");
         addColumnRecCases(reconciled_row);
     }, function() {
         freebase.fetchTypeInfo(typesSeen.getAll(), function() {

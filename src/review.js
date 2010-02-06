@@ -2,8 +2,23 @@ function onDisplayRenderScreen() {}
 
 function onHideRenderScreen() {}
 
-function addReviewItem(entity) {
-    var container = $('.reconciliationsToReview');
+function addReviewItem(entity, reconciliationMethod) {
+    var container;
+    switch (reconciliationMethod) {
+        case "automatic": 
+            container = $(".automaticReconciliationsToReview");
+            break;
+        case "manual": 
+            container = $(".manualReconciliationsToReview");
+            break;
+        case "previously": 
+            container = $(".oldReconciliationsToReview");
+            break;
+        default:
+            $('.reconciliationsToReview');
+    }
+
+    
     var newTemplate = $(".templates .reviewNewTemplate");
     var skippedTemplate = $(".templates .reviewSkippedTemplate");
     var reconciledTemplate = $(".templates .reviewReconciledTemplate");
@@ -11,6 +26,7 @@ function addReviewItem(entity) {
     if (entity.isCVT() || null == entity.id || $.isArray(entity.id))
         return;
     
+    container.show();
     var template;
     switch(entity.id){
       case "None": template = newTemplate.clone(); break;
