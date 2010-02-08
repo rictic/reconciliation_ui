@@ -337,17 +337,17 @@ function getCreatedIds(url, callback) {
             $(".fetchingFreeqIds").hide();
             $(".idsFetched").show();
             var actions=result.result.actions;
-            var result={};
+            var keymap = {};
             $.each(actions, function(_,i) {
                 var summary = JSON.parse(i.result);
                 for (var key in summary) {
                     if (key.match(/(entity\d+)|(recGroup\d+)/)){
-                        result[key]=summary[key];
+                        keymap[key] = summary[key];
                     }
                 }
             });
             repeatingTimer.stop();
-            callback(result);
+            callback(keymap);
         });
     }
 }
