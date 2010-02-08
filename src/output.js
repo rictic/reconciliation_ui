@@ -165,7 +165,7 @@ function getTriples(entities, callback) {
         var type = $.makeArray(cvt['/type/object/type'])[0];
         for (var i = 0; i < props.length; i++){
             var predicate = props[i];
-            if (predicate.indexOf(type) != 0){
+            if (predicate.indexOf(type) !== 0){
                 if (predicate !== "/type/object/type")
                     warn("bad predicate " + predicate + " in CVT with type" + type);
                 continue;
@@ -183,6 +183,7 @@ function getTriples(entities, callback) {
                 value = $.makeArray(value);
                 value = Arr.filter(value, function(val){return !val['/rec_ui/toplevel_entity']});
                 var ids = $.map(value, getID);
+                ids = Arr.filter(ids, function(id){return id !== ""});
                 if (ids.length === 0)
                     continue;
                 if (ids.length === 1)
