@@ -3,13 +3,30 @@ function onDisplayRenderScreen() {}
 function onHideRenderScreen() {}
 
 /** @param {!tEntity|RecGroup} entity */
-function addReviewItem(entity) {
-    var container = $('.reconciliationsToReview');
+function addReviewItem(entity, reconciliationMethod) {
+    var container;
+    switch (reconciliationMethod) {
+        case "automatic": 
+            container = $(".automaticReconciliationsToReview");
+            break;
+        case "manual": 
+            container = $(".manualReconciliationsToReview");
+            break;
+        case "previously": 
+            container = $(".oldReconciliationsToReview");
+            break;
+        default:
+            error("unknown reconciliationMethod in addReviewItem: " + reconciliationMethod);
+            return;
+    }
+
+    
     var newTemplate = $(".templates .reviewNewTemplate");
     var skippedTemplate = $(".templates .reviewSkippedTemplate");
     var reconciledTemplate = $(".templates .reviewReconciledTemplate");
     var recGroupTemplate = $(".templates .reviewRecGroupTemplate");
     
+    container.show();
     var template;
     if (entity instanceof RecGroup)
         template = recGroupTemplate.clone();

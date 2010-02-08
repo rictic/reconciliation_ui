@@ -4,8 +4,8 @@ TestCase("UtilityTest",{
         var groupedProps = groupProperties(properties);
         assertEq(properties,groupedProps.getProperties());
         assertEq(properties,groupedProps.getComplexProperties());
-    },
-    testComplexPropertyGrouping: function() {
+    }
+    ,testComplexPropertyGrouping: function() {
         var properties = ["a","b:c:h","b:c:d","e","b:f"];
         var groupedProps = groupProperties(properties);
         assertEq(["a","b","e"], groupedProps.getProperties());

@@ -171,6 +171,19 @@ freebase.mqlValue;
         return link;
     }
     
+    /** @param {string=} type
+      * @return {freebase.mqlTree}
+      */
+    function getTypeQuery(type) {
+        return {
+            id:type || null,
+            type:'/type/type',
+            "/freebase/type_hints/included_types":[],
+            "/freebase/type_hints/mediator":{"optional": true, "value":null},
+            "extends" : []
+        }
+    }
+    
     /** @type {Object.<string, freebase.mqlTree>} */
     var typeMetadata = {};
     /** @param {!Array.<!string>} types
@@ -182,20 +195,13 @@ freebase.mqlValue;
         $.each(types, function(_,type) {
             if (freebase.getTypeMetadata(type))
                 return;
-            q_pairs.push([type, {query:getQuery(type)}]);
+            q_pairs.push([type, {query:getTypeQuery(type)}]);
         })
         
         var errorTypes = [];
         freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
         
-        function getQuery(type) {
-            return {
-                id:type,
-                type:'/type/type',
-                "/freebase/type_hints/included_types":[],
-                "/freebase/type_hints/mediator":{}
-            }
-        }
+        
         
         function handler(type, result) {
             typeMetadata[type] = result;
@@ -244,19 +250,15 @@ freebase.mqlValue;
         freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
         
         function getQuery(prop) {
-            return {
-                "expected_type" : {
-                    "extends" : [],
-                    "id" : null,
-                    "/freebase/type_hints/included_types":[],
-                    "/freebase/type_hints/mediator" : {"optional":true, "value":null}
-                },
+            var query =  {
                 "reverse_property" : null,
                 "master_property"  : null,
                 "type" : "/type/property",
                 "name":null,
                 "id" : prop
             }
+            query.expected_type = getTypeQuery();
+            return query;
         }
 
         function handler(mqlProp, result){
@@ -311,4 +313,13 @@ freebase.mqlValue;
                 callback(results.result.id);
         });
     }
-})();
+    
+    /** @param {string} s
+        @return {boolean}
+     */
+    freebase.isMqlDatetime = function(s) {
+        return isISO8601(s);
+    }
+    
+    return freebase;
+}());

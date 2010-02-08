@@ -302,3 +302,8 @@ td {
     padding-top: 2px;
     font-size: 95%;
 }
+
+.mid-table-subheading {
+    font-size: 95%;
+    margin-top: 20px;
+}

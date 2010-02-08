@@ -551,6 +551,8 @@ function mapTreeToEntity(tree, parent) {
             internalReconciler.register(innerEntity);
             return innerEntity;
         });
+        
+        validateProperty(prop, values);
         entity.addProperty(prop, values);
     }
     
@@ -560,13 +562,46 @@ function mapTreeToEntity(tree, parent) {
     return entity;
 }
 
+function validateProperty(prop, values) {
+    if (prop === '/type/object/type') {
+        freebase.fetchTypeInfo(values, function(){}, function(invalidTypes) {
+            $.map(invalidTypes, warnUnknownType);
+        });
+    }
+    var propMetadata = freebase.getPropMetadata(prop);
+    if (propMetadata && propMetadata.expected_type && propMetadata.expected_type.id) {
+        var type = propMetadata.expected_type;
+        $.each(values, function(_, value) {
+            validateValueForType(value, type.id);
+        })
+    }
+}
+
+/** @const */
+var literalValidationRegexes = {
+    "/type/boolean": /^(true|false)$/,
+    "/type/int": /^-?\d+$/,
+    "/type/float": /^-?(\d+)?(.\d+)?([eE]-?\d+)?$/,
+    "/type/text": /^.{0,4096}$/,
+    "/type/rawstring": /^.{0,4096}$/
+}
+function validateValueForType(value, type) {
+    var regex = literalValidationRegexes[type];
+    if (regex && !value.match(regex))
+        warnInvalidLiteral(value, type);
+    if (type === "/type/datetime") {
+        if (!freebase.isMqlDatetime(value)) {
+            warnInvalidLiteral(value, type, "Freebase Loader needs dates to be formatted according to ISO8601, see <a href='http://www.freebase.com/docs/mql/ch02.html#typedatetime' target='_blank'>the MQL documentation here</a> for more information.");
+        }
+    }
+}
+
+/** @param {tEntity} entity */
 function connectCVTProperties(entity) {
     for (var prop in entity) {
         var propMeta = freebase.getPropMetadata(prop);
-        if (!propMeta) {
-            debugger;
+        if (!propMeta)
             continue;
-        }
         var inverseProp = propMeta.inverse_property;
         if (!inverseProp)
             continue;
@@ -616,4 +651,16 @@ function warnUnknownProp(_, errorProp) {
 var requiredProperties = ["/type/object/type", "/type/object/name"];
 function warnPropertyMissing(propName) {
     addInputWarning(propName + " is required for Freebase Loader to function correctly");
+}
+
+function warnUnknownType(typeName) {
+    addInputWarning("Cannot find a type with the id " + typeName);
+}
+
+/** @param {!string} value
+  * @param {!string} type
+  * @param {string=} msg
+  */
+function warnInvalidLiteral(value, type, msg) {
+    addInputWarning("`" + value + "` is not a valid " + type + ". " + (msg || ""));
 }
