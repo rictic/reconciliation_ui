@@ -101,6 +101,7 @@ tEntity.prototype.displayValue = function() {
   * @param {!boolean} automatic
   */
 tEntity.prototype.reconcileWith = function(id, automatic) {
+    this['/rec_ui/was_automatically_reconciled'] = automatic;
     var recGroup = internalReconciler.getRecGroup(this);
     var self = this;
     freebase.getCanonicalID(id, function(new_id) {

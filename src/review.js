@@ -2,9 +2,17 @@ function onDisplayRenderScreen() {}
 
 function onHideRenderScreen() {}
 
-/** @param {!tEntity|RecGroup} entity */
+/** @param {!tEntity|RecGroup} entity 
+  * @param {string=} reconciliationMethod 
+  */
 function addReviewItem(entity, reconciliationMethod) {
     var container;
+    if (!reconciliationMethod) {
+        var was_auto = entity['/rec_ui/was_automatically_reconciled'];
+        if (was_auto === undefined) reconciliationMethod = "previously";
+        else if (was_auto === false) reconciliationMethod = "manual";
+        else reconciliationMethod = "automatic";
+    }
     switch (reconciliationMethod) {
         case "automatic": 
             container = $(".automaticReconciliationsToReview");
