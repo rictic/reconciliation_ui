@@ -84,6 +84,12 @@ loader.path.part = (function() {
     }
 })();
 
+/** @type {number} */
+loader.path.part.prototype.index;
+
+/** @type {string} */
+loader.path.part.prototype.prop;
+
 loader.path.part.prototype.toString = function() {
     var s = this.prop;
     if (this.index !== undefined)
