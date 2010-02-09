@@ -72,11 +72,14 @@ loader.record;
 loader.tree;
 
 //Some globals that various components poke into
+/** @type {!Array.<!string>} */
 var originalHeaders;
+/** @type {!Array.<!tEntity>} */
 var rows;
 var typesSeen = new Set();
 var propertiesSeen = new Set();
 var inputType;
+/** @type {!Array.<!loader.path>} */
 var headerPaths;
 
 /*
@@ -85,7 +88,10 @@ var headerPaths;
 
 function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated
-    originalHeaders = rows = inputType = headerPaths = undefined;
+    inputType = undefined;
+    originalHeaders = [];
+    rows = [];
+    headerPaths = [];
     typesSeen = new Set();
     propertiesSeen = new Set();
 }
