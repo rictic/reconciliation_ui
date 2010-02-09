@@ -68,7 +68,7 @@ file "build/libs_compiled.js" => libs do |t|
 end
 
 #externs files for libraries
-lib_externs = ["src/externs.js", "lib/jquery.externs.js", "lib/jsobjdump.externs.js", "lib/isISO8601.externs.js"]
+lib_externs = ["src/externs.js"] + FileList["lib/*.externs.js"]
 
 file "build/src_compiled.js" => src + lib_externs do |t|
   compilejs(src, t.name, false, lib_externs)
