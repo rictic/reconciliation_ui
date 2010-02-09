@@ -380,7 +380,7 @@ function rowsToRecords(rows, onComplete, yielder) {
  * @param {!loader.path} path
  * @param {!number} topindex
  * @param {!loader.tree} record
- * @value {!string} value
+ * @param {!string} value
  *
  */
 function pathPut(path, topindex, record, value) {

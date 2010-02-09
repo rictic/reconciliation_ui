@@ -42,7 +42,7 @@ function canonicalizeFreebaseId(entity) {
     });
 }
 
-/** @params {!tEntity} entity
+/** @param {!tEntity} entity
   * 
   */
 function addColumnRecCases(entity) {
