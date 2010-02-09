@@ -102,27 +102,27 @@
                   in code, so this is safe to edit so long as it has the same general structure.
                   -->
               <div id="manualReconcileTemplate" class="invisible manualReconChoices">
-                <div class="currentRecord">
-                  <h4>Current Record:</h4>
-                  <div class="recordVals">
-
-                  </div>
-                </div>
+                <table>
+                    <thead>
+                        <tr><th class='title' colspan='2'>Match your data:</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="recordVals"><td></td><td></td></tr>
+                    </tbody>
+                    
+                    <tr><th colspan='4'>to one of these Freebase topics:</th></tr>
+                    
+                    <tbody class="manualReconciliationChoices">
+                        
+                    </tbody>
+                </table>
                 
-                <div class="reconciliationCandidates">
-                  <h4>Select one of these Freebase topics:</h4>
-                  <table class='manualReconciliationChoices'>
-                    <thead><tr><th></th></tr></thead>
-                    <tbody><tr><td></td></tr></tbody>
-                  </table>
-                  <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
-                  <h4>Or:</h4>
-                  <button class="skipButton otherSelection" name="">Skip This Item</button>
-                  <button class="newButton otherSelection" name="None">Not in Freebase</button>
-                  <label>Search For Another Topic:</label>
-                  <input type="text" class="find_topic">
-                </div>
-                <div class='clear'></div>
+                <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
+                <h4>Or:</h4>
+                <button class="skipButton otherSelection" name="">Skip This Item</button>
+                <button class="newButton otherSelection" name="None">Not in Freebase</button>
+                <label>Search For Another Topic:</label>
+                <input type="text" class="find_topic">
               </div>
           </div>
           

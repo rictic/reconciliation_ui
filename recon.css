@@ -93,10 +93,6 @@ table.manualReconciliationChoices tbody tr a {
     color: #0063DC;
 }
 
-table.currentRecord {
-    background: #E7EEF3;
-}
-
 #progresscontainer {
     position:absolute;
     width: 50%;
@@ -118,34 +114,6 @@ a.optionsButton {
     color: #777;
     float: right;
     margin-right: 15px;
-}
-
-.currentRecord {
-    float: left;
-    border: 2px solid #999;
-    margin-top: 30px;
-    padding-left: 5px;
-    padding-right: 5px;
-    width: 20%;
-    overflow: hidden;
-}
-
-.currentRecord label {
-    font-size: 90%;
-    font-color: #aaa;
-}
-
-.currentRecord .propertyGroup {
-    margin-left: 12px;
-    margin-top: 4px;
-    margin-bottom: 8px;
-    font-size: 125%;
-    font-weight: bold;
-}
-
-.reconciliationCandidates {
-    float: right;
-    width: 75%;
 }
 
 .clear {
@@ -306,4 +274,21 @@ td {
 .mid-table-subheading {
     font-size: 95%;
     margin-top: 20px;
+}
+
+.score {
+    color: #999;
+    font-size: 90%;
+}
+
+th.title {
+    font-size: 115%;
+}
+
+.buttonColumn {
+    text-align: center;
+}
+
+.recordVals {
+    font-size: 108%;
 }
