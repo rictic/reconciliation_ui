@@ -1,3 +1,7 @@
+#A bunch of plumbing for testing, minifying javascript, and deploying
+
+#Freebase Loader will run just fine without worrying about all this stuff
+
 task :default => [:test]
 task :test => [:compile_tests, :run_tests]
 
