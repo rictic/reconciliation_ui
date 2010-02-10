@@ -294,7 +294,7 @@ freebase.mqlValue;
     }
 
     /** @param {freebase.mqlTree} mqlResult
-        @result {boolean} */
+        @return {boolean} */
     freebase.isBadOrEmptyResult = function(mqlResult) {
         return mqlResult.code != "/api/status/ok" || mqlResult.result === null;
     }

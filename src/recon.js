@@ -34,7 +34,7 @@ function handleReconChoice(entity,freebaseId) {
 
 
 
-/** @params {!tEntity} entity
+/** @param {!tEntity} entity
   * 
   */
 function addColumnRecCases(entity) {

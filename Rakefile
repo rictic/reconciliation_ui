@@ -68,7 +68,7 @@ file "build/libs_compiled.js" => libs do |t|
 end
 
 #externs files for libraries
-lib_externs = ["src/externs.js", "lib/jquery.externs.js", "lib/jsobjdump.externs.js", "lib/isISO8601.externs.js"]
+lib_externs = ["src/externs.js"] + FileList["lib/*.externs.js"]
 
 file "build/src_compiled.js" => src + lib_externs do |t|
   compilejs(src, t.name, false, lib_externs)
@@ -91,10 +91,30 @@ task :version do
 end
 
 task :push do
+  if get_current_branch != "master"
+    puts "\n" * 2
+    puts "*************************************************"
+    puts "*       DEPLOYING WHILE NOT ON MASTER           *"
+    puts "*************************************************"
+    puts "\n" * 2
+    puts "(you probably meant to do rake deploy_dev)"
+    puts "Press enter to continue anyways, ^C to stop"
+    STDIN.gets
+  end
   push "/mw/loader/"
 end
 
 task :push_dev do
+  if get_current_branch == "master"
+    puts "\n" * 2
+    puts "*************************************************"
+    puts "*            DEPLOYING MASTER TO DEV            *"
+    puts "*************************************************"
+    puts "\n" * 2
+    puts "(you probably meant to do rake deploy)"
+    puts "Press enter to continue anyways, ^C to stop"
+    STDIN.gets
+  end
   push "/mw/loader_dev/"
 end
 
@@ -118,6 +138,9 @@ def compilejs(js_files, output_name, third_party=false, externs=[])
   end
 end
 
+def get_current_branch
+  `git branch`.match(/^\* (.*?)$/m)[1]
+end
 
 #tabulates savings by compiling and by gzipping
 task :savings => "build/compiled.js" do

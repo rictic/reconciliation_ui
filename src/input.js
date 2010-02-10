@@ -72,15 +72,25 @@ loader.record;
 loader.tree;
 
 //Some globals that various components poke into
+/** @type {!Array.<!string>} */
+var originalHeaders;
+/** @type {!Array.<!tEntity>} */
+var rows;
 var typesSeen = new Set();
 var propertiesSeen = new Set();
-var originalHeaders, rows, inputType, headerPaths;
 /** @type {InternalReconciler} */
 var internalReconciler;
+/** @type {string} */
+var inputType;
+/** @type {!Array.<!loader.path>} */
+var headerPaths;
 
 function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated
-    originalHeaders = rows = inputType = headerPaths = undefined;
+    inputType = undefined;
+    originalHeaders = [];
+    rows = [];
+    headerPaths = [];
     internalReconciler = new InternalReconciler();
     resetEntities();
     typesSeen = new Set();
@@ -382,7 +392,7 @@ function rowsToRecords(rows, onComplete, yielder) {
  * @param {!loader.path} path
  * @param {!number} topindex
  * @param {!loader.tree} record
- * @value {!string} value
+ * @param {!string} value
  *
  */
 function pathPut(path, topindex, record, value) {
