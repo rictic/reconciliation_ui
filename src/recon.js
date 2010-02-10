@@ -27,26 +27,17 @@ function handleReconChoice(entity,freebaseId) {
     delete manualQueue[entity["/rec_ui/id"]];
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
     entity.reconcileWith(freebaseId, false);
-    canonicalizeFreebaseId(entity);
     addColumnRecCases(entity);
     updateUnreconciledCount();
     manualReconcile();
 }
 
 
-function canonicalizeFreebaseId(entity) {
-    var envelope = {query:{"myId:id":entity.id, "id":null}}
-    freebase.mqlRead(envelope, function(results){
-        if (results && results.result && results.result.id)
-            entity.id = results.result.id
-    });
-}
 
 /** @param {!tEntity} entity
   * 
   */
 function addColumnRecCases(entity) {
-    var autoQueueLength = automaticQueue.length;
     for (var key in entity) {
         var values = $.makeArray(entity[key]);
         $.each(values, function(_, value) {
@@ -70,9 +61,4 @@ function addColumnRecCases(entity) {
             totalRecords++;
         });
     }
-    
-    //The auto queue was empty when this started, so autorecon needs
-    //to be restarted.
-    if (autoQueueLength == 0 && reconciliationBegun)
-        beginAutoReconciliation();
 }

@@ -41,17 +41,25 @@ tEntity.prototype.getChainedProperty = function(prop) {
     return getChainedProperty(this,prop);
 }
 
-/** @param {loader.path} path
+/** @param {loader.path|string} path
   * @param {boolean=} preservePlace
   * @return {Array}
   */
 tEntity.prototype.get = function(path, preservePlace) {
+    if (getType(path) === "string") 
+        return this.get(new loader.path(/**@type string*/(path)), preservePlace);
     var slots = [this];
     $.each(path.parts, function(_,part) {
         var newSlots = [];
         $.each(slots, function(_,slot) {
             if (!slot) {
                 newSlots.push(undefined);
+                return;
+            }
+            
+            var prop = part.prop;
+            if (prop === "id" && ('getIdentifier' in slot)) {
+                newSlots.push(slot.getID());
                 return;
             }
             
@@ -79,13 +87,13 @@ tEntity.prototype.get = function(path, preservePlace) {
 
 /** @param {string=} linkText */
 tEntity.prototype.freebaseLink = function(linkText) {
-    linkText = linkText || this.name || this.id;
-    return freebase.link(linkText,this.id);
+    linkText = linkText || this.name || this.getID();
+    return freebase.link(linkText,this.getID());
 }
 
 tEntity.prototype.displayValue = function() {
     if (!this.id)
-        return displayValue(this['/type/object/name'] || this.id);
+        return displayValue(this['/type/object/name'] || this.getID());
     return this.freebaseLink();
 };
 
@@ -93,7 +101,15 @@ tEntity.prototype.displayValue = function() {
   * @param {!boolean} automatic
   */
 tEntity.prototype.reconcileWith = function(id, automatic) {
-    this.id = id;
+    this['/rec_ui/was_automatically_reconciled'] = automatic;
+    var recGroup = internalReconciler.getRecGroup(this);
+    var self = this;
+    freebase.getCanonicalID(id, function(new_id) {
+        if (recGroup.shouldMerge) 
+            recGroup.setID(new_id);
+        else
+            self.setID(new_id);
+    });
     var feedback = {
         query:this['/rec_ui/recon_query'],
         reconciledWith:id,
@@ -102,7 +118,7 @@ tEntity.prototype.reconcileWith = function(id, automatic) {
     }
     $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
 
-    addReviewItem(this, automatic ? "automatic" : "manual");
+    addReviewItem(recGroup.shouldMerge ? recGroup : this, automatic ? "automatic" : "manual");
 }
 
 /** @param {!string} prop
@@ -153,6 +169,34 @@ tEntity.prototype.addParent = function(parent, prop) {
 tEntity.prototype.isCVT = function() {
     //an entity is a CVT if any of its types are CVT types
     return Arr.any($.makeArray(this['/type/object/type']), isCVTType);
+}
+
+/** @return {!string|undefined}*/
+tEntity.prototype.getID = function() {
+    var recGroup = internalReconciler.getRecGroup(this);
+    if (recGroup && recGroup.shouldMerge)
+        return recGroup.getID();
+    return this.id;
+}
+
+tEntity.prototype.setID = function(id) {
+    this.id = id;
+}
+
+tEntity.prototype.getIdentifier = function() {
+    var id = this.getID();
+    if (!Arr.contains(["None", "None (merged)"], id))
+        return id;
+    
+    var recGroup = internalReconciler.getRecGroup(this);
+    if (recGroup && recGroup.shouldMerge)
+        return "$recGroup" + recGroup.internal_id
+    else
+        return "$entity" + this['/rec_ui/id'];
+}
+
+tEntity.prototype.getInternalID = function() {
+    return this['/rec_ui/id'];
 }
 
 /** @return {string} */

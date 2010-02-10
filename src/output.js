@@ -125,15 +125,14 @@ function prepareTriples() {
 var tripleGetterYielder;
 function getTriples(entities, callback) {
     tripleGetterYielder = new Yielder();
-    function isValidID(id) {
+    function hasValidID(entity) {
+        var id = getID(entity);
         if ($.isArray(id))
             id = id[0];
         return id !== undefined && $.trim(id) !== "";
     }
     function getID(entity) {
-        if (entity.id === "None")
-            return "$entity" + entity['/rec_ui/id'];
-        return entity.id;
+        return entity.getIdentifier();
     }
     function getValue(property, value) {
         if (getType(value) === "array") {
@@ -200,7 +199,7 @@ function getTriples(entities, callback) {
     
     var triples = [];
     politeEach(entities, function(_,subject) {
-        if (!subject || !isValidID(subject.id) || subject.isCVT())
+        if (!subject || !hasValidID(subject) || subject.isCVT())
             return;
         
         /* Assert each type and all included types exactly once */
@@ -217,7 +216,7 @@ function getTriples(entities, callback) {
         })
         
         /* If the subject is new to Freebase, give it a name as well */
-        if (subject.id === "None"){
+        if (Arr.contains(["None", "None (merged)"], subject.getID())){
             $.each($.makeArray(subject["/type/object/name"]), function(_, name) {
                 if (name)
                     triples.push({s:getID(subject),p:"/type/object/name",o:name});
@@ -250,7 +249,8 @@ function getTriples(entities, callback) {
                         triples.push({s:getID(subject),p:predicate,o:cvtTripleObject}); 
                 }
                 
-                if  (!isValidID(object.id))
+                
+                if  (!hasValidID(object))
                     return;
                 
                 
@@ -295,16 +295,29 @@ function checkLogin() {
 
 var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
+function fillinIds(createdEntities) {
+    for (var key in createdEntities) {
+        var id = standardizeId(createdEntities[key]);
+        
+        var entity_match = key.match(/entity(\d+)/);
+        if (entity_match) {
+            entities[entity_match[1]].setID(id);
+            continue;
+        }
+        var recGroup_match = key.match(/recGroup(\d+)/);
+        if (recGroup_match) {
+            RecGroup.groups[recGroup_match[1]].setID(id);
+            continue;
+        }
+    }
+}
+
 /** @param {!number} job_id
   * @param {function()=} onComplete
   */
 function populateCreatedIds(job_id, onComplete) {
     getCreatedIds(freeq_url + job_id + "?view=list", function(createdEntities) {
-        for (var key in createdEntities) {
-            var entity = entities[key.match(/entity(\d+)/)[1]];
-            var id = createdEntities[key];
-            entity.id = standardizeId(id);
-        }
+        fillinIds(createdEntities);
         if (onComplete) onComplete();
     });
 }
@@ -325,17 +338,17 @@ function getCreatedIds(url, callback) {
             $(".fetchingFreeqIds").hide();
             $(".idsFetched").show();
             var actions=result.result.actions;
-            var res={};
+            var keymap = {};
             $.each(actions, function(_,i) {
-                var o = JSON.parse(i.result);
-                for (var j in o) {
-                    if (j.indexOf("entity")==0){
-                        res[j]=o[j];
+                var summary = JSON.parse(i.result);
+                for (var key in summary) {
+                    if (key.match(/(entity\d+)|(recGroup\d+)/)){
+                        keymap[key] = summary[key];
                     }
                 }
             });
             repeatingTimer.stop();
-            callback(res);
+            callback(keymap);
         });
     }
 }

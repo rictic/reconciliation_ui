@@ -78,13 +78,12 @@ var originalHeaders;
 var rows;
 var typesSeen = new Set();
 var propertiesSeen = new Set();
+/** @type {InternalReconciler} */
+var internalReconciler;
+/** @type {string} */
 var inputType;
 /** @type {!Array.<!loader.path>} */
 var headerPaths;
-
-/*
-** Parsing and munging the input
-*/
 
 function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated
@@ -92,9 +91,16 @@ function resetGlobals() {
     originalHeaders = [];
     rows = [];
     headerPaths = [];
+    internalReconciler = new InternalReconciler();
+    resetEntities();
     typesSeen = new Set();
     propertiesSeen = new Set();
 }
+
+
+/*
+** Parsing and munging the input
+*/
 
 /** @param {!string} input Either a tsv or a json array of trees
   * @param {!function(loader.record, function(boolean))} ambiguityResolver
@@ -504,6 +510,7 @@ function findAllProperties(trees, onComplete, yielder) {
   * @param {Yielder=} yielder
   */
 function mapTreesToEntities(trees, onComplete, yielder) {
+    internalReconciler = new InternalReconciler();
     politeMap(trees, function(record){return mapTreeToEntity(record)}, onComplete, yielder);
 }
 
@@ -551,6 +558,7 @@ function mapTreeToEntity(tree, parent) {
             if (innerEntity.isCVT())
                 connectCVTProperties(innerEntity);
             
+            internalReconciler.register(innerEntity);
             return innerEntity;
         });
         
@@ -558,6 +566,9 @@ function mapTreeToEntity(tree, parent) {
         entity.addProperty(prop, values);
     }
     
+    //otherwise it will get registered above
+    if (!parent)
+        internalReconciler.register(entity);
     return entity;
 }
 

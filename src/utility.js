@@ -167,6 +167,7 @@ function numProperties(obj) {
 
 
 function identity(value) {return value;}
+function isUndefined(value) {return value === undefined;}
 
 function getChainedProperty(entity, prop) {
     var slots = [entity];
@@ -400,4 +401,11 @@ var assert = function() {
 
 var debug = function(val) {
     log(JSON.stringify(JsObjDump.annotate(val), null, 2))
+}
+
+var p = function(val) {
+    if (getType(val) === "object" && 'toJSON' in val)
+        debug(val.toJSON());
+    else
+        debug(val);
 }

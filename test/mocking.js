@@ -87,3 +87,11 @@ function temporaryMock(context, name, value) {
         context[name] = oldValue;
     }
 }
+
+/** @type function(...) */
+function mockingFunction(var_args) {}
+
+//stub out network access functions
+$.getJSON = mockingFunction;
+getJSON = mockingFunction;
+$.ajax = mockingFunction;

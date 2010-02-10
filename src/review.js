@@ -2,8 +2,17 @@ function onDisplayRenderScreen() {}
 
 function onHideRenderScreen() {}
 
+/** @param {!tEntity|RecGroup} entity 
+  * @param {string=} reconciliationMethod 
+  */
 function addReviewItem(entity, reconciliationMethod) {
     var container;
+    if (!reconciliationMethod) {
+        var was_auto = entity['/rec_ui/was_automatically_reconciled'];
+        if (was_auto === undefined) reconciliationMethod = "previously";
+        else if (was_auto === false) reconciliationMethod = "manual";
+        else reconciliationMethod = "automatic";
+    }
     switch (reconciliationMethod) {
         case "automatic": 
             container = $(".automaticReconciliationsToReview");
@@ -23,23 +32,30 @@ function addReviewItem(entity, reconciliationMethod) {
     var newTemplate = $(".templates .reviewNewTemplate");
     var skippedTemplate = $(".templates .reviewSkippedTemplate");
     var reconciledTemplate = $(".templates .reviewReconciledTemplate");
-    if (!entity) return;
-    if (entity.isCVT() || null == entity.id || $.isArray(entity.id))
-        return;
+    var recGroupTemplate = $(".templates .reviewRecGroupTemplate");
     
     container.show();
     var template;
-    switch(entity.id){
-      case "None": template = newTemplate.clone(); break;
-      case ""    : template = skippedTemplate.clone(); break;
-      default    : template = reconciledTemplate.clone(); break;
+    if (entity instanceof RecGroup)
+        template = recGroupTemplate.clone();
+    else {
+        switch(entity.id){
+          case "None": template = newTemplate.clone(); break;
+          case ""    : template = skippedTemplate.clone(); break;
+          default    : template = reconciledTemplate.clone(); break;
+        }
     }
     
-    var classSelector = "reviewEntity" + entity['/rec_ui/id'];
-    template.addClass(classSelector);
-    $("." + classSelector, container).remove();
+    removeReviewItem(entity);
+    template.addClass(getReviewClassSelector(entity));
+
     
-    $(".candidateName",template).html("<a class='internalLink' href='#" + entity['/rec_ui/id'] + "'>" + textValue(entity) + "</a>");
+    if (entity instanceof RecGroup)
+        addReviewRecGroup(entity, template);
+    else
+        addReviewEntity(entity, template);
+        
+    
     var freebaseName = null;
     if (entity['/rec_ui/freebase_name']){
         $.each(entity['/rec_ui/freebase_name'],function(idx,name){
@@ -49,16 +65,50 @@ function addReviewItem(entity, reconciliationMethod) {
         freebaseName = freebaseName || entity['/rec_ui/freebase_name'][0];
     }
     var handleName = function(freebaseName) {
-        $(".freebaseName", template).html(entity.freebaseLink(freebaseName));
+        $(".freebaseName", template).html(freebase.link(freebaseName, entity.getID()));
         if (freebaseName && textValue(entity).toLowerCase() === freebaseName.toLowerCase())
             $(".freebaseName", template).addClass("identicalMatch");
     }
     if (freebaseName) handleName(freebaseName);
-    else freebase.getName(entity.id, handleName);
-        
-    $(".internalLink", template).click(function(val) {
+    else freebase.getName(entity.getID(), handleName);
+    
+    container.append(template);
+}
+
+function removeReviewItem(item) {
+    var container = $('.reconciliationsToReview');
+    $("." + getReviewClassSelector(item), container).remove();
+}
+
+function getReviewClassSelector(item) {
+    return "review" + (item instanceof tEntity ? "Entity" : "RecGroup") + item.getInternalID();
+}
+
+function makeInternalLink(content, entity) {
+    var link = node("a", {
+            "href": "#" + entity['/rec_ui/id']
+           ,"class": "internalLink" 
+    })
+    .click(function(val) {
         $("#tabs > ul").tabs("select",0);
         displayReconChoices(entity["/rec_ui/id"]);
-        return false;})
-    container.append(template);
+        return false;
+    })
+    .append(content.clone());
+    content.html(link);
+}
+
+function addReviewRecGroup(recGroup, template) {
+    var repEntity = recGroup.members[0];
+    $(".count", template).html(recGroup.members.length + "");
+    freebase.getName(recGroup.type, function(type_name) {
+        $(".type", template).html(type_name);
+    });
+    var name = $(".name", template).html(recGroup.name);
+    makeInternalLink(name, repEntity);
+}
+
+function addReviewEntity(entity, template) {
+    var name = $(".candidateName", template);
+    makeInternalLink(name.html(textValue(entity)), entity);
 }

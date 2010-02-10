@@ -51,6 +51,9 @@ AutomaticQueue.prototype.push = function(entity) {
     entity['/rec_ui/rec_begun'] = true;
     this.length++;
     this.internalQueue.push(entity);
+    updateUnreconciledCount();
+    if (reconciliationBegun && !autoreconciling)
+        autoReconcile();
 }
 
 /** @return {tEntity} */
@@ -63,6 +66,7 @@ AutomaticQueue.prototype.shift = function() {
     if (this.length === 0) 
         return undefined;
     this.length--;
+    updateUnreconciledCount();
     return this.internalQueue.shift();
 }
 
@@ -73,18 +77,29 @@ function beginAutoReconciliation() {
     autoReconcile();
 }
 
+var autoreconciling = false;
 function finishedAutoReconciling() {
     $(".nowReconciling").hide();
     $('.notReconciling').show();
+    autoreconciling = false;
 }
 
 function autoReconcile() {
+    autoreconciling = true;
     if (automaticQueue.length == 0) {
         finishedAutoReconciling();
         return;
     }
-    updateUnreconciledCount();
-    getCandidates(automaticQueue.peek(), autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
+
+    var entity = automaticQueue.peek();
+    if (entity.getID() !== undefined) {
+        automaticQueue.shift();
+        addTimeout(autoReconcile, 0);
+        if (!internalReconciler.getRecGroup(entity).shouldMerge)
+            addReviewItem(entity);
+        return;
+    }
+    getCandidates(entity, autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
 }
 
 /** @param {!tEntity} entity
@@ -124,8 +139,8 @@ function constructReconciliationQuery(entity, typeless) {
     return query;
     
     function constructQueryPart(value) {
-        if (value.id != undefined && value.id != "" && value.id != "None")
-            return {"id":value.id, "name":value["/type/object/name"]}
+        if (value instanceof tEntity && !Arr.contains([undefined, "", "None", "None (merged"], value.getID()))
+            return {"id":value.getID(), "name":value["/type/object/name"]}
         if (value['/rec_ui/id'] !== undefined)
             return $.makeArray(value["/type/object/name"])[0];
         return value;
@@ -206,7 +221,6 @@ function autoReconcileResults(entity) {
         }
         else {
             entity.reconcileWith(matchedResult.id, true);
-            canonicalizeFreebaseId(entity);
             entity["/rec_ui/freebase_name"] = matchedResult.name;
             addColumnRecCases(entity);
         }
