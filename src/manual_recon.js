@@ -64,7 +64,7 @@ function renderReconChoices(entity) {
     var tableHeader = $("table thead tr", template);
     var columnHeaders = ["Name","Type"].concat($.map(uniqueMqlProps,getPropName)).concat();
     $.each(columnHeaders, function(_, header) {
-        tableHeader.append(node("th",header,{"class":"bottomHeader"}))
+        tableHeader.append(node("th",header, {"class": "propHeader"}))
     })
 
     var tableBody = $(".manualReconciliationChoices", template).empty();

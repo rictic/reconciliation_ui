@@ -201,8 +201,11 @@ th {
 	padding: 10px 8px;
 }
 
-td {
+#reviewScreen td {
 	border-bottom: 1px solid #ccc;
+}
+
+td {
 	padding: 9px 8px 0px 8px;
 }
 
@@ -291,4 +294,38 @@ td {
 
 .recordVals {
     font-size: 108%;
+}
+
+.currentRecord {
+    border: 1px solid #999;
+/*    background-color: #A79FD6;*/
+}
+
+.manualReconciliationChoices {
+    border: 1px solid #999;
+}
+
+.manualReconciliationChoices .odd {
+/*    background-color: #FCC497;*/
+}
+
+.manualReconciliationChoices .odd {
+/*    background-color: #FCD3B2;*/
+}
+
+.internalReconciliationPrompt {
+    float: right;
+    max-width: 20%;
+    border: 2px solid #999;
+    background-color: #ddf;
+    padding: 10px;
+}
+
+.manualReconciliationChoices tr {
+    height: 100px;
+    overflow: hidden;
+}
+
+.manualReconMeat {
+    max-width: 80%;
 }

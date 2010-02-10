@@ -107,27 +107,29 @@
                     <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
                 </div>
                 
-                <table>
-                    <thead>
-                        <tr><th class='title' colspan='2'>Match your data:</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr class="recordVals"><td></td><td></td></tr>
-                    </tbody>
+                <div class='manualReconMeat'>
+                    <table>
+                        <thead>
+                            <tr><th class='title' colspan='2'>Match your data:</th></tr>
+                        </thead>
+                        <tbody class='currentRecord'>
+                            <tr class="recordVals"><td></td><td></td></tr>
+                        </tbody>
                     
-                    <tr><th class='title' colspan='4'>to one of these Freebase topics:</th></tr>
+                        <tr><th class='title' colspan='4'>to one of these Freebase topics:</th></tr>
                     
-                    <tbody class="manualReconciliationChoices">
+                        <tbody class="manualReconciliationChoices">
                         
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
                 
-                <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
-                <h4>Or:</h4>
-                <button class="skipButton otherSelection" name="">Skip This Item</button>
-                <button class="newButton otherSelection" name="None">Not in Freebase</button>
-                <label>Search For Another Topic:</label>
-                <input type="text" class="find_topic">
+                    <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
+                    <h4>Or:</h4>
+                    <button class="skipButton otherSelection" name="">Skip This Item</button>
+                    <button class="newButton otherSelection" name="None">Not in Freebase</button>
+                    <label>Search For Another Topic:</label>
+                    <input type="text" class="find_topic">
+                </div>
               </div>
           </div>
           
