@@ -10,6 +10,15 @@ function initializeReconciliation(onReady) {
     totalRecords = rows.length;
     var rec_partition = Arr.partition(rows,isUnreconciled);
     automaticQueue = new AutomaticQueue(rec_partition[0]);
+    automaticQueue.bind("changed", function() {
+        var pctProgress = (((totalRecords - automaticQueue.length) / totalRecords) * 100);
+        $("#progressbar").progressbar("value", pctProgress);
+        $("#progressbar label").html(pctProgress.toFixed(1) + "%");
+
+        //restarts the queue if something is added to it after autorecon seems finished
+        if (reconciliationBegun && !autoreconciling)
+            autoReconcile();
+    })
     politeEach(rec_partition[1],function(_,reconciled_row){
         reconciled_row['/rec_ui/rec_begun'] = true;
         addReviewItem(reconciled_row, "previously");
@@ -28,7 +37,7 @@ function handleReconChoice(entity,freebaseId) {
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
     entity.reconcileWith(freebaseId, false);
     addColumnRecCases(entity);
-    updateUnreconciledCount();
+    updateManualUnreconciledCount();
     manualReconcile();
 }
 
@@ -38,6 +47,7 @@ function handleReconChoice(entity,freebaseId) {
   * 
   */
 function addColumnRecCases(entity) {
+    if (!automaticQueue) return;
     for (var key in entity) {
         var values = $.makeArray(entity[key]);
         $.each(values, function(_, value) {

@@ -31,7 +31,7 @@
 **  Automatic reconciliation
 */
 var manualQueue = {};
-var automaticQueue = new AutomaticQueue();
+var automaticQueue;
 
 
 /** @constructor
@@ -44,6 +44,7 @@ function AutomaticQueue(initialValues) {
     /** @type {number} */
     this.length = this.internalQueue.length;
 }
+AutomaticQueue.prototype = new EventEmitter();
 
 /** @param {tEntity} entity
   */
@@ -51,9 +52,7 @@ AutomaticQueue.prototype.push = function(entity) {
     entity['/rec_ui/rec_begun'] = true;
     this.length++;
     this.internalQueue.push(entity);
-    updateUnreconciledCount();
-    if (reconciliationBegun && !autoreconciling)
-        autoReconcile();
+    this.emit("changed");
 }
 
 /** @return {tEntity} */
@@ -66,8 +65,9 @@ AutomaticQueue.prototype.shift = function() {
     if (this.length === 0) 
         return undefined;
     this.length--;
-    updateUnreconciledCount();
-    return this.internalQueue.shift();
+    var val = this.internalQueue.shift();
+    this.emit("changed");
+    return val;
 }
 
 function beginAutoReconciliation() {

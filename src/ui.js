@@ -130,7 +130,6 @@ function showConfirmationSpreadsheet(beforeDisplay) {
         spreadSheetData.aaData.push(row);
     }, function() {
         if (beforeDisplay) beforeDisplay();
-        updateUnreconciledCount();
         spreadSheetData["bAutoWidth"] = false;
         spreadSheetData["bSort"] = false;
         $("#spreadsheetDiv").html('<table class="display" id="spreadsheetTable"><\/table>');
@@ -216,10 +215,7 @@ $(document).ready(function() {
     $("#spreadsheetPreview button.continue").click(continueToReconciliation);
 });
 
-function updateUnreconciledCount() {
-    var pctProgress = (((totalRecords - automaticQueue.length) / totalRecords) * 100);
-    $("#progressbar").progressbar("value", pctProgress);
-    $("#progressbar label").html(pctProgress.toFixed(1) + "%");
+function updateManualUnreconciledCount() {
     $(".manual_count").html("("+numProperties(manualQueue)+")");
 }
 

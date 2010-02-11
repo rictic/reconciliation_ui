@@ -12,7 +12,7 @@ function addToManualQueue(entity) {
         manualReconcile();
     else if (wasSingleton)
         renderReconChoices(entity)
-    updateUnreconciledCount();
+    updateManualUnreconciledCount();
 }
 
 function manualReconcile() {
@@ -24,7 +24,7 @@ function manualReconcile() {
                 addReviewItem(val);
             val = getFirstValue(manualQueue);
         }
-        updateUnreconciledCount();
+        updateManualUnreconciledCount();
         if(val != undefined) {
             displayReconChoices(val["/rec_ui/id"])
             renderReconChoices(getSecondValue(manualQueue)); //render-ahead the next one
