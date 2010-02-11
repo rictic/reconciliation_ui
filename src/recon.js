@@ -10,7 +10,7 @@ function initializeReconciliation(onReady) {
     totalRecords = rows.length;
     var rec_partition = Arr.partition(rows,isUnreconciled);
     automaticQueue = new AutomaticQueue(rec_partition[0]);
-    automaticQueue.bind("changed", function() {
+    automaticQueue.addListener("changed", function() {
         var pctProgress = (((totalRecords - automaticQueue.length) / totalRecords) * 100);
         $("#progressbar").progressbar("value", pctProgress);
         $("#progressbar label").html(pctProgress.toFixed(1) + "%");
