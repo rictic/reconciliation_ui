@@ -91,6 +91,7 @@ function renderReconChoices(entity) {
           handleReconChoice(entity, data.id);
         });
 
+    $("button.undo", template).click(undoReconciliation);
     $(".otherSelection", template).click(function() {handleReconChoice(entity, this.name)});
     
     $(".moreButton",template).click(function() {
