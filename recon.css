@@ -93,10 +93,6 @@ table.manualReconciliationChoices tbody tr a {
     color: #0063DC;
 }
 
-table.currentRecord {
-    background: #E7EEF3;
-}
-
 #progresscontainer {
     position:absolute;
     width: 50%;
@@ -118,34 +114,6 @@ a.optionsButton {
     color: #777;
     float: right;
     margin-right: 15px;
-}
-
-.currentRecord {
-    float: left;
-    border: 2px solid #999;
-    margin-top: 30px;
-    padding-left: 5px;
-    padding-right: 5px;
-    width: 20%;
-    overflow: hidden;
-}
-
-.currentRecord label {
-    font-size: 90%;
-    font-color: #aaa;
-}
-
-.currentRecord .propertyGroup {
-    margin-left: 12px;
-    margin-top: 4px;
-    margin-bottom: 8px;
-    font-size: 125%;
-    font-weight: bold;
-}
-
-.reconciliationCandidates {
-    float: right;
-    width: 75%;
 }
 
 .clear {
@@ -233,8 +201,11 @@ th {
 	padding: 10px 8px;
 }
 
-td {
+#reviewScreen td {
 	border-bottom: 1px solid #ccc;
+}
+
+td {
 	padding: 9px 8px 0px 8px;
 }
 
@@ -306,4 +277,56 @@ td {
 .mid-table-subheading {
     font-size: 95%;
     margin-top: 20px;
+}
+
+.score {
+    color: #999;
+    font-size: 90%;
+}
+
+.title {
+    font-size: 130%;
+    color: #f60;
+}
+
+.buttonColumn {
+    text-align: center;
+}
+
+.recordVals {
+    font-size: 108%;
+}
+
+.currentRecord {
+    border: 1px solid #999;
+/*    background-color: #A79FD6;*/
+}
+
+.manualReconciliationChoices {
+    border: 1px solid #999;
+}
+
+.manualReconciliationChoices .odd {
+/*    background-color: #FCC497;*/
+}
+
+.manualReconciliationChoices .odd {
+/*    background-color: #FCD3B2;*/
+}
+
+.internalReconciliationPrompt {
+    float: right;
+    max-width: 20%;
+    border: 2px solid #999;
+    background-color: #ddf;
+    padding: 10px;
+}
+
+.manualReconciliationChoices tr {
+    height: 100px;
+    overflow: hidden;
+}
+
+.manualReconMeat {
+    max-width: 80%;
 }
