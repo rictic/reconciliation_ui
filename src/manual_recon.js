@@ -45,9 +45,13 @@ function displayReconChoices(entityID) {
     if (entity === undefined) return;
     $(".manualQueueEmpty").hide();
     $(".manualReconciliation").show();
-    if (! $("#" + getManualReconId(entity))[0])
+    var selector = "#" + getManualReconId(entity);
+    //if the screen doesn't exist, render it
+    if (! $(selector)[0])
         renderReconChoices(entity);
-    $(".displayArea").empty().append($("#" + getManualReconId(entity)))
+    //if the screen isn't already in the display area, empty that and put it in
+    if (!$(".displayArea " + selector)[0])
+        $(".displayArea").empty().append($("#" + getManualReconId(entity)))
 }
 
 function renderReconChoices(entity) {
