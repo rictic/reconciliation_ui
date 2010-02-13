@@ -40,7 +40,8 @@ function getReconciliationUndo(entity) {
     return function() {
         entity.unreconcile();
         displayReconChoices(entity['/rec_ui/id']);
-        manualQueue['/rec_ui/internal_id'] = entity;
+        manualQueue[entity['/rec_ui/id']] = entity;
+        updateUnreconciledCount();
     }
 }
 
