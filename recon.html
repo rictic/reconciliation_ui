@@ -98,35 +98,42 @@
                 </div>
               </div>
               
-              <!--  Template for a manual reconciliation case. This is copied and the holes are filled in
-                  in code, so this is safe to edit so long as it has the same general structure.
-                  -->
-              <div id="manualReconcileTemplate" class="invisible manualReconChoices">
-                <div class="currentRecord">
-                  <h4>Current Record:</h4>
-                  <div class="recordVals">
+<!--          Templates are moved here to be displayed       -->
+              <div class='displayArea'>
+              
+              </div>
+              
+              <div class='holdingArea invisible'>
+                  <!--  Template for a manual reconciliation case. This is copied and the holes are filled in
+                      in code, so this is safe to edit so long as it has the same general structure.
+                      -->
+                  <div id="manualReconcileTemplate" class="manualReconChoices">
+                    <div class="currentRecord">
+                      <h4>Current Record:</h4>
+                      <div class="recordVals">
 
+                      </div>
+                    </div>
+
+                    <div class="reconciliationCandidates">
+                      <div class="internalReconciliationPrompt invisible">
+                          <p>There are <span class="count">several</span> <span class='type'>topic</span>s with the name "<span class="name">{name goes here}</span>"</p>
+                          <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
+                      </div>
+                      <h4>Select one of these Freebase topics:</h4>
+                      <table class='manualReconciliationChoices'>
+                        <thead><tr><th></th></tr></thead>
+                        <tbody><tr><td></td></tr></tbody>
+                      </table>
+                      <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
+                      <h4>Or:</h4>
+                      <button class="skipButton otherSelection" name="">Skip This Item</button>
+                      <button class="newButton otherSelection" name="None">Not in Freebase</button>
+                      <label>Search For Another Topic:</label>
+                      <input type="text" class="find_topic">
+                    </div>
+                    <div class='clear'></div>
                   </div>
-                </div>
-                
-                <div class="reconciliationCandidates">
-                  <div class="internalReconciliationPrompt invisible">
-                      <p>There are <span class="count">several</span> <span class='type'>topic</span>s with the name "<span class="name">{name goes here}</span>"</p>
-                      <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
-                  </div>
-                  <h4>Select one of these Freebase topics:</h4>
-                  <table class='manualReconciliationChoices'>
-                    <thead><tr><th></th></tr></thead>
-                    <tbody><tr><td></td></tr></tbody>
-                  </table>
-                  <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
-                  <h4>Or:</h4>
-                  <button class="skipButton otherSelection" name="">Skip This Item</button>
-                  <button class="newButton otherSelection" name="None">Not in Freebase</button>
-                  <label>Search For Another Topic:</label>
-                  <input type="text" class="find_topic">
-                </div>
-                <div class='clear'></div>
               </div>
           </div>
           

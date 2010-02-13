@@ -87,7 +87,7 @@ var headerPaths;
 
 function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated
-    inputType = undefined;
+    inputType = "";
     originalHeaders = [];
     rows = [];
     headerPaths = [];
