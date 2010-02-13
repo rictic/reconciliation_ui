@@ -76,7 +76,7 @@ function addReviewItem(entity, reconciliationMethod) {
 }
 
 function removeReviewItem(item) {
-    var container = $('.reconciliationsToReview');
+    var container = $('#reviewScreen');
     $("." + getReviewClassSelector(item), container).remove();
 }
 

@@ -36,21 +36,24 @@ function manualReconcile() {
     }
 }
 
+function getManualReconId(entity) {
+    return "manualReconcile" + entity['/rec_ui/id'];
+}
+
 function displayReconChoices(entityID) {
     var entity = entities[entityID];
     if (entity === undefined) return;
     $(".manualQueueEmpty").hide();
     $(".manualReconciliation").show();
-    if (! $("#manualReconcile" + entityID)[0])
+    if (! $("#" + getManualReconId(entity))[0])
         renderReconChoices(entity);
-    $(".manualReconChoices:visible").remove();
-    $("#manualReconcile" + entityID).show();
+    $(".displayArea").empty().append($("#" + getManualReconId(entity)))
 }
 
 function renderReconChoices(entity) {
     if (entity == undefined) return;
     var template = $("#manualReconcileTemplate").clone();
-    template[0].id = "manualReconcile" + entity['/rec_ui/id'];
+    template[0].id = getManualReconId(entity);
     var headerPaths = entity["/rec_ui/headerPaths"];
     var mqlPaths = entity["/rec_ui/mql_paths"];
     var uniqueMqlProps = Arr.unique($.map(mqlPaths, function(path){return path.toComplexProp()}));
