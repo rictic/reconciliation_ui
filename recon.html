@@ -97,42 +97,49 @@
                   All of your records are now reconciled.  Retrieve your spreadsheet by clicking the tab up above.
                 </div>
               </div>
+
+<!--          Templates are moved here to be displayed       -->
+              <div class='displayArea'>
               
-              <!--  Template for a manual reconciliation case. This is copied and the holes are filled in
-                  in code, so this is safe to edit so long as it has the same general structure.
-                  -->
-              <div id="manualReconcileTemplate" class="invisible manualReconChoices">
-                <div class="internalReconciliationPrompt invisible">
-                    <p>There are <span class="count">several</span> <span class='type'>topic</span>s with the name "<span class="name">{name goes here}</span>"</p>
-                    <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
-                </div>
-                
-                <div class='manualReconMeat'>
-                    <table>
-                        <thead>
-                            <tr><th class='title' colspan='2'>Match your data:</th></tr>
-                        </thead>
-                        <tbody class='currentRecord'>
-                            <tr class="recordVals"><td></td><td></td></tr>
-                        </tbody>
-                    
-                        <tr><th class='title' colspan='4'>to one of these Freebase topics:</th></tr>
-                    
-                        <tbody class="manualReconciliationChoices">
-                        
-                        </tbody>
-                    </table>
-                
-                    <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
-                    <h4>Or:</h4>
-                    <button class="skipButton otherSelection" name="">Skip This Item</button>
-                    <button class="newButton otherSelection" name="None">Not in Freebase</button>
-                    <label>Search For Another Topic:</label>
-                    <input type="text" class="find_topic">
-                    <div>
-                        <button class="undo">Undo</button>
+              </div>
+              
+              <div class='holdingArea invisible'>
+                  <!--  Template for a manual reconciliation case. This is copied and the holes are filled in
+                      in code, so this is safe to edit so long as it has the same general structure.
+                      -->
+                  <div id="manualReconcileTemplate" class="manualReconChoices">
+                    <div class="internalReconciliationPrompt invisible">
+                        <p>There are <span class="count">several</span> <span class='type'>topic</span>s with the name "<span class="name">{name goes here}</span>"</p>
+                        <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
                     </div>
-                </div>
+
+                    <div class='manualReconMeat'>
+                        <table>
+                            <thead>
+                                <tr><th class='title' colspan='2'>Match your data:</th></tr>
+                            </thead>
+                            <tbody class='currentRecord'>
+                                <tr class="recordVals"><td></td><td></td></tr>
+                            </tbody>
+
+                            <tr><th class='title' colspan='4'>to one of these Freebase topics:</th></tr>
+
+                            <tbody class="manualReconciliationChoices">
+
+                            </tbody>
+                        </table>
+
+                        <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
+                        <h4>Or:</h4>
+                        <button class="skipButton otherSelection" name="">Skip This Item</button>
+                        <button class="newButton otherSelection" name="None">Not in Freebase</button>
+                        <label>Search For Another Topic:</label>
+                        <input type="text" class="find_topic">
+                        <div>
+                            <button class="undo">Undo</button>
+                        </div>
+                    </div>
+                  </div>
               </div>
           </div>
           

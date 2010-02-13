@@ -36,21 +36,28 @@ function manualReconcile() {
     }
 }
 
+function getManualReconId(entity) {
+    return "manualReconcile" + entity['/rec_ui/id'];
+}
+
 function displayReconChoices(entityID) {
     var entity = entities[entityID];
     if (entity === undefined) return;
     $(".manualQueueEmpty").hide();
     $(".manualReconciliation").show();
-    if (! $("#manualReconcile" + entityID)[0])
+    var selector = "#" + getManualReconId(entity);
+    //if the screen doesn't exist, render it
+    if (! $(selector)[0])
         renderReconChoices(entity);
-    $(".manualReconChoices:visible").remove();
-    $("#manualReconcile" + entityID).show();
+    //if the screen isn't already in the display area, empty that and put it in
+    if (!$(".displayArea " + selector)[0])
+        $(".displayArea").empty().append($("#" + getManualReconId(entity)))
 }
 
 function renderReconChoices(entity) {
     if (entity == undefined) return;
     var template = $("#manualReconcileTemplate").clone();
-    template[0].id = "manualReconcile" + entity['/rec_ui/id'];
+    template[0].id = getManualReconId(entity);
     var headerPaths = entity["/rec_ui/headerPaths"];
     var mqlPaths = entity["/rec_ui/mql_paths"];
     var uniqueMqlProps = Arr.unique($.map(mqlPaths, function(path){return path.toComplexProp()}));
