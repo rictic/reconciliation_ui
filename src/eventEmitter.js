@@ -20,6 +20,6 @@ EventEmitter.prototype.listeners = function(name) {
 EventEmitter.prototype.emit = function(name, var_args) {
     var args = Array.prototype.slice.call(arguments, 1);
     $.each(this.listeners(name), function(_, handler) {
-        handler(args);
+        handler.apply(null, args);
     });
 }
