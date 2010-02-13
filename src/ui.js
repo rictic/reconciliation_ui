@@ -213,6 +213,18 @@ $(document).ready(function() {
     if ($("#initialInput")[0].value != "") inputThrottler();
     
     $("#spreadsheetPreview button.continue").click(continueToReconciliation);
+    
+    //send feedback to the recon server when a reconciliation takes place
+    tEntity.addListener("reconciled", function(entity, automatic) {
+        var feedback = {
+            query:entity['/rec_ui/recon_query'],
+            reconciledWith:entity.id,
+            automatic:automatic,
+            softwareTool: "/guid/9202a8c04000641f800000000df257ed"
+        }
+        log(feedback);
+        $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
+    });
 });
 
 function updateManualUnreconciledCount() {

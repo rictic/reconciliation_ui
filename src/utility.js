@@ -368,6 +368,11 @@ RepeatingTimer.prototype.clear = function() {
     }
 }
 
+function copyInto(source, destination) {
+    for (var key in source)
+        destination[key] = source[key];
+}
+
 /*
 ** create debugging tools if they're not available
 */

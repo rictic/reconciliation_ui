@@ -112,3 +112,10 @@ function addReviewEntity(entity, template) {
     var name = $(".candidateName", template);
     makeInternalLink(name.html(textValue(entity)), entity);
 }
+
+$(function() {
+    tEntity.addListener("reconciled", function(entity, automatic) {
+        var recGroup = internalReconciler.getRecGroup(entity);
+        addReviewItem(recGroup.shouldMerge ? recGroup : entity, automatic ? "automatic" : "manual");
+    });
+});
