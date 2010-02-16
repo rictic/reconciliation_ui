@@ -222,7 +222,6 @@ $(document).ready(function() {
             automatic:automatic,
             softwareTool: "/guid/9202a8c04000641f800000000df257ed"
         }
-        log(feedback);
         $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
     });
 });
