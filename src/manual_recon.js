@@ -2,32 +2,55 @@
 ** Manual Reconciliation
 */
 
-function addToManualQueue(entity) {
-    if (manualQueue[entity['/rec_ui/id']])
-        return;
-    var wasEmpty = isObjectEmpty(manualQueue);
-    var wasSingleton = getSecondValue(manualQueue) === undefined;
-    manualQueue[entity["/rec_ui/id"]] = entity;
-    if (wasEmpty)
-        manualReconcile();
-    else if (wasSingleton)
-        renderReconChoices(entity)
-    updateManualUnreconciledCount();
+/** @constructor */
+function ManualQueue() {
+    this.internalObj = {};
+    this.length = 0;
 }
+ManualQueue.prototype = new EventEmitter();
+
+ManualQueue.prototype.peek = function(n) {
+    n = n || 1;
+    for (var key in this.internalObj)
+        if (--n <= 0)
+            return this.internalObj[key];
+}
+
+ManualQueue.prototype.shift = function() {
+    for (var key in this.internalObj) {
+        var val = this.internalObj[key];
+        delete this.internalObj[key];
+        this.length--;
+        this.emit("changed", this);
+        this.emit("removed", val);
+        return val;
+    }
+}
+
+ManualQueue.prototype.push = function(entity) {
+    var key = entity['/rec_ui/id'];
+    if (this.internalObj[key]) return;
+    this.internalObj[key] = entity;
+    this.length++;
+    this.emit("changed", this);
+    this.emit("added", entity);
+}
+
+
+
 
 function manualReconcile() {
     if ($(".manualReconChoices:visible").length === 0) {
-        var val = getFirstValue(manualQueue);
+        var val = manualQueue.peek();
         while (val && val.getID() !== undefined) {
-            delete manualQueue[val['/rec_ui/id']];
+            manualQueue.shift();
             if (!internalReconciler.getRecGroup(val).shouldMerge)
                 addReviewItem(val);
-            val = getFirstValue(manualQueue);
+            val = manualQueue.peek();
         }
-        updateManualUnreconciledCount();
         if(val != undefined) {
             displayReconChoices(val["/rec_ui/id"])
-            renderReconChoices(getSecondValue(manualQueue)); //render-ahead the next one
+            renderReconChoices(manualQueue.peek(2)); //render-ahead the next one
         }
         else{
             $(".manualQueueEmpty").show();

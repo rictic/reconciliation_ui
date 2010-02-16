@@ -19,6 +19,16 @@ function initializeReconciliation(onReady) {
         if (reconciliationBegun && !autoreconciling)
             autoReconcile();
     })
+    manualQueue = new ManualQueue();
+    manualQueue.addListener("changed", function() {
+        $(".manual_count").html("("+manualQueue.length+")");
+    });
+    manualQueue.addListener("added", function(entity) {
+        if (manualQueue.length === 1)
+            manualReconcile();
+        if (manualQueue.length === 2)
+            renderReconChoices(entity);
+    });
     politeEach(rec_partition[1],function(_,reconciled_row){
         reconciled_row['/rec_ui/rec_begun'] = true;
         addReviewItem(reconciled_row, "previously");
@@ -37,7 +47,6 @@ function handleReconChoice(entity,freebaseId) {
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
     entity.reconcileWith(freebaseId, false);
     addColumnRecCases(entity);
-    updateManualUnreconciledCount();
     manualReconcile();
 }
 

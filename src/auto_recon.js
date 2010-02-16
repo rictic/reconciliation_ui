@@ -30,7 +30,7 @@
 /*
 **  Automatic reconciliation
 */
-var manualQueue = {};
+var manualQueue;
 var automaticQueue;
 
 
@@ -216,9 +216,8 @@ function autoReconcileResults(entity) {
     // match found:
     else if(entity.reconResults[0]["match"] == true) {
         var matchedResult = entity.reconResults[0];
-        if (require_exact_name_match && !Arr.contains($.makeArray(entity['/type/object/name']),$.makeArray(matchedResult.name)[0])) {
-            addToManualQueue(entity);
-        }
+        if (require_exact_name_match && !Arr.contains($.makeArray(entity['/type/object/name']),$.makeArray(matchedResult.name)[0]))
+            manualQueue.push(entity);
         else {
             entity.reconcileWith(matchedResult.id, true);
             entity["/rec_ui/freebase_name"] = matchedResult.name;
@@ -226,6 +225,6 @@ function autoReconcileResults(entity) {
         }
     }
     else
-        addToManualQueue(entity)
+        manualQueue.push(entity)
     autoReconcile();
 }

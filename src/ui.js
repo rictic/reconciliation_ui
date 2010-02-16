@@ -227,10 +227,6 @@ $(document).ready(function() {
     });
 });
 
-function updateManualUnreconciledCount() {
-    $(".manual_count").html("("+numProperties(manualQueue)+")");
-}
-
 function updateMdoInfo() {
     var mdo_info = {software_tool:"/guid/9202a8c04000641f800000000df257ed"};
     var name = $("#mdo_name")[0].value;
