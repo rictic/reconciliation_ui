@@ -2,43 +2,6 @@
 ** Manual Reconciliation
 */
 
-/** @constructor */
-function ManualQueue() {
-    this.internalObj = {};
-    this.length = 0;
-}
-ManualQueue.prototype = new EventEmitter();
-
-ManualQueue.prototype.peek = function(n) {
-    n = n || 1;
-    for (var key in this.internalObj)
-        if (--n <= 0)
-            return this.internalObj[key];
-}
-
-ManualQueue.prototype.shift = function() {
-    for (var key in this.internalObj) {
-        var val = this.internalObj[key];
-        delete this.internalObj[key];
-        this.length--;
-        this.emit("changed", this);
-        this.emit("removed", val);
-        return val;
-    }
-}
-
-ManualQueue.prototype.push = function(entity) {
-    var key = entity['/rec_ui/id'];
-    if (this.internalObj[key]) return;
-    this.internalObj[key] = entity;
-    this.length++;
-    this.emit("changed", this);
-    this.emit("added", entity);
-}
-
-
-
-
 function manualReconcile() {
     if ($(".manualReconChoices:visible").length === 0) {
         var val = manualQueue.peek();

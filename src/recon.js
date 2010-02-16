@@ -9,24 +9,28 @@ function isUnreconciled(entity) {
 function initializeReconciliation(onReady) {
     totalRecords = rows.length;
     var rec_partition = Arr.partition(rows,isUnreconciled);
-    automaticQueue = new AutomaticQueue(rec_partition[0]);
+    automaticQueue = new EntityQueue();
+    $.each(rec_partition[0], function(_, unreconciledEntity) {
+        automaticQueue.push(unreconciledEntity);
+    });
     automaticQueue.addListener("changed", function() {
-        var pctProgress = (((totalRecords - automaticQueue.length) / totalRecords) * 100);
+        var pctProgress = (((totalRecords - automaticQueue.size()) / totalRecords) * 100);
         $("#progressbar").progressbar("value", pctProgress);
         $("#progressbar label").html(pctProgress.toFixed(1) + "%");
-
-        //restarts the queue if something is added to it after autorecon seems finished
+    })
+    automaticQueue.addListener("added", function() {
+        //restarts autoreconciliation if something is added after it seems finished
         if (reconciliationBegun && !autoreconciling)
             autoReconcile();
     })
-    manualQueue = new ManualQueue();
+    manualQueue = new EntityQueue();
     manualQueue.addListener("changed", function() {
-        $(".manual_count").html("("+manualQueue.length+")");
+        $(".manual_count").html("("+manualQueue.size()+")");
     });
     manualQueue.addListener("added", function(entity) {
-        if (manualQueue.length === 1)
+        if (manualQueue.size() === 1)
             manualReconcile();
-        if (manualQueue.length === 2)
+        if (manualQueue.size() === 2)
             renderReconChoices(entity);
     });
     politeEach(rec_partition[1],function(_,reconciled_row){
@@ -43,7 +47,7 @@ function initializeReconciliation(onReady) {
 }
 
 function handleReconChoice(entity,freebaseId) {
-    delete manualQueue[entity["/rec_ui/id"]];
+    manualQueue.remove(entity);
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
     entity.reconcileWith(freebaseId, false);
     addColumnRecCases(entity);

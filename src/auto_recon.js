@@ -33,43 +33,6 @@
 var manualQueue;
 var automaticQueue;
 
-
-/** @constructor
-  * @param {Array.<tEntity>=} initialValues
-  */
-function AutomaticQueue(initialValues) {
-    /** @const
-        @type {Array.<tEntity>}*/
-    this.internalQueue = initialValues || [];
-    /** @type {number} */
-    this.length = this.internalQueue.length;
-}
-AutomaticQueue.prototype = new EventEmitter();
-
-/** @param {tEntity} entity
-  */
-AutomaticQueue.prototype.push = function(entity) {
-    entity['/rec_ui/rec_begun'] = true;
-    this.length++;
-    this.internalQueue.push(entity);
-    this.emit("changed");
-}
-
-/** @return {tEntity} */
-AutomaticQueue.prototype.peek = function() {
-    return this.internalQueue[0];
-}
-
-/** @return {tEntity|undefined} */
-AutomaticQueue.prototype.shift = function() {
-    if (this.length === 0) 
-        return undefined;
-    this.length--;
-    var val = this.internalQueue.shift();
-    this.emit("changed");
-    return val;
-}
-
 function beginAutoReconciliation() {
     $(".nowReconciling").show();
     $(".notReconciling").hide();
@@ -86,7 +49,7 @@ function finishedAutoReconciling() {
 
 function autoReconcile() {
     autoreconciling = true;
-    if (automaticQueue.length == 0) {
+    if (automaticQueue.size() === 0) {
         finishedAutoReconciling();
         return;
     }

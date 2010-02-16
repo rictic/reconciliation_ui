@@ -38,6 +38,14 @@ Arr.removeAt = function(a, i) {
     return a.slice(0,i).concat(a.slice(i+1));
 }
 
+Arr.removeOneMatching = function(a, p) {
+    for (var i in a) {
+        if (p(a[i]))
+            return Arr.removeAt(a,i);
+    }
+    return a;
+}
+
 /** Is value in array?
   * @param {!Array} array
   * @param {*} value
