@@ -156,6 +156,7 @@ function renderCandidate(result, mqlProps, entity) {
     node("td",
          node("img",{src:freebase_url + "/api/trans/image_thumb/"+result['id']+"?maxwidth=100&maxheight=100"})
     ).appendTo(tableRow);
+    node("td", {"class": "blurb"}).appendTo(tableRow);
     
     tableRow.append(node("td",displayValue(result)));
     var displayTypes = [];
@@ -179,7 +180,8 @@ function renderCandidate(result, mqlProps, entity) {
 }
 
 function fetchMqlProps(reconResult, mqlProps, entity, context) {
-    var query = {"id":reconResult["id"]};
+    var query = {"id":reconResult["id"],
+                 "/common/topic/article" : { "id" : null, "optional" : true, "limit" : 1 }};
     $.each(mqlProps, function(_, prop) {
         var slot = query;
         var parts = prop.split(":");
@@ -218,7 +220,13 @@ function fillInMQLProps(entity, mqlProps, mqlResult) {
     var result = mqlResult.result;
     var row = $("tr." + idToClass(result.id),context);
     
-    
+    var article = result['/common/topic/article'];
+    if (article && article.id) {
+        freebase.getBlurb(article.id, {maxlength: 200, break_paragraphs: true}, function(text) {
+            $("td.blurb", row).html(text);
+        });
+    }
+
     for (var i = 0; i < mqlProps.length; i++) {
         var cell = $("td." + idToClass(mqlProps[i]), row).empty();
         cell.append(displayValue(getChainedProperty(result, mqlProps[i])));

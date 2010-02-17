@@ -330,3 +330,7 @@ td {
 .manualReconMeat {
     max-width: 80%;
 }
+
+.manualReconMeat .blurb {
+    max-width: 350px;
+}
