@@ -1,3 +1,35 @@
+/******************************************************************************
+ * All source and examples in this project are subject to the
+ * following copyright, unless specifically stated otherwise
+ * in the file itself:
+ *
+ * Copyright (c) 2007-2009, Metaweb Technologies, Inc.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials provided
+ *       with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY METAWEB TECHNOLOGIES ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL METAWEB TECHNOLOGIES BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+ 
+ 
 /*
 =======================================================
 
@@ -69,7 +101,7 @@ below rules into your own stylesheet to customize.
 
 .fbs-pane,
 .fbs-flyout-pane,
-li.nomatch,
+li.fbs-nomatch,
 a.fbs-more-link,
 li.fbs-selected,
 .fbs-flyout-images,
@@ -96,7 +128,7 @@ h3.fbs-topic-properties,
 
 .fbs-item-name,
 li.fbs-help-on-focus,
-li.nomatch,
+li.fbs-nomatch,
 .fbs-nomatch-text,
 .fbs-flyout-pane h3,
 .fbs-properties-header { 
@@ -124,7 +156,7 @@ li.nomatch,
 .fbs-header { background: #fefefe; }
 
 li.fbs-help-on-focus,
-li.nomatch { 
+li.fbs-nomatch { 
     border-bottom: 1px solid #dae3e9;
 }
 
@@ -185,7 +217,7 @@ ul.fbs-list,
 
 li.fbs-item {
     border-bottom: 1px solid #dae3e9;
-  
+    list-style-type: none;
 }
 
 .fbs-attribution {
@@ -250,7 +282,7 @@ ul.fbs-list {
 
 .fbs-flyout-content,
 .fbs-attribution {
-  padding: 5px;
+    padding: 5px;
 }
 
 .fbs-flyout-content:after {
@@ -270,7 +302,7 @@ Freebase Suggest Results List
 
 /* each .fbs-item is a single returned result */
 li.fbs-help-on-focus,
-li.nomatch {
+li.fbs-nomatch {
     padding: 6px 8px 7px 6px;
     font-size: 1.4em;
     line-height: 1;
@@ -310,9 +342,9 @@ a.fbs-more-link {
 }
 
 .fbs-item-name {
-    padding: 5px 8px 4px 6px;
+    padding: 2px 8px 1px 6px;
     font-size: 1.4em;
-    line-height: 1;
+    line-height: 1.4em;
     background: #f4f8fb;
 }
 
@@ -353,7 +385,7 @@ Freebase Suggest No Results
 -------------------------------------------------------
 */
 
-li.nomatch {
+li.fbs-nomatch {
     padding: 0;
 }
 
@@ -365,12 +397,12 @@ li.nomatch {
 }
 
 .fbs-nomatch-text,
-.nomatch h3,
+.fbs-nomatch h3,
 ul.fbs-search-tips {
     padding: 6px 8px 7px 6px;
 }
 
-.nomatch h3 {
+.fbs-nomatch h3 {
     font-weight: bold;
     font-size: 0.9em;
 }
@@ -398,6 +430,7 @@ Freebase Suggest Create New
     padding: 0.2em 0.3em;
     margin-left: 0px !important;
     max-width: 17em;
+    font-size: .8em;
 }
 
 .fbs-suggestnew-description { 
@@ -413,13 +446,17 @@ Freebase Suggest Create New
   color: #999999;
 }
 
+/** placeholder text **/
+.fbs-placeholder {
+    color: #99a;
+    font-style: italic;
+}
+
 /*
 -------------------------------------------------------
 Freebase Suggest Flyout Elements
 -------------------------------------------------------
 */
-
-#fbs-topic-flyout
 
 /* the object title */
 h1#fbs-flyout-title {
@@ -429,7 +466,7 @@ h1#fbs-flyout-title {
     margin-top: 0.3em;
 }
 
-h1#fbs-flyout-title .template-label {
+h1#fbs-flyout-title .fbs-flyout-template-label {
     color: #999999;
     font-size: 0.8em;
 }
@@ -483,7 +520,7 @@ h3.fbs-topic-properties {
 }
 
 .fbs-topic-properties strong {
-    display: block;
+    display: inline;
     font-size: 0.8em;
 }
 
@@ -496,11 +533,15 @@ h3.fbs-topic-properties {
    in order to provide a fixed margin on text to prevent poor text wrapping
    around thumbnail
 */
-p.image-true,
-h3.image-true,
-h1.image-true { margin-left: 85px; }
+p.fbs-flyout-image-true,
+h3.fbs-flyout-image-true,
+h1.fbs-flyout-image-true { margin-left: 85px; }
 
 .fbs-meta-info { margin-left: 110px; }
+#fbs-user-flyout li { 
+    margin-left: 100px;
+    }
+#fbs-domain-flyout .fbs-meta-info { margin-left: 145px;}
 
 /* generic flyout list */
 .fbs-flyout-list li {
@@ -550,18 +591,4 @@ to inline Internet Explor fixes
 
 * html .fbs-flyout-content:after { height: 1px; }
 
-/*
-----------------------------
-Temporary hacks
-----------------------------
-these are just to force some
-design changes before we can fully
-update the templates.
-*/
-
-/*.fbs-item-type,*/
-.unicode {
-  display: none;
-}
-
-/* Version:r79501 Built:Fri Aug 14 2009 by daepark */
+/* Version:r87595 Built:Tue Jan 05 2010 by daepark */
