@@ -8,7 +8,7 @@ UndoStack.prototype.push = function(undoFunction) {
 }
 
 UndoStack.prototype.pop = function() {
-    var undoFunction = this.internal_stack.shift();
+    var undoFunction = this.internal_stack.pop();
     if (undoFunction)
         undoFunction();
 }
