@@ -295,6 +295,7 @@ td {
 
 .recordVals {
     font-size: 108%;
+    height: 100px;
 }
 
 .currentRecord {
