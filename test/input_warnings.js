@@ -21,6 +21,24 @@ var warningTests = {
             unmockWarnUnknownProp();
         }
     }
+    ,"test Unknown Complex Property": function() {
+        var unmockFetch = temporaryMock(freebase, 'fetchPropertyInfo', function(properties,onComplete,onError) {
+            if (onError)
+                onError(properties);
+            else
+                onComplete();
+        });
+        var unmockWarnUnknownProp = temporaryMock(window, 'warnUnknownProp', pass);
+
+        try {
+            expectAsserts(2);
+            justParseIt("/a:/b\t\n1\n");
+        }
+        finally {
+            unmockFetch();
+            unmockWarnUnknownProp();
+        }
+    }
     ,testWarnTypeMissing: function() {
         var unmockWarnPropMissing = temporaryMock(window, 'warnPropertyMissing', pass);
         

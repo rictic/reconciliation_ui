@@ -67,12 +67,14 @@ function renderReconChoices(entity) {
     for(var i = 0; i < uniqueMqlPaths.length; i++) {
         currentRecord.append(node("td", {"class":"propertyGroup"}).append(displayValue(entity.get(uniqueMqlPaths[i]))));
     }
+    currentRecord.append(node("td"));
     
     var tableHeader = $("table thead tr", template);
     var columnHeaders = ["Name","Type"].concat($.map(uniqueMqlProps,getPropName)).concat();
     $.each(columnHeaders, function(_, header) {
         tableHeader.append(node("th",header, {"class": "propHeader"}))
     })
+    tableHeader.append(node("th"));
 
     var tableBody = $(".manualReconciliationChoices", template).empty();
     for (var i = 0; i < entity.reconResults.length; i++)
@@ -156,7 +158,6 @@ function renderCandidate(result, mqlProps, entity) {
     node("td",
          node("img",{src:freebase_url + "/api/trans/image_thumb/"+result['id']+"?maxwidth=100&maxheight=100"})
     ).appendTo(tableRow);
-    node("td", {"class": "blurb"}).appendTo(tableRow);
     
     tableRow.append(node("td",displayValue(result)));
     var displayTypes = [];
@@ -175,6 +176,8 @@ function renderCandidate(result, mqlProps, entity) {
         );
     
     fetchMqlProps(result, mqlProps, entity, tableRow);
+
+    node("td", {"class": "blurb"}).appendTo(tableRow);
     
     return tableRow;
 }
