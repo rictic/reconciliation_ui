@@ -18,6 +18,8 @@ function initializeReconciliation(onReady) {
         freebase.fetchTypeInfo(typesSeen.getAll(), function() {
             $(".initialLoadingMessage").hide();
             reconciliationBegun = true;
+            if (inputType === "JSON")
+                $("input.outputFormat[value='json']").attr("checked","checked").change()
             onReady();
         });
     });
