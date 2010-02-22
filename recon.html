@@ -169,8 +169,11 @@
 <!--      Give the user their data back      -->
           <div id="spreadsheetRender" class="container">
               
-              <h3>Copy your updated spreadsheet from here:</h3>
-              <textarea name="outputSpreadSheet" id="outputSpreadSheet" class='spreadsheet'></textarea><br>
+              <h3>Copy your updated <span class='outputFormatText'>spreadsheet</span> from here:</h3>
+              <textarea id="outputData" class='spreadsheet'></textarea><br>
+              Format: <label for="spreadsheet_out">Spreadsheet</label><input type="radio" name='outputFormat' class='outputFormat' value="spreadsheet" id="spreadsheet_out" checked> | <label for="json_out">JSON</label><input type="radio" name='outputFormat' class='outputFormat' value="json" id="json_out">
+              
+              
               
               
               
