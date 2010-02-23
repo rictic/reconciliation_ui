@@ -258,12 +258,15 @@ freebase.mqlValue;
                 "id" : prop
             }
             query.expected_type = getTypeQuery();
+            query.schema = getTypeQuery();
             return query;
         }
 
         function handler(mqlProp, result){
             if (result.expected_type.id)
-                typeMetadata[result.expected_type.id] = result.expected_type
+                typeMetadata[result.expected_type.id] = result.expected_type;
+            if (result.schema.id)
+                typeMetadata[result.schema.id] = result.schema;
             result.inverse_property = result.reverse_property || result.master_property;
             if (result.inverse_property)
                 propertiesSeen.add(result.inverse_property);
