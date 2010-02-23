@@ -108,7 +108,7 @@ function renderSpreadsheet(onComplete) {
 function prepareTriples() {
     $(".renderingTriples").show();
     $(".triplesRendered").hide();
-    getTriples(entities, false, function(triples) {
+    getTriples(entities, $("#assert_naked_properties")[0].checked, function(triples) {
         politeMap(triples,function(val){return JSON.stringify(val)},
             function(encodedTriples) {
                 var tripleString = encodedTriples.join("\n");
@@ -459,7 +459,7 @@ $(document).ready(function () {
         $(".uploadToFreeQ").show();
     });
     
-    
+    $("#assert_naked_properties").change(function() { prepareTriples(); });
     $("#mdo_data_source").suggest({type:"/dataworld/information_source",
                                flyout:true,type_strict:"should"})
                          .bind("fb-select", function(e, data) { 
