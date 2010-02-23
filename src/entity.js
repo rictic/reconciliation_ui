@@ -25,6 +25,7 @@ function tEntity(initialVals) {
     for (var key in initialVals)
         this[key] = initialVals[key];
 }
+copyInto(new EventEmitter(), tEntity);
 
 tEntity.prototype.setInitialHeaders = function(headers) {
     headers = headers.slice();
@@ -110,15 +111,7 @@ tEntity.prototype.reconcileWith = function(id, automatic) {
         else
             self.setID(new_id);
     });
-    var feedback = {
-        query:this['/rec_ui/recon_query'],
-        reconciledWith:id,
-        automatic:automatic,
-        softwareTool: "/guid/9202a8c04000641f800000000df257ed"
-    }
-    $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
-
-    addReviewItem(recGroup.shouldMerge ? recGroup : this, automatic ? "automatic" : "manual");
+    tEntity.emit("reconciled", this, automatic);
 }
 
 /** @param {!string} prop

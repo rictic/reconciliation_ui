@@ -30,45 +30,8 @@
 /*
 **  Automatic reconciliation
 */
-var manualQueue = {};
-var automaticQueue = new AutomaticQueue();
-
-
-/** @constructor
-  * @param {Array.<tEntity>=} initialValues
-  */
-function AutomaticQueue(initialValues) {
-    /** @const
-        @type {Array.<tEntity>}*/
-    this.internalQueue = initialValues || [];
-    /** @type {number} */
-    this.length = this.internalQueue.length;
-}
-
-/** @param {tEntity} entity
-  */
-AutomaticQueue.prototype.push = function(entity) {
-    entity['/rec_ui/rec_begun'] = true;
-    this.length++;
-    this.internalQueue.push(entity);
-    updateUnreconciledCount();
-    if (reconciliationBegun && !autoreconciling)
-        autoReconcile();
-}
-
-/** @return {tEntity} */
-AutomaticQueue.prototype.peek = function() {
-    return this.internalQueue[0];
-}
-
-/** @return {tEntity|undefined} */
-AutomaticQueue.prototype.shift = function() {
-    if (this.length === 0) 
-        return undefined;
-    this.length--;
-    updateUnreconciledCount();
-    return this.internalQueue.shift();
-}
+var manualQueue;
+var automaticQueue;
 
 function beginAutoReconciliation() {
     $(".nowReconciling").show();
@@ -86,7 +49,7 @@ function finishedAutoReconciling() {
 
 function autoReconcile() {
     autoreconciling = true;
-    if (automaticQueue.length == 0) {
+    if (automaticQueue.size() === 0) {
         finishedAutoReconciling();
         return;
     }
@@ -202,12 +165,21 @@ function getCandidates(entity, callback, onError,typeless) {
 
 /** @param {tEntity} entity */
 function autoReconcileResults(entity) {
-    automaticQueue.shift();
+    automaticQueue.remove(entity);
     // no results, set to None:
     if(entity.reconResults.length == 0) {
         if (!entity.typelessRecon)
             getCandidates(entity,autoReconcileResults,function(){automaticQueue.shift();autoReconcile();},true);
         
+        //If this entity is identical in name to several others then
+        //it's not safe to automatically create new here, we need the
+        //user to do internal reconciliation or duplicate entities could
+        //be created
+        if (internalReconciler.getRecGroup(entity).members.length > 1) {
+            manualQueue.push(entity);
+            autoReconcile();
+            return;
+        }
         entity.reconcileWith("None", true);
         warn("No candidates found for the object:");
         warn(entity);
@@ -216,9 +188,8 @@ function autoReconcileResults(entity) {
     // match found:
     else if(entity.reconResults[0]["match"] == true) {
         var matchedResult = entity.reconResults[0];
-        if (require_exact_name_match && !Arr.contains($.makeArray(entity['/type/object/name']),$.makeArray(matchedResult.name)[0])) {
-            addToManualQueue(entity);
-        }
+        if (require_exact_name_match && !Arr.contains($.makeArray(entity['/type/object/name']),$.makeArray(matchedResult.name)[0]))
+            manualQueue.push(entity);
         else {
             entity.reconcileWith(matchedResult.id, true);
             entity["/rec_ui/freebase_name"] = matchedResult.name;
@@ -226,6 +197,6 @@ function autoReconcileResults(entity) {
         }
     }
     else
-        addToManualQueue(entity)
+        manualQueue.push(entity)
     autoReconcile();
 }

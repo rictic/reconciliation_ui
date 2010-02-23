@@ -10,30 +10,57 @@ function isUnreconciled(entity) {
 function initializeReconciliation(onReady) {
     totalRecords = rows.length;
     var rec_partition = Arr.partition(rows,isUnreconciled);
-    automaticQueue = new AutomaticQueue(rec_partition[0]);
-    politeEach(rec_partition[1],function(_,reconciled_row){
-        reconciled_row['/rec_ui/rec_begun'] = true;
-        addReviewItem(reconciled_row, "previously");
-        addColumnRecCases(reconciled_row);
+    //initialize queues and their event handlers
+    automaticQueue = new EntityQueue();
+    automaticQueue.addListener("changed", function() {
+        var pctProgress = (((totalRecords - automaticQueue.size()) / totalRecords) * 100);
+        $("#progressbar").progressbar("value", pctProgress);
+        $("#progressbar label").html(pctProgress.toFixed(1) + "%");
+    })
+    automaticQueue.addListener("added", function(entity) {
+        entity['/rec_ui/rec_begun'] = true;
+        //restarts autoreconciliation if something is added after it seems finished
+        if (reconciliationBegun && !autoreconciling)
+            autoReconcile();
+    })
+    manualQueue = new EntityQueue();
+    manualQueue.addListener("changed", function() {
+        $(".manual_count").html("("+manualQueue.size()+")");
+    });
+    manualQueue.addListener("added", function(entity) {
+        if (manualQueue.size() === 1)
+            manualReconcile();
+        if (manualQueue.size() === 2)
+            renderReconChoices(entity);
+    });
+    
+    //populate queues and begin reconciliation
+    politeEach(rec_partition[0], function(_, unreconciledEntity) {
+        automaticQueue.push(unreconciledEntity);
     }, function() {
-        freebase.fetchTypeInfo(typesSeen.getAll(), function() {
-            $(".initialLoadingMessage").hide();
-            reconciliationBegun = true;
-            reconUndoStack = new UndoStack()
-            if (inputType === "JSON")
-                $("input.outputFormat[value='json']").attr("checked","checked").change()
-            onReady();
+        politeEach(rec_partition[1],function(_,reconciled_row){
+            reconciled_row['/rec_ui/rec_begun'] = true;
+            addReviewItem(reconciled_row, "previously");
+            addColumnRecCases(reconciled_row);
+        }, function() {
+            freebase.fetchTypeInfo(typesSeen.getAll(), function() {
+                $(".initialLoadingMessage").hide();
+                reconciliationBegun = true;
+                reconUndoStack = new UndoStack()
+                if (inputType === "JSON")
+                    $("input.outputFormat[value='json']").attr("checked","checked").change()
+                onReady();
+            });
         });
     });
 }
 
 function handleReconChoice(entity,freebaseId) {
-    delete manualQueue[entity["/rec_ui/id"]];
+    manualQueue.remove(entity);
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
     reconUndoStack.push(getReconciliationUndo(entity))
     entity.reconcileWith(freebaseId, false);
     addColumnRecCases(entity);
-    updateUnreconciledCount();
     manualReconcile();
 }
 
@@ -42,8 +69,7 @@ function getReconciliationUndo(entity) {
     return function() {
         entity.unreconcile();
         displayReconChoices(entity['/rec_ui/id']);
-        manualQueue[entity['/rec_ui/id']] = entity;
-        updateUnreconciledCount();
+        manualQueue.unshift(entity);
     }
 }
 
@@ -55,6 +81,7 @@ function undoReconciliation() {
   * 
   */
 function addColumnRecCases(entity) {
+    if (!automaticQueue) return;
     for (var key in entity) {
         var values = $.makeArray(entity[key]);
         $.each(values, function(_, value) {
