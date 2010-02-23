@@ -41,6 +41,9 @@ function AutomaticQueue(initialValues) {
     /** @const
         @type {Array.<tEntity>}*/
     this.internalQueue = initialValues || [];
+    $.each(this.internalQueue, function(_,entity) {
+        entity['/rec_ui/rec_begun'] = true;
+    });
     /** @type {number} */
     this.length = this.internalQueue.length;
 }
