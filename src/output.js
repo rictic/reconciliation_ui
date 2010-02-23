@@ -33,7 +33,7 @@
 
 function onDisplayOutputScreen() {
     addTimeout(checkLogin,0);
-    addTimeout(displaySpreadsheet,0);
+    addTimeout(displayOutput,0);
     addTimeout(prepareTriples,0);
 }
 function onHideOutputScreen() {
@@ -41,7 +41,7 @@ function onHideOutputScreen() {
         spreadsheetRendererYielder.cancel();
     if (tripleGetterYielder)
         tripleGetterYielder.cancel();
-    $("#outputSpreadSheet")[0].value = "";
+    $("#outputData")[0].value = "";
 }
 
 /** @param {!Array.<(string|undefined)>} arr
@@ -83,12 +83,21 @@ function encodeRow(row) {
     return $.map(lines,encodeLine);
 }
 
-function displaySpreadsheet() {
-    $("#outputSpreadSheet")[0].value = "One moment, rendering...";
+function displayOutput() {
+    $("#outputData")[0].value = "One moment, rendering...";
     
-    renderSpreadsheet(function(spreadsheet) {
-        $("#outputSpreadSheet")[0].value = spreadsheet;
-    })
+    function setOutput(val) {
+        $("#outputData")[0].value = val;
+    }
+    
+    if ($("input.outputFormat:checked").val() === "spreadsheet")
+        renderSpreadsheet(setOutput)
+    else
+        renderJSON(setOutput);
+}
+
+function renderJSON(callback) {
+    callback(JSON.stringify(rows, null, 2));
 }
 
 var spreadsheetRendererYielder;
@@ -424,7 +433,7 @@ $(document).ready(function () {
                     
                     if ($("input.graphport:checked")[0].value === "otg") {
                         populateCreatedIds(job_id, function() {
-                            displaySpreadsheet();
+                            displayOutput();
                         });
                         $(".uploadToOTGComplete").show();
                     }
@@ -448,6 +457,10 @@ $(document).ready(function () {
         $(".uploadToFreeQ").show();
     });
     
+    $("input.outputFormat").change(function() {
+        displayOutput();
+        $(".outputFormatText").html(this.value);
+    });
     
     $("#mdo_data_source").suggest({type:"/dataworld/information_source",
                                flyout:true,type_strict:"should"})
