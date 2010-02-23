@@ -208,6 +208,14 @@ function autoReconcileResults(entity) {
         if (!entity.typelessRecon)
             getCandidates(entity,autoReconcileResults,function(){automaticQueue.shift();autoReconcile();},true);
         
+        //If this entity is identical in name to several others then
+        //it's not safe to automatically create new here, we need the
+        //user to do internal reconciliation or duplicate entities could
+        //be created
+        if (internalReconciler.getRecGroup(entity).members.length > 1) {
+            addToManualQueue(entity);
+            return;
+        }
         entity.reconcileWith("None", true);
         warn("No candidates found for the object:");
         warn(entity);
