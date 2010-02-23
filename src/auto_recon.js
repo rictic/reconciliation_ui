@@ -165,7 +165,7 @@ function getCandidates(entity, callback, onError,typeless) {
 
 /** @param {tEntity} entity */
 function autoReconcileResults(entity) {
-    automaticQueue.shift();
+    automaticQueue.remove(entity);
     // no results, set to None:
     if(entity.reconResults.length == 0) {
         if (!entity.typelessRecon)
@@ -177,6 +177,7 @@ function autoReconcileResults(entity) {
         //be created
         if (internalReconciler.getRecGroup(entity).members.length > 1) {
             manualQueue.push(entity);
+            autoReconcile();
             return;
         }
         entity.reconcileWith("None", true);

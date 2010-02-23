@@ -9,16 +9,15 @@ function isUnreconciled(entity) {
 function initializeReconciliation(onReady) {
     totalRecords = rows.length;
     var rec_partition = Arr.partition(rows,isUnreconciled);
+    //initialize queues and their event handlers
     automaticQueue = new EntityQueue();
-    $.each(rec_partition[0], function(_, unreconciledEntity) {
-        automaticQueue.push(unreconciledEntity);
-    });
     automaticQueue.addListener("changed", function() {
         var pctProgress = (((totalRecords - automaticQueue.size()) / totalRecords) * 100);
         $("#progressbar").progressbar("value", pctProgress);
         $("#progressbar label").html(pctProgress.toFixed(1) + "%");
     })
-    automaticQueue.addListener("added", function() {
+    automaticQueue.addListener("added", function(entity) {
+        entity['/rec_ui/rec_begun'] = true;
         //restarts autoreconciliation if something is added after it seems finished
         if (reconciliationBegun && !autoreconciling)
             autoReconcile();
@@ -33,15 +32,21 @@ function initializeReconciliation(onReady) {
         if (manualQueue.size() === 2)
             renderReconChoices(entity);
     });
-    politeEach(rec_partition[1],function(_,reconciled_row){
-        reconciled_row['/rec_ui/rec_begun'] = true;
-        addReviewItem(reconciled_row, "previously");
-        addColumnRecCases(reconciled_row);
+    
+    //populate queues and begin reconciliation
+    politeEach(rec_partition[0], function(_, unreconciledEntity) {
+        automaticQueue.push(unreconciledEntity);
     }, function() {
-        freebase.fetchTypeInfo(typesSeen.getAll(), function() {
-            $(".initialLoadingMessage").hide();
-            reconciliationBegun = true;
-            onReady();
+        politeEach(rec_partition[1],function(_,reconciled_row){
+            reconciled_row['/rec_ui/rec_begun'] = true;
+            addReviewItem(reconciled_row, "previously");
+            addColumnRecCases(reconciled_row);
+        }, function() {
+            freebase.fetchTypeInfo(typesSeen.getAll(), function() {
+                $(".initialLoadingMessage").hide();
+                reconciliationBegun = true;
+                onReady();
+            });
         });
     });
 }
