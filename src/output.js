@@ -217,7 +217,7 @@ function getTriples(entities, assertNakedProperties, callback) {
             $.each(subject['/rec_ui/headerPaths'], function(_, headerPath) {
                 var prop = headerPath.parts[0].prop;
                 var metadata = freebase.getPropMetadata(prop);
-                if (metadata && metadata.schema && metadata.schema.id)
+                if (metadata && metadata.schema && metadata.schema.id && metadata.schema.id !== "/type/object")
                     addType(metadata.schema.id);
             });
         }
