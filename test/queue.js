@@ -17,15 +17,15 @@ var error_sheet =
 TestCase("Test Reconciliation Queues",{
     "test initialization with simple films": function() {
         getToInitialization(simple_films);
-        assertEq(3, automaticQueue.length);
+        assertEq(3, automaticQueue.size());
     }
     ,"test initialization with partially reconciled simple films": function() {
         getToInitialization(partially_reconciled);
-        assertEq(3, automaticQueue.length);
+        assertEq(3, automaticQueue.size());
     }
     ,"test TOOL-105": function() {
         getToInitialization(error_sheet);
-        assertEq(1, automaticQueue.length);
+        assertEq(1, automaticQueue.size());
     }
 });
 

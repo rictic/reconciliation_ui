@@ -130,7 +130,6 @@ function showConfirmationSpreadsheet(beforeDisplay) {
         spreadSheetData.aaData.push(row);
     }, function() {
         if (beforeDisplay) beforeDisplay();
-        updateUnreconciledCount();
         spreadSheetData["bAutoWidth"] = false;
         spreadSheetData["bSort"] = false;
         $("#spreadsheetDiv").html('<table class="display" id="spreadsheetTable"><\/table>');
@@ -214,14 +213,18 @@ $(document).ready(function() {
     if ($("#initialInput")[0].value != "") inputThrottler();
     
     $("#spreadsheetPreview button.continue").click(continueToReconciliation);
+    
+    //send feedback to the recon server when a reconciliation takes place
+    tEntity.addListener("reconciled", function(entity, automatic) {
+        var feedback = {
+            query:entity['/rec_ui/recon_query'],
+            reconciledWith:entity.id,
+            automatic:automatic,
+            softwareTool: "/guid/9202a8c04000641f800000000df257ed"
+        }
+        $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
+    });
 });
-
-function updateUnreconciledCount() {
-    var pctProgress = (((totalRecords - automaticQueue.length) / totalRecords) * 100);
-    $("#progressbar").progressbar("value", pctProgress);
-    $("#progressbar label").html(pctProgress.toFixed(1) + "%");
-    $(".manual_count").html("("+numProperties(manualQueue)+")");
-}
 
 function updateMdoInfo() {
     var mdo_info = {software_tool:"/guid/9202a8c04000641f800000000df257ed"};

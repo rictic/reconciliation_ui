@@ -2,32 +2,18 @@
 ** Manual Reconciliation
 */
 
-function addToManualQueue(entity) {
-    if (manualQueue[entity['/rec_ui/id']])
-        return;
-    var wasEmpty = isObjectEmpty(manualQueue);
-    var wasSingleton = getSecondValue(manualQueue) === undefined;
-    manualQueue[entity["/rec_ui/id"]] = entity;
-    if (wasEmpty)
-        manualReconcile();
-    else if (wasSingleton)
-        renderReconChoices(entity)
-    updateUnreconciledCount();
-}
-
 function manualReconcile() {
     if ($(".manualReconChoices:visible").length === 0) {
-        var val = getFirstValue(manualQueue);
+        var val = manualQueue.peek();
         while (val && val.getID() !== undefined) {
-            delete manualQueue[val['/rec_ui/id']];
+            manualQueue.shift();
             if (!internalReconciler.getRecGroup(val).shouldMerge)
                 addReviewItem(val);
-            val = getFirstValue(manualQueue);
+            val = manualQueue.peek();
         }
-        updateUnreconciledCount();
         if(val != undefined) {
             displayReconChoices(val["/rec_ui/id"])
-            renderReconChoices(getSecondValue(manualQueue)); //render-ahead the next one
+            renderReconChoices(manualQueue.peek(2)); //render-ahead the next one
         }
         else{
             $(".manualQueueEmpty").show();

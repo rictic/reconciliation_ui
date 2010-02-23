@@ -30,48 +30,8 @@
 /*
 **  Automatic reconciliation
 */
-var manualQueue = {};
-var automaticQueue = new AutomaticQueue();
-
-
-/** @constructor
-  * @param {Array.<tEntity>=} initialValues
-  */
-function AutomaticQueue(initialValues) {
-    /** @const
-        @type {Array.<tEntity>}*/
-    this.internalQueue = initialValues || [];
-    $.each(this.internalQueue, function(_,entity) {
-        entity['/rec_ui/rec_begun'] = true;
-    });
-    /** @type {number} */
-    this.length = this.internalQueue.length;
-}
-
-/** @param {tEntity} entity
-  */
-AutomaticQueue.prototype.push = function(entity) {
-    entity['/rec_ui/rec_begun'] = true;
-    this.length++;
-    this.internalQueue.push(entity);
-    updateUnreconciledCount();
-    if (reconciliationBegun && !autoreconciling)
-        autoReconcile();
-}
-
-/** @return {tEntity} */
-AutomaticQueue.prototype.peek = function() {
-    return this.internalQueue[0];
-}
-
-/** @return {tEntity|undefined} */
-AutomaticQueue.prototype.shift = function() {
-    if (this.length === 0) 
-        return undefined;
-    this.length--;
-    updateUnreconciledCount();
-    return this.internalQueue.shift();
-}
+var manualQueue;
+var automaticQueue;
 
 function beginAutoReconciliation() {
     $(".nowReconciling").show();
@@ -89,7 +49,7 @@ function finishedAutoReconciling() {
 
 function autoReconcile() {
     autoreconciling = true;
-    if (automaticQueue.length == 0) {
+    if (automaticQueue.size() === 0) {
         finishedAutoReconciling();
         return;
     }
@@ -216,7 +176,7 @@ function autoReconcileResults(entity) {
         //user to do internal reconciliation or duplicate entities could
         //be created
         if (internalReconciler.getRecGroup(entity).members.length > 1) {
-            addToManualQueue(entity);
+            manualQueue.push(entity);
             return;
         }
         entity.reconcileWith("None", true);
@@ -227,9 +187,8 @@ function autoReconcileResults(entity) {
     // match found:
     else if(entity.reconResults[0]["match"] == true) {
         var matchedResult = entity.reconResults[0];
-        if (require_exact_name_match && !Arr.contains($.makeArray(entity['/type/object/name']),$.makeArray(matchedResult.name)[0])) {
-            addToManualQueue(entity);
-        }
+        if (require_exact_name_match && !Arr.contains($.makeArray(entity['/type/object/name']),$.makeArray(matchedResult.name)[0]))
+            manualQueue.push(entity);
         else {
             entity.reconcileWith(matchedResult.id, true);
             entity["/rec_ui/freebase_name"] = matchedResult.name;
@@ -237,6 +196,6 @@ function autoReconcileResults(entity) {
         }
     }
     else
-        addToManualQueue(entity)
+        manualQueue.push(entity)
     autoReconcile();
 }
