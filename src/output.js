@@ -108,7 +108,7 @@ function renderSpreadsheet(onComplete) {
 function prepareTriples() {
     $(".renderingTriples").show();
     $(".triplesRendered").hide();
-    getTriples(entities, function(triples) {
+    getTriples(entities, false, function(triples) {
         politeMap(triples,function(val){return JSON.stringify(val)},
             function(encodedTriples) {
                 var tripleString = encodedTriples.join("\n");
@@ -123,7 +123,7 @@ function prepareTriples() {
 }
 
 var tripleGetterYielder;
-function getTriples(entities, callback) {
+function getTriples(entities, assertNakedProperties, callback) {
     tripleGetterYielder = new Yielder();
     function hasValidID(entity) {
         var id = getID(entity);
@@ -204,16 +204,27 @@ function getTriples(entities, callback) {
         
         /* Assert each type and all included types exactly once */
         var types = new Set();
-        $.each($.makeArray(subject['/type/object/type']), function(_, type){
+        function addType(type) {
             types.add(type);
             var metadata = freebase.getTypeMetadata(type);
             if (metadata)
                 types.addAll(metadata["/freebase/type_hints/included_types"]);
-        });
+        }
+        $.each($.makeArray(subject['/type/object/type']), function(_, type){addType(type)});
+        /* Unless given specific OK to assert naked properties, assert
+           any types implied by the subject's properties. */
+        if (!assertNakedProperties) {
+            $.each(subject['/rec_ui/headerPaths'], function(_, headerPath) {
+                var prop = headerPath.parts[0].prop;
+                var metadata = freebase.getPropMetadata(prop);
+                if (metadata && metadata.schema && metadata.schema.id)
+                    addType(metadata.schema.id);
+            });
+        }
         $.each(types.getAll(), function(_,type) {
             if (type)
                 triples.push({s:getID(subject), p:"/type/object/type",o:type});
-        })
+        });
         
         /* If the subject is new to Freebase, give it a name as well */
         if (Arr.contains(["None", "None (merged)"], subject.getID())){
