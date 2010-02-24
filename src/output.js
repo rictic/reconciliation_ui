@@ -216,9 +216,10 @@ function getTriples(entities, callback) {
         $.each(subject['/rec_ui/headerPaths'], function(_, headerPath) {
             var prop = headerPath.parts[0].prop;
             var metadata = freebase.getPropMetadata(prop);
-            if (metadata && metadata.schema && metadata.schema.id && metadata.schema.id !== "/type/object")
+            if (metadata && metadata.schema && metadata.schema.id)
                 addType(metadata.schema.id);
         });
+        types.remove("/type/object");
         $.each(types.getAll(), function(_,type) {
             if (type)
                 triples.push({s:getID(subject), p:"/type/object/type",o:type});
