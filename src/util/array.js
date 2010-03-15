@@ -39,7 +39,7 @@ Arr.removeAt = function(a, i) {
 }
 
 Arr.removeOneMatching = function(a, p) {
-    for (var i in a) {
+    for (var i = 0; i < a.length; i++) {
         if (p(a[i]))
             return Arr.removeAt(a,i);
     }
