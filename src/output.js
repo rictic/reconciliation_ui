@@ -427,7 +427,7 @@ $(document).ready(function () {
             }
             ,error: function(x, msg, error) {
                 $(".uploadToFreeQ").show();
-                $(".uploadForm .error").show().html(escape(msg));
+                $(".uploadForm .error").show().html("There was an error uploading to TripleLoader: " + escape(msg) + " " + error);
             }
             ,success: function(result) {
                 var job_id=result.result.job_id;
