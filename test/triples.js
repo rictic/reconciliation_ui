@@ -5,7 +5,7 @@ TestCase("triples",{
         entity.addProperty("b", "c");
         
         expectAsserts(1);
-        getTriples([entity], function(triples) {
+        getTriples([entity], false, function(triples) {
             assertEq([{s:"/a", p:"b", o:"c"}], triples);
         });
     }
@@ -21,7 +21,7 @@ TestCase("triples",{
         cvt.addProperty("/cvt/b","c");
         
         expectAsserts(1);
-        getTriples([entity, cvt], function(triples) {
+        getTriples([entity, cvt], false, function(triples) {
             assertEq([{s:"/a", p:"topic", o:{b:"c"}}], triples);
         });
     }
@@ -37,7 +37,7 @@ TestCase("triples",{
         leaf.addParent(cvt);
         
         expectAsserts(1);
-        getTriples([entity, cvt, leaf], function(triples) {
+        getTriples([entity, cvt, leaf], false, function(triples) {
             assertEq([{s:"/entity",
                        p:"/topic/cvt_topic",
                        o:{leaf_topic:"/leaf"}}], triples);
@@ -53,7 +53,7 @@ TestCase("triples",{
         
         //no triples should be produced, because the id of the child is blank
         expectAsserts(1);
-        getTriples([parent, child], function(triples) {
+        getTriples([parent, child], false, function(triples) {
             assertEq([{s:"/parent",
                        p:"/topic",
                        o:"/child"
@@ -70,7 +70,7 @@ TestCase("triples",{
 
         //no triples should be produced, because the id of the child is blank
         expectAsserts(1);
-        getTriples([parent, child], function(triples) {
+        getTriples([parent, child], false, function(triples) {
             assertEq([], triples);
         });
     }
@@ -85,7 +85,7 @@ TestCase("triples",{
         parent.addProperty("/topic", [firstChild,secondChild]);
         
         expectAsserts(1);
-        getTriples([parent, firstChild, secondChild], function(triples) {
+        getTriples([parent, firstChild, secondChild], false, function(triples) {
             assertEq([{s:"/parent",
                        p:"/topic",
                        o:"/child1"
@@ -106,7 +106,7 @@ TestCase("triples",{
         parent.addProperty("/topic", [firstChild,secondChild]);
         
         expectAsserts(1);
-        getTriples([parent, firstChild, secondChild], function(triples) {
+        getTriples([parent, firstChild, secondChild], false, function(triples) {
             assertEq([{s:"/parent",
                        p:"/topic",
                        o:"/child2"}], triples);
@@ -127,7 +127,7 @@ TestCase("triples",{
         secondLeaf.addParent(cvt);
         
         expectAsserts(1);
-        getTriples([entity, cvt, firstLeaf, secondLeaf], function(triples) {
+        getTriples([entity, cvt, firstLeaf, secondLeaf], false, function(triples) {
             assertEq([{s:"/entity",
                        p:"/topic/cvt_topic",
                        o:{leaf_topic:["/leaf1","/leaf2"]}}], triples);
@@ -148,7 +148,7 @@ TestCase("triples",{
         secondLeaf.addParent(cvt);
         
         expectAsserts(1);
-        getTriples([entity, cvt, firstLeaf, secondLeaf], function(triples) {
+        getTriples([entity, cvt, firstLeaf, secondLeaf], false, function(triples) {
             assertEq([{s:"/entity",
                        p:"/topic/cvt_topic",
                        o:{leaf_topic:"/leaf2"}}], triples);
