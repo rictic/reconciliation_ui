@@ -13,7 +13,7 @@ TestCase("internal reconciliation",{
 
         assertSubsetOf(internalReconciler, {
             byType: {
-                "/film/director": {
+                "/people/person": {
                     "James Cameron": {
                         members:[{"/type/object/name": ["James Cameron"]},
                                  {"/type/object/name": ["James Cameron"]}],
@@ -43,7 +43,7 @@ TestCase("internal reconciliation",{
         
         assertSubsetOf(internalReconciler, {
             byType: {
-                "/film/director": {
+                "/people/person": {
                     "James Cameron": {
                         members:[{"/type/object/name": ["James Cameron"]},
                                  {"/type/object/name": ["James Cameron"]}],

@@ -34,11 +34,32 @@ InternalReconciler.prototype.setMerged = function(entity, shouldMerge) {
   * @return {(!RecGroup|undefined)}
   */
 InternalReconciler.prototype.getRecGroup = function(entity) {
-    var type = entity.get("/type/object/type")[0];
+    var type = this.typeEquivalence(entity.get("/type/object/type")[0]);
     var name = this.normalizeName(entity.get("/type/object/name")[0]);
     if (Arr.any([type, name], isUndefined))
         return undefined;
     return this._getRecGroup(type, name);
+}
+
+InternalReconciler.prototype.typeEquivalence = function(type) {
+    var equivalences = {
+        "/film/director"                 : "/people/person",
+        "/film/producer"                 : "/people/person",
+        "/film/writer"                   : "/people/person",
+        "/film/film_story_contributor"   : "/people/person",
+        "/film/cinematographer"          : "/people/person",
+        "/film/editor"                   : "/people/person",
+        "/film/film_casting_director"    : "/people/person",
+        "/film/film_production_designer" : "/people/person",
+        "/film/film_art_director"        : "/people/person",
+        "/film/film_set_decorator"       : "/people/person",
+        "/film/film_costume_designer"    : "/people/person",
+        "/film/music_contributor"        : "/people/person",
+        "/film/film_crewmember"          : "/people/person"
+    }
+    if (type in equivalences)
+        return equivalences[type];
+    return type;
 }
 
 /** @param {!string} type
