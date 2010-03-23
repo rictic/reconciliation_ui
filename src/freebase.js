@@ -317,6 +317,13 @@ freebase.mqlValue;
         });
     }
     
+    freebase.getBlurb = function(id, options, onComplete) {
+        options = options || {};
+        $.getJSON("http://api.freebase.com/api/trans/blurb" + id + "?callback=?&", options, function(response) {
+            onComplete(response.result ? response.result.body : "");
+        });
+    }
+    
     /** @param {string} s
         @return {boolean}
      */

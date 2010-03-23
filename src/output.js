@@ -33,7 +33,7 @@
 
 function onDisplayOutputScreen() {
     addTimeout(checkLogin,0);
-    addTimeout(displaySpreadsheet,0);
+    addTimeout(displayOutput,0);
     addTimeout(prepareTriples,0);
 }
 function onHideOutputScreen() {
@@ -41,7 +41,7 @@ function onHideOutputScreen() {
         spreadsheetRendererYielder.cancel();
     if (tripleGetterYielder)
         tripleGetterYielder.cancel();
-    $("#outputSpreadSheet")[0].value = "";
+    $("#outputData")[0].value = "";
 }
 
 /** @param {!Array.<(string|undefined)>} arr
@@ -83,12 +83,21 @@ function encodeRow(row) {
     return $.map(lines,encodeLine);
 }
 
-function displaySpreadsheet() {
-    $("#outputSpreadSheet")[0].value = "One moment, rendering...";
+function displayOutput() {
+    $("#outputData")[0].value = "One moment, rendering...";
     
-    renderSpreadsheet(function(spreadsheet) {
-        $("#outputSpreadSheet")[0].value = spreadsheet;
-    })
+    function setOutput(val) {
+        $("#outputData")[0].value = val;
+    }
+    
+    if ($("input.outputFormat:checked").val() === "spreadsheet")
+        renderSpreadsheet(setOutput)
+    else
+        renderJSON(setOutput);
+}
+
+function renderJSON(callback) {
+    callback(JSON.stringify(rows, null, 2));
 }
 
 var spreadsheetRendererYielder;
@@ -202,7 +211,7 @@ function getTriples(entities, assertNakedProperties, callback) {
         if (!subject || !hasValidID(subject) || subject.isCVT())
             return;
         
-        /* Assert each type and all included types exactly once */
+        
         var types = new Set();
         function addType(type) {
             types.add(type);
@@ -210,17 +219,19 @@ function getTriples(entities, assertNakedProperties, callback) {
             if (metadata)
                 types.addAll(metadata["/freebase/type_hints/included_types"]);
         }
+        /* Assert each type and all included types exactly once */
         $.each($.makeArray(subject['/type/object/type']), function(_, type){addType(type)});
         /* Unless given specific OK to assert naked properties, assert
            any types implied by the subject's properties. */
         if (!assertNakedProperties) {
-            $.each(subject['/rec_ui/headerPaths'], function(_, headerPath) {
-                var prop = headerPath.parts[0].prop;
-                var metadata = freebase.getPropMetadata(prop);
-                if (metadata && metadata.schema && metadata.schema.id && metadata.schema.id !== "/type/object")
-                    addType(metadata.schema.id);
-            });
+        $.each(subject['/rec_ui/headerPaths'], function(_, headerPath) {
+            var prop = headerPath.parts[0].prop;
+            var metadata = freebase.getPropMetadata(prop);
+            if (metadata && metadata.schema && metadata.schema.id)
+                addType(metadata.schema.id);
+        });
         }
+        types.remove("/type/object");
         $.each(types.getAll(), function(_,type) {
             if (type)
                 triples.push({s:getID(subject), p:"/type/object/type",o:type});
@@ -419,7 +430,7 @@ $(document).ready(function () {
             }
             ,error: function(x, msg, error) {
                 $(".uploadToFreeQ").show();
-                $(".uploadForm .error").show().html(escape(msg));
+                $(".uploadForm .error").show().html("There was an error uploading to TripleLoader: " + escape(msg) + " " + error);
             }
             ,success: function(result) {
                 var job_id=result.result.job_id;
@@ -435,7 +446,7 @@ $(document).ready(function () {
                     
                     if ($("input.graphport:checked")[0].value === "otg") {
                         populateCreatedIds(job_id, function() {
-                            displaySpreadsheet();
+                            displayOutput();
                         });
                         $(".uploadToOTGComplete").show();
                     }
@@ -457,6 +468,11 @@ $(document).ready(function () {
         $(".freeqLoad").hide();
         $(".uploadToSandboxComplete").hide();
         $(".uploadToFreeQ").show();
+    });
+    
+    $("input.outputFormat").change(function() {
+        displayOutput();
+        $(".outputFormatText").html(this.value);
     });
     
     $("#assert_naked_properties").change(function() { prepareTriples(); });

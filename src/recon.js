@@ -1,4 +1,5 @@
 var totalRecords = 0;
+var reconUndoStack;
 
 function isUnreconciled(entity) {
     if (entity.isCVT())
@@ -45,6 +46,9 @@ function initializeReconciliation(onReady) {
             freebase.fetchTypeInfo(typesSeen.getAll(), function() {
                 $(".initialLoadingMessage").hide();
                 reconciliationBegun = true;
+                reconUndoStack = new UndoStack()
+                if (inputType === "JSON")
+                    $("input.outputFormat[value='json']").attr("checked","checked").change()
                 onReady();
             });
         });
@@ -54,12 +58,24 @@ function initializeReconciliation(onReady) {
 function handleReconChoice(entity,freebaseId) {
     manualQueue.remove(entity);
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
+    reconUndoStack.push(getReconciliationUndo(entity))
     entity.reconcileWith(freebaseId, false);
     addColumnRecCases(entity);
     manualReconcile();
 }
 
+function getReconciliationUndo(entity) {
+    //simple, stupid first pass: unreconcile the entity completely
+    return function() {
+        entity.unreconcile();
+        displayReconChoices(entity['/rec_ui/id']);
+        manualQueue.unshift(entity);
+    }
+}
 
+function undoReconciliation() {
+    reconUndoStack.pop();
+}
 
 /** @param {!tEntity} entity
   * 

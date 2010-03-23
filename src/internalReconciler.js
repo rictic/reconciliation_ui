@@ -35,7 +35,7 @@ InternalReconciler.prototype.setMerged = function(entity, shouldMerge) {
   */
 InternalReconciler.prototype.getRecGroup = function(entity) {
     var type = entity.get("/type/object/type")[0];
-    var name = entity.get("/type/object/name")[0];
+    var name = this.normalizeName(entity.get("/type/object/name")[0]);
     if (Arr.any([type, name], isUndefined))
         return undefined;
     return this._getRecGroup(type, name);
@@ -52,6 +52,12 @@ InternalReconciler.prototype._getRecGroup = function(type, name) {
     if (!(name in byName))
         byName[name] = new RecGroup(type, name);
     return byName[name];
+}
+
+InternalReconciler.prototype.normalizeName = function(name) {
+    if (name)
+        return $.trim(name)
+    return name;
 }
 
 RecGroup.groups = [];
@@ -75,10 +81,6 @@ RecGroup.prototype.register = function(entity) {
     }
     
     this.members.push(entity);
-    if (entity['/type/object/type'][0] !== this.type)
-        error("entity with type " + entity['/type/object/type'][0] + " registered to RecGroup of type " + this.type);
-    if (entity['/type/object/name'][0] !== this.name)
-        error("entity with name " + entity['/type/object/name'][0] + " registered to RecGroup of name " + this.name);
 }
 
 RecGroup.prototype.setID = function(id) {
@@ -97,4 +99,8 @@ RecGroup.prototype.getID = function() {
 
 RecGroup.prototype.getInternalID = function() {
     return this.internal_id;
+}
+
+RecGroup.prototype.unreconcile = function() {
+    this.reconcileTo = undefined;
 }
