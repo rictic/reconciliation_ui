@@ -12,6 +12,7 @@ task :build_debug => [:clean, :copy_all, :version]
 task :deploy => [:clean, :build, :push, :clean_again]
 task :deploy_debug => [:clean, :build_debug, :compile_tests, :push, :clean_again]
 task :deploy_dev => [:clean, :build_debug, :compile_tests, :push_dev, :clean_again]
+task :deploy_temp => [:clean, :build_debug, :compile_tests, :push_temp, :clean_again]
 
 file "build/" do
   sh "mkdir -p build"
@@ -120,6 +121,19 @@ task :push_dev do
     STDIN.gets
   end
   push "/mw/loader_dev/"
+end
+
+task :push_temp do
+  if get_current_branch != "type-equivalence"
+    puts "\n" * 2
+    puts "*************************************************"
+    puts "*            DEPLOYING #{get_current_branch} TO TEMP            *"
+    puts "*************************************************"
+    puts "\n" * 2
+    puts "Press enter to foolishly continue anyways, ^C to stop"
+    STDIN.gets
+  end
+  push "/mw/loader_temp/"
 end
 
 def push(target)
