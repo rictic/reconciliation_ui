@@ -35,6 +35,7 @@ function onDisplayOutputScreen() {
     addTimeout(checkLogin,0);
     addTimeout(displayOutput,0);
     addTimeout(prepareTriples,0);
+    $("#freeq_form").attr("action", freeq_url)
 }
 function onHideOutputScreen() {
     if (spreadsheetRendererYielder)
@@ -292,8 +293,9 @@ function checkLogin() {
     $(".uploadSpinner").show();
     $(".uploadLogin").hide();
     $(".uploadForm").hide();
+    
     $.ajax({
-        url:"http://data.labs.freebase.com/freeq/spreadsheet/",
+        url:freeq_url,
         type:"GET",
         complete:function(response){
             $(".uploadSpinner").hide();
@@ -315,7 +317,7 @@ function checkLogin() {
     });
 }
 
-var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
+
 
 function fillinIds(createdEntities) {
     for (var key in createdEntities) {

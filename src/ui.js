@@ -222,7 +222,7 @@ $(document).ready(function() {
             automatic:automatic,
             softwareTool: "/guid/9202a8c04000641f800000000df257ed"
         }
-        $.getJSON("http://data.labs.freebase.com/recon/feedback", {feedback:JSON.stringify(feedback)}, function(){});
+        $.getJSON(reconciliation_url + "feedback", {feedback:JSON.stringify(feedback)}, function(){});
     });
 });
 
@@ -239,6 +239,7 @@ function updateMdoInfo() {
 
 var freebase_url = "http://www.freebase.com/";
 var reconciliation_url = "http://data.labs.freebase.com/recon/";
+var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
 /* Takes a string and populates the initialInput textarea. */
 function handlePOSTdata(data) {
