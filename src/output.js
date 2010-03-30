@@ -423,7 +423,10 @@ FreeQMonitor.prototype.checkProgress = function() {
     $.getJSON(this.url, null, handler);
 }
 
-$(document).ready(function () {
+function setupOutput() {
+    if (inputType === "JSON")
+        $("input.outputFormat[value='json']").attr("checked","checked").change()
+    
     //fancy stuff only works with the standard freeq url and when we're on
     //the same domain as freeq
     if (onSameDomain() && freeq_url === standardFreeq) {
@@ -466,8 +469,9 @@ $(document).ready(function () {
             }
         });
     }
-        
-        
+}
+
+$(document).ready(function () {
     $(".displayTriples").click(function(){$(".triplesDisplay").slideToggle(); return false;});
     $(".uploadLogin button.checkLogin").click(checkLogin);
     $(".loadAgainButton").click(function() {
