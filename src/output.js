@@ -273,7 +273,8 @@ function checkLogin() {
     $(".uploadForm").hide();
     
     $.ajax({
-        url:freeq_url,
+        //hard coded, because other freeq endpoints don't behave the same for login purposes
+        url:"http://data.labs.freebase.com/freeq/spreadsheet/",
         type:"GET",
         complete:function(response){
             $(".uploadSpinner").hide();
