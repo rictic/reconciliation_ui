@@ -261,6 +261,7 @@ function getTriples(entities, callback) {
     }, function() {callback(triples)}, tripleGetterYielder);
 }
 
+var standardFreeq = "http://data.labs.freebase.com/freeq/spreadsheet/";
 function checkLogin() {
     if (!onSameDomain()) {
         $(".uploadForm").show();
@@ -274,7 +275,7 @@ function checkLogin() {
     
     $.ajax({
         //hard coded, because other freeq endpoints don't behave the same for login purposes
-        url:"http://data.labs.freebase.com/freeq/spreadsheet/",
+        url:standardFreeq,
         type:"GET",
         complete:function(response){
             $(".uploadSpinner").hide();
@@ -401,7 +402,9 @@ FreeQMonitor.prototype.checkProgress = function() {
 }
 
 $(document).ready(function () {
-    if (onSameDomain()) {
+    //fancy stuff only works with the standard freeq url and when we're on
+    //the same domain as freeq
+    if (onSameDomain() && freeq_url === standardFreeq) {
         $('#freeq_form').ajaxForm({
             dataType:'json'
             ,beforeSend: function() {
