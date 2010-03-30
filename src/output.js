@@ -469,6 +469,9 @@ function setupOutput() {
             }
         });
     }
+    if (freeq_url !== standardFreeq) {
+        $("#freeq_form").append("<input type='hidden' name='fb_user' value='/user/spreadsheet_bot'>")
+    }
 }
 
 $(document).ready(function () {
