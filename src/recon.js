@@ -47,8 +47,7 @@ function initializeReconciliation(onReady) {
                 $(".initialLoadingMessage").hide();
                 reconciliationBegun = true;
                 reconUndoStack = new UndoStack()
-                if (inputType === "JSON")
-                    $("input.outputFormat[value='json']").attr("checked","checked").change()
+                setupOutput();
                 onReady();
             });
         });

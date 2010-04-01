@@ -35,6 +35,7 @@ function onDisplayOutputScreen() {
     addTimeout(checkLogin,0);
     addTimeout(displayOutput,0);
     addTimeout(prepareTriples,0);
+    $("#freeq_form").attr("action", freeq_url)
 }
 function onHideOutputScreen() {
     if (spreadsheetRendererYielder)
@@ -282,6 +283,7 @@ function getTriples(entities, assertNakedProperties, callback) {
     }, function() {callback(triples)}, tripleGetterYielder);
 }
 
+var standardFreeq = "http://data.labs.freebase.com/freeq/spreadsheet/";
 function checkLogin() {
     if (!onSameDomain()) {
         $(".uploadForm").show();
@@ -292,8 +294,10 @@ function checkLogin() {
     $(".uploadSpinner").show();
     $(".uploadLogin").hide();
     $(".uploadForm").hide();
+    
     $.ajax({
-        url:"http://data.labs.freebase.com/freeq/spreadsheet/",
+        //hard coded, because other freeq endpoints don't behave the same for login purposes
+        url:standardFreeq,
         type:"GET",
         complete:function(response){
             $(".uploadSpinner").hide();
@@ -315,7 +319,7 @@ function checkLogin() {
     });
 }
 
-var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
+
 
 function fillinIds(createdEntities) {
     for (var key in createdEntities) {
@@ -419,8 +423,13 @@ FreeQMonitor.prototype.checkProgress = function() {
     $.getJSON(this.url, null, handler);
 }
 
-$(document).ready(function () {
-    if (onSameDomain()) {
+function setupOutput() {
+    if (inputType === "JSON")
+        $("input.outputFormat[value='json']").attr("checked","checked").change()
+    
+    //fancy stuff only works with the standard freeq url and when we're on
+    //the same domain as freeq
+    if (onSameDomain() && freeq_url === standardFreeq) {
         $('#freeq_form').ajaxForm({
             dataType:'json'
             ,beforeSend: function() {
@@ -460,8 +469,12 @@ $(document).ready(function () {
             }
         });
     }
-        
-        
+    if (freeq_url !== standardFreeq) {
+        $("#freeq_form").append("<input type='hidden' name='fb_user' value='/user/spreadsheet_bot'>")
+    }
+}
+
+$(document).ready(function () {
     $(".displayTriples").click(function(){$(".triplesDisplay").slideToggle(); return false;});
     $(".uploadLogin button.checkLogin").click(checkLogin);
     $(".loadAgainButton").click(function() {
