@@ -61,6 +61,8 @@ function renderReconChoices(entity) {
 
 
     var tableBody = $(".reconciliationCandidates table tbody", template).empty();
+    var reconResultsFetched = entity.reconResults !== undefined;
+    entity.reconResults = entity.reconResults || [];
     for (var i = 0; i < entity.reconResults.length; i++)
         tableBody.append(renderCandidate(entity.reconResults[i], uniqueMqlProps, entity));
 
@@ -97,7 +99,9 @@ function renderReconChoices(entity) {
             updateCandidates();
         }, function(){;});
     });
-    template.insertAfter("#manualReconcileTemplate")
+    if (!reconResultsFetched)
+        $(".moreButton", template).click();
+    template.insertAfter("#manualReconcileTemplate");
 }
 
 function renderInternalReconciliationDialog(entity, template) {
