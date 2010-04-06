@@ -62,7 +62,10 @@ function renderReconChoices(entity) {
     })
     tableHeader.append(node("th"));
 
+
     var tableBody = $(".manualReconciliationChoices", template).empty();
+    var reconResultsFetched = entity.reconResults !== undefined;
+    entity.reconResults = entity.reconResults || [];
     for (var i = 0; i < entity.reconResults.length; i++)
         tableBody.append(renderCandidate(entity.reconResults[i], uniqueMqlProps, entity));
 
@@ -100,7 +103,9 @@ function renderReconChoices(entity) {
             updateCandidates();
         }, function(){;});
     });
-    template.insertAfter("#manualReconcileTemplate")
+    if (!reconResultsFetched)
+        $(".moreButton", template).click();
+    template.insertAfter("#manualReconcileTemplate");
 }
 
 function renderInternalReconciliationDialog(entity, template) {
@@ -162,7 +167,7 @@ function renderCandidate(result, mqlProps, entity) {
         );
     
     fetchMqlProps(result, mqlProps, entity, tableRow);
-
+    
     node("td", {"class": "blurb"}).appendTo(tableRow);
     
     return tableRow;
@@ -215,7 +220,7 @@ function fillInMQLProps(entity, mqlProps, mqlResult) {
             $("td.blurb", row).html(text);
         });
     }
-
+    
     for (var i = 0; i < mqlProps.length; i++) {
         var cell = $("td." + idToClass(mqlProps[i]), row).empty();
         cell.append(displayValue(getChainedProperty(result, mqlProps[i])));
