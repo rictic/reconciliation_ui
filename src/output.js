@@ -391,6 +391,7 @@ function FreeQMonitor(job_id, onComplete) {
     this.url = freeq_url + job_id;
     this.onComplete = onComplete;
     var self = this;
+    //for reliability, no matter what happens we'll check FreeQ at least once every 30 seconds
     this.repeatingTimer = new RepeatingTimer(30 * 1000, function() {self.checkProgress();})
     this.checkProgress();
 }
