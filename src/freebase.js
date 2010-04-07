@@ -258,12 +258,15 @@ freebase.mqlValue;
                 "id" : prop
             }
             query.expected_type = getTypeQuery();
+            query.schema = getTypeQuery();
             return query;
         }
 
         function handler(mqlProp, result){
             if (result.expected_type.id)
-                typeMetadata[result.expected_type.id] = result.expected_type
+                typeMetadata[result.expected_type.id] = result.expected_type;
+            if (result.schema.id)
+                typeMetadata[result.schema.id] = result.schema;
             result.inverse_property = result.reverse_property || result.master_property;
             if (result.inverse_property)
                 propertiesSeen.add(result.inverse_property);
@@ -311,6 +314,13 @@ freebase.mqlValue;
         freebase.mqlRead(envelope, function(results){
             if (results && results.result && results.result.id)
                 callback(results.result.id);
+        });
+    }
+    
+    freebase.getBlurb = function(id, options, onComplete) {
+        options = options || {};
+        $.getJSON("http://api.freebase.com/api/trans/blurb" + id + "?callback=?&", options, function(response) {
+            onComplete(response.result ? response.result.body : "");
         });
     }
     

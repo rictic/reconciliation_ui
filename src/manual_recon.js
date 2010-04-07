@@ -47,20 +47,23 @@ function renderReconChoices(entity) {
     var headerPaths = entity["/rec_ui/headerPaths"];
     var mqlPaths = entity["/rec_ui/mql_paths"];
     var uniqueMqlProps = Arr.unique($.map(mqlPaths, function(path){return path.toComplexProp()}));
+    var uniqueMqlPaths = $.map(["/type/object/name","/type/object/type"].concat(uniqueMqlProps), function(prop) {return new loader.path(prop)});
     
     var currentRecord = $(".recordVals",template);
-    for(var i = 0; i < headerPaths.length; i++) {
-        currentRecord.append(node("label", headerPaths[i].getDisplayName() + ":"));
-        currentRecord.append(node("div", {"class":"propertyGroup"}).append(displayValue(entity.get(headerPaths[i]))));
+    for(var i = 0; i < uniqueMqlPaths.length; i++) {
+        currentRecord.append(node("td", {"class":"propertyGroup"}).append(displayValue(entity.get(uniqueMqlPaths[i]))));
     }
+    currentRecord.append(node("td"));
     
-    var tableHeader = $(".reconciliationCandidates table thead", template).empty();
-    var columnHeaders = ["","Image","Name","Type"].concat($.map(uniqueMqlProps,getPropName)).concat(["Score"]);
-    for (var i = 0; i < columnHeaders.length; i++)
-        tableHeader.append(node("th",columnHeaders[i],{"class":"bottomHeader"}));
+    var tableHeader = $("table thead tr", template);
+    var columnHeaders = ["Name","Type"].concat($.map(uniqueMqlProps,getPropName)).concat();
+    $.each(columnHeaders, function(_, header) {
+        tableHeader.append(node("th",header, {"class": "propHeader"}))
+    })
+    tableHeader.append(node("th"));
 
 
-    var tableBody = $(".reconciliationCandidates table tbody", template).empty();
+    var tableBody = $(".manualReconciliationChoices", template).empty();
     var reconResultsFetched = entity.reconResults !== undefined;
     entity.reconResults = entity.reconResults || [];
     for (var i = 0; i < entity.reconResults.length; i++)
@@ -68,8 +71,8 @@ function renderReconChoices(entity) {
 
     var numCandidates;
     function updateCandidates() {
-        $('.reconciliationCandidates table tbody tr:odd', template).addClass('odd');
-        $('.reconciliationCandidates table tbody tr:even', template).addClass('even');
+        $('tr:odd', tableBody).addClass('odd');
+        $('tr:even', tableBody).addClass('even');
         numCandidates = entity.reconResults.length;
     }
     updateCandidates();
@@ -86,6 +89,7 @@ function renderReconChoices(entity) {
           handleReconChoice(entity, data.id);
         });
 
+    $("button.undo", template).click(undoReconciliation);
     $(".otherSelection", template).click(function() {handleReconChoice(entity, this.name)});
     
     $(".moreButton",template).click(function() {
@@ -135,10 +139,11 @@ function renderCandidate(result, mqlProps, entity) {
     var url = freebase_url + "/view/" + result['id'];
     var tableRow = node("tr", {"class":idToClass(result["id"])});
     
-    var button = node("button", "Select", 
+    var button = node("button", "Choose", 
        {"class":'manualSelection', 
         "name":result.id})
-    tableRow.append(node("td",button));
+    var score = node("span", Math.round(result["score"] * 100), {"class": 'score'});
+    tableRow.append(node("td",node("div").append(button).append("<br>").append(score), {"class":"buttonColumn"}));
     button.click(function(val) {entity['/rec_ui/freebase_name'] = result.name; handleReconChoice(entity, result.id)})
     
     node("td",
@@ -160,14 +165,17 @@ function renderCandidate(result, mqlProps, entity) {
             node("td", node("img",{src:"resources/spinner.gif"}),
                  {"class":"replaceme "+idToClass(mqlProps[j])})
         );
-    tableRow.append(node("td",result["score"]));
+    
     fetchMqlProps(result, mqlProps, entity, tableRow);
+    
+    node("td", {"class": "blurb"}).appendTo(tableRow);
     
     return tableRow;
 }
 
 function fetchMqlProps(reconResult, mqlProps, entity, context) {
-    var query = {"id":reconResult["id"]};
+    var query = {"id":reconResult["id"],
+                 "/common/topic/article" : { "id" : null, "optional" : true, "limit" : 1 }};
     $.each(mqlProps, function(_, prop) {
         var slot = query;
         var parts = prop.split(":");
@@ -206,6 +214,12 @@ function fillInMQLProps(entity, mqlProps, mqlResult) {
     var result = mqlResult.result;
     var row = $("tr." + idToClass(result.id),context);
     
+    var article = result['/common/topic/article'];
+    if (article && article.id) {
+        freebase.getBlurb(article.id, {maxlength: 200, break_paragraphs: true}, function(text) {
+            $("td.blurb", row).html(text);
+        });
+    }
     
     for (var i = 0; i < mqlProps.length; i++) {
         var cell = $("td." + idToClass(mqlProps[i]), row).empty();

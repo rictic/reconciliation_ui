@@ -216,3 +216,14 @@ tEntity.prototype.toJSON = function() {
     }
     return js;
 }
+
+tEntity.prototype.unreconcile = function() {
+    this.id = undefined;
+    var recGroup = internalReconciler.getRecGroup(this);
+    removeReviewItem(this);
+    if (recGroup) {
+        removeReviewItem(recGroup);
+        if (recGroup.shouldMerge)
+            recGroup.unreconcile();
+    }
+}

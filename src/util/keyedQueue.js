@@ -25,6 +25,7 @@ KeyedQueue.prototype.shift = function() {
     return val;
 }
 
+//adds to the end of the queue
 KeyedQueue.prototype.push = function(val) {
     var key = this.getKey(val);
     if (this._set.contains(key))
@@ -36,15 +37,27 @@ KeyedQueue.prototype.push = function(val) {
     return true;
 }
 
+//adds to the front of the queue
+KeyedQueue.prototype.unshift = function(val) {
+    var key = this.getKey(val);
+    if (this._set.contains(key))
+        return false;
+    this._set.add(key);
+    this._array.unshift(val);
+    this.emit("changed");
+    this.emit("added", val);
+    return true;
+}
+
 KeyedQueue.prototype.remove = function(val) {
     var key = this.getKey(val);
     if (!this._set.contains(key))
         return undefined;
 
     //remove the value with matching key from the array by simply walking it
-    var self = this;
+    var getKey = this.getKey;
     this._array = Arr.removeOneMatching(this._array, function(array_val) {
-        return self.getKey(array_val) === key;
+        return getKey(array_val) === key;
     });
     
     this._set.remove(key);

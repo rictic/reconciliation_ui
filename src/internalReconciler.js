@@ -100,3 +100,7 @@ RecGroup.prototype.getID = function() {
 RecGroup.prototype.getInternalID = function() {
     return this.internal_id;
 }
+
+RecGroup.prototype.unreconcile = function() {
+    this.reconcileTo = undefined;
+}

@@ -33,7 +33,7 @@
 
 function onDisplayOutputScreen() {
     addTimeout(checkLogin,0);
-    addTimeout(displaySpreadsheet,0);
+    addTimeout(displayOutput,0);
     addTimeout(prepareTriples,0);
     $("#freeq_form").attr("action", freeq_url)
 }
@@ -42,7 +42,7 @@ function onHideOutputScreen() {
         spreadsheetRendererYielder.cancel();
     if (tripleGetterYielder)
         tripleGetterYielder.cancel();
-    $("#outputSpreadSheet")[0].value = "";
+    $("#outputData")[0].value = "";
 }
 
 /** @param {!Array.<(string|undefined)>} arr
@@ -84,12 +84,21 @@ function encodeRow(row) {
     return $.map(lines,encodeLine);
 }
 
-function displaySpreadsheet() {
-    $("#outputSpreadSheet")[0].value = "One moment, rendering...";
+function displayOutput() {
+    $("#outputData")[0].value = "One moment, rendering...";
     
-    renderSpreadsheet(function(spreadsheet) {
-        $("#outputSpreadSheet")[0].value = spreadsheet;
-    })
+    function setOutput(val) {
+        $("#outputData")[0].value = val;
+    }
+    
+    if ($("input.outputFormat:checked").val() === "spreadsheet")
+        renderSpreadsheet(setOutput)
+    else
+        renderJSON(setOutput);
+}
+
+function renderJSON(callback) {
+    callback(JSON.stringify(rows, null, 2));
 }
 
 var spreadsheetRendererYielder;
@@ -109,7 +118,7 @@ function renderSpreadsheet(onComplete) {
 function prepareTriples() {
     $(".renderingTriples").show();
     $(".triplesRendered").hide();
-    getTriples(entities, function(triples) {
+    getTriples(entities, $("#assert_naked_properties")[0].checked, function(triples) {
         politeMap(triples,function(val){return JSON.stringify(val)},
             function(encodedTriples) {
                 var tripleString = encodedTriples.join("\n");
@@ -124,7 +133,7 @@ function prepareTriples() {
 }
 
 var tripleGetterYielder;
-function getTriples(entities, callback) {
+function getTriples(entities, assertNakedProperties, callback) {
     tripleGetterYielder = new Yielder();
     function hasValidID(entity) {
         var id = getID(entity);
@@ -203,18 +212,31 @@ function getTriples(entities, callback) {
         if (!subject || !hasValidID(subject) || subject.isCVT())
             return;
         
-        /* Assert each type and all included types exactly once */
+        
         var types = new Set();
-        $.each($.makeArray(subject['/type/object/type']), function(_, type){
+        function addType(type) {
             types.add(type);
             var metadata = freebase.getTypeMetadata(type);
             if (metadata)
                 types.addAll(metadata["/freebase/type_hints/included_types"]);
+        }
+        /* Assert each type and all included types exactly once */
+        $.each($.makeArray(subject['/type/object/type']), function(_, type){addType(type)});
+        /* Unless given specific OK to assert naked properties, assert
+           any types implied by the subject's properties. */
+        if (!assertNakedProperties) {
+        $.each(subject['/rec_ui/headerPaths'], function(_, headerPath) {
+            var prop = headerPath.parts[0].prop;
+            var metadata = freebase.getPropMetadata(prop);
+            if (metadata && metadata.schema && metadata.schema.id)
+                addType(metadata.schema.id);
         });
+        }
+        types.remove("/type/object");
         $.each(types.getAll(), function(_,type) {
             if (type)
                 triples.push({s:getID(subject), p:"/type/object/type",o:type});
-        })
+        });
         
         /* If the subject is new to Freebase, give it a name as well */
         if (Arr.contains(["None", "None (merged)"], subject.getID())){
@@ -402,7 +424,10 @@ FreeQMonitor.prototype.checkProgress = function() {
     $.getJSON(this.url, null, handler);
 }
 
-$(document).ready(function () {
+function setupOutput() {
+    if (inputType === "JSON")
+        $("input.outputFormat[value='json']").attr("checked","checked").change()
+    
     //fancy stuff only works with the standard freeq url and when we're on
     //the same domain as freeq
     if (onSameDomain() && freeq_url === standardFreeq) {
@@ -431,7 +456,7 @@ $(document).ready(function () {
                     
                     if ($("input.graphport:checked")[0].value === "otg") {
                         populateCreatedIds(job_id, function() {
-                            displaySpreadsheet();
+                            displayOutput();
                         });
                         $(".uploadToOTGComplete").show();
                     }
@@ -445,8 +470,12 @@ $(document).ready(function () {
             }
         });
     }
-        
-        
+    if (freeq_url !== standardFreeq) {
+        $("#freeq_form").append("<input type='hidden' name='fb_user' value='/user/spreadsheet_bot'>")
+    }
+}
+
+$(document).ready(function () {
     $(".displayTriples").click(function(){$(".triplesDisplay").slideToggle(); return false;});
     $(".uploadLogin button.checkLogin").click(checkLogin);
     $(".loadAgainButton").click(function() {
@@ -455,7 +484,12 @@ $(document).ready(function () {
         $(".uploadToFreeQ").show();
     });
     
+    $("input.outputFormat").change(function() {
+        displayOutput();
+        $(".outputFormatText").html(this.value);
+    });
     
+    $("#assert_naked_properties").change(function() { prepareTriples(); });
     $("#mdo_data_source").suggest({type:"/dataworld/information_source",
                                flyout:true,type_strict:"should"})
                          .bind("fb-select", function(e, data) { 
