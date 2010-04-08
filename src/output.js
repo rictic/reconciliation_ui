@@ -225,12 +225,12 @@ function getTriples(entities, assertNakedProperties, callback) {
         /* Unless given specific OK to assert naked properties, assert
            any types implied by the subject's properties. */
         if (!assertNakedProperties) {
-        $.each(subject['/rec_ui/headerPaths'], function(_, headerPath) {
-            var prop = headerPath.parts[0].prop;
-            var metadata = freebase.getPropMetadata(prop);
-            if (metadata && metadata.schema && metadata.schema.id)
-                addType(metadata.schema.id);
-        });
+            $.each(subject['/rec_ui/headerPaths'], function(_, headerPath) {
+                var prop = headerPath.parts[0].prop;
+                var metadata = freebase.getPropMetadata(prop);
+                if (metadata && metadata.schema && metadata.schema.id)
+                    addType(metadata.schema.id);
+            });
         }
         types.remove("/type/object");
         $.each(types.getAll(), function(_,type) {
