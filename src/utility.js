@@ -373,6 +373,14 @@ function logger(log_level) {
     return function(message){/*node("div",JSON.stringify(message)).appendTo("#" + log_level + "Log");*/ return message;}
 }
 
+function insertInto(text, textarea) {
+    var selection = new Selection(textarea[0]).create();
+    var val = textarea.val();
+    val = val.substring(0,selection.start) + text + val.substring(selection.end);
+    textarea.val(val);
+    textarea.focus();
+}
+
 //These messages don't go anywhere at the moment, but it'd be very easy to create the
 // places where they'd go
 if (!window.console)

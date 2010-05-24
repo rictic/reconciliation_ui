@@ -185,7 +185,7 @@ $(document).ready(function() {
     var capture_tab = function(event) {
         if (event.keyCode == 9) {
             if (event.type === "keydown")
-                $("#initialInput").insertAtCaret("\t");
+                insertInto("\t", $("#initialInput"));
             event.returnValue = false;
             return false;
         }
