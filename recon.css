@@ -335,3 +335,8 @@ td {
 .manualReconMeat .blurb {
     max-width: 350px;
 }
+.ui-progressbar-value {
+    -webkit-transition-duration: 500ms; 
+    -moz-transition-duration: 500ms; 
+    transition-duration: 500ms;
+}
