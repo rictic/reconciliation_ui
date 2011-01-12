@@ -315,9 +315,16 @@ td {
 /*    background-color: #FCD3B2;*/
 }
 
-.internalReconciliationPrompt {
+.internalReconMoved {
     float: right;
     max-width: 20%;
+    border: 2px solid #999;
+    background-color: #ddf;
+    padding: 10px;
+}
+
+.internalReconciliationPrompt {
+    max-width: 40%;
     border: 2px solid #999;
     background-color: #ddf;
     padding: 10px;

@@ -132,6 +132,7 @@ function renderInternalReconciliationDialog(entity, template) {
     });
     checkbox[0].id = input_id;
     
+    $(".internalReconMoved", template).removeClass("invisible");
     context.removeClass("invisible");
 }
 
