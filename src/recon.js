@@ -215,6 +215,7 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
     for (var i = 0; i < candidates.length; i++) {
       var candidate = candidates[i];
       var r = {};
+      console.log(JSON.stringify(candidate, null, 2));
       r.id = candidate.mid
       r.name = [candidate.name];
       r.score = candidate.confidence;
@@ -229,19 +230,32 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
     params['name'] = $.makeArray(structured_query["/type/object/name"])[0];
     params['kind'] = $.makeArray(structured_query["/type/object/type"]);
     params['prop'] = [];
-    for (key in structured_query) {
+    walkTree(structured_query, function(path, value) {
+      var key = path.join(".");
       if (key === "/type/object/name" || key === "/type/object/type") {
-        continue;
+        return;
       }
-      var values = $.makeArray(structured_query[key]);
-      $.each(values, function(_, value) {
-        if (getType(value) !== 'string') {
-          return; //continue
-        }
-        params['prop'].push(key + ":" + value);
-      });
-    }
+      params['prop'].push(key + ":" + value);
+    });
     return params;
+  }
+  function walkTree(tree, onLeaf) {
+    var path = [];
+    function walk(node) {
+      for (var key in node) {
+        path.push(key);
+        $.each($.makeArray(node[key]), function(_, value) {
+          var type = getType(value);
+          if (type === "object") {
+            walk(value);
+          } else {
+            onLeaf(path.slice(), value);
+          }
+        });
+        path.pop(key);
+      }
+    }
+    walk(tree);
   }
 
   var base_url = 'https://www.googleapis.com/freebase/v1dev/reconcile?';
