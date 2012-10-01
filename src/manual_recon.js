@@ -48,13 +48,13 @@ function renderReconChoices(entity) {
     var mqlPaths = entity["/rec_ui/mql_paths"];
     var uniqueMqlProps = Arr.unique($.map(mqlPaths, function(path){return path.toComplexProp()}));
     var uniqueMqlPaths = $.map(["/type/object/name","/type/object/type"].concat(uniqueMqlProps), function(prop) {return new loader.path(prop)});
-    
+
     var currentRecord = $(".recordVals",template);
     for(var i = 0; i < uniqueMqlPaths.length; i++) {
         currentRecord.append(node("td", {"class":"propertyGroup"}).append(displayValue(entity.get(uniqueMqlPaths[i]))));
     }
     currentRecord.append(node("td"));
-    
+
     var tableHeader = $("table thead tr", template);
     var columnHeaders = ["Name","Type"].concat($.map(uniqueMqlProps,getPropName)).concat();
     $.each(columnHeaders, function(_, header) {
@@ -84,14 +84,14 @@ function renderReconChoices(entity) {
         .suggest({type:entity['/type/object/type'],
                   type_strict:"should",
                   flyout:true})
-        .bind("fb-select", function(e, data) { 
+        .bind("fb-select", function(e, data) {
           entity['/rec_ui/freebase_name'] = $.makeArray(data.name);
           handleReconChoice(entity, data.id);
         });
 
     $("button.undo", template).click(undoReconciliation);
     $(".otherSelection", template).click(function() {handleReconChoice(entity, this.name)});
-    
+
     $(".moreButton",template).click(function() {
         $(".loadingMoreCandidates", template).fadeIn();
         getCandidates(entity, function() {
@@ -113,14 +113,14 @@ function renderInternalReconciliationDialog(entity, template) {
     //don't prompt if there isn't a RecGroup to speak of
     if (!recGroup || recGroup.members.length <= 1)
         return;
-    
+
     var context = $(".internalReconciliationPrompt", template);
     $(".count", context).html(recGroup.members.length + "");
     freebase.getName(recGroup.type, function(type_name) {
         $(".type", context).html(type_name);
     });
     $(".name", context).html(recGroup.name);
-    
+
     //set up the mapping between the lable and the check box, so that you can click
     //on the label and check/uncheck the box
     var input_id = "treat_same" + entity['/rec_ui/id'];
@@ -131,25 +131,25 @@ function renderInternalReconciliationDialog(entity, template) {
         internalReconciler.setMerged(entity, this.checked);
     });
     checkbox[0].id = input_id;
-    
+
     context.removeClass("invisible");
 }
 
 function renderCandidate(result, mqlProps, entity) {
     var url = freebase_url + "/view/" + result['id'];
     var tableRow = node("tr", {"class":idToClass(result["id"])});
-    
-    var button = node("button", "Choose", 
-       {"class":'manualSelection', 
+
+    var button = node("button", "Choose",
+       {"class":'manualSelection',
         "name":result.id})
-    var score = node("span", Math.round(result["score"] * 100), {"class": 'score'});
+    var score = node("span", Math.round(result["score"] * 100) + "%", {"class": 'score'});
     tableRow.append(node("td",node("div").append(button).append("<br>").append(score), {"class":"buttonColumn"}));
     button.click(function(val) {entity['/rec_ui/freebase_name'] = result.name; handleReconChoice(entity, result.id)})
-    
+
     node("td",
          node("img",{src:freebase_url + "/api/trans/image_thumb/"+result['id']+"?maxwidth=100&maxheight=100"})
     ).appendTo(tableRow);
-    
+
     tableRow.append(node("td",displayValue(result)));
     var displayTypes = [];
     $.each($.makeArray(result.type), function(_,typeId) {
@@ -165,11 +165,11 @@ function renderCandidate(result, mqlProps, entity) {
             node("td", node("img",{src:"resources/spinner.gif"}),
                  {"class":"replaceme "+idToClass(mqlProps[j])})
         );
-    
+
     fetchMqlProps(result, mqlProps, entity, tableRow);
-    
+
     node("td", {"class": "blurb"}).appendTo(tableRow);
-    
+
     return tableRow;
 }
 
@@ -193,7 +193,7 @@ function fetchMqlProps(reconResult, mqlProps, entity, context) {
             queryObj['id'] = null;
             queryObj['optional'] = true;
         }
-            
+
     })
     var envelope = {query:query};
     function handler(results) {
@@ -213,14 +213,14 @@ function fillInMQLProps(entity, mqlProps, mqlResult) {
 
     var result = mqlResult.result;
     var row = $("tr." + idToClass(result.id),context);
-    
+
     var article = result['/common/topic/article'];
     if (article && article.id) {
         freebase.getBlurb(article.id, {maxlength: 200, break_paragraphs: true}, function(text) {
             $("td.blurb", row).html(text);
         });
     }
-    
+
     for (var i = 0; i < mqlProps.length; i++) {
         var cell = $("td." + idToClass(mqlProps[i]), row).empty();
         cell.append(displayValue(getChainedProperty(result, mqlProps[i])));

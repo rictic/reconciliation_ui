@@ -33,7 +33,7 @@ function initializeReconciliation(onReady) {
         if (manualQueue.size() === 2)
             renderReconChoices(entity);
     });
-    
+
     //populate queues and begin reconciliation
     politeEach(rec_partition[0], function(_, unreconciledEntity) {
         automaticQueue.push(unreconciledEntity);
@@ -77,7 +77,7 @@ function undoReconciliation() {
 }
 
 /** @param {!tEntity} entity
-  * 
+  *
   */
 function addColumnRecCases(entity) {
     if (!automaticQueue) return;
@@ -90,7 +90,7 @@ function addColumnRecCases(entity) {
             //skip it if it's already gone through the queue
             if (value['/rec_ui/rec_begun'])
                 return;
-            
+
             value['/rec_ui/rec_begun'] = true;
             if (isUnreconciled(value) && value['/type/object/name']) {
                 automaticQueue.push(value);
@@ -134,14 +134,14 @@ function constructReconciliationQuery(entity, typeless) {
             });
             var lastPart = parts[parts.length-1];
             slot[lastPart] = constructQueryPart(value);
-        })        
+        })
     }
     if (typeless || !query['/type/object/type'])
         query['/type/object/type'] = ['/common/topic'];
     query = cleanup(query);
     entity['/rec_ui/recon_query'] = query;
     return query;
-    
+
     function constructQueryPart(value) {
         if (value instanceof tEntity && !Arr.contains([undefined, "", "None", "None (merged"], value.getID()))
             return {"id":value.getID(), "name":value["/type/object/name"]}
@@ -149,7 +149,7 @@ function constructReconciliationQuery(entity, typeless) {
             return $.makeArray(value["/type/object/name"])[0];
         return value;
     }
-    
+
     /* Removes undefined values, nulls, empty lists, empty objects,
        and collapses singleton arrays down to their single values
        to better feed the reconciliation service.  */
@@ -187,7 +187,7 @@ function constructReconciliationQuery(entity, typeless) {
  *  @param {function(...)} onError
  *  @param {boolean=} typeless
  */
-function getCandidates(entity, callback, onError,typeless) {
+function getTraditionalCandidates(entity, callback, onError,typeless) {
     function handler(results) {
         entity.reconResults = results;
         callback(entity);
@@ -202,4 +202,62 @@ function getCandidates(entity, callback, onError,typeless) {
     }
     var query = constructReconciliationQuery(entity,typeless);
     getJSON(reconciliation_url + "query?jsonp=?", {q:JSON.stringify(query), limit:limit}, handler, onError);
+}
+
+function getConcordeCandidates(entity, callback, onError, typeless) {
+  function handler(results) {
+    entity.reconResults = cleanResults(results);
+    callback(entity);
+  }
+  function cleanResults(results) {
+    var candidates = results.candidate || [];
+    var to_return = [];
+    for (var i = 0; i < candidates.length; i++) {
+      var candidate = candidates[i];
+      var r = {};
+      r.id = candidate.mid
+      r.name = [candidate.name];
+      r.score = candidate.confidence;
+      to_return.push(r);
+    }
+    return to_return;
+  }
+  function getParams() {
+    var structured_query = constructReconciliationQuery(entity,typeless);
+    var params = {};
+    //Concorde only supports one name for something
+    params['name'] = $.makeArray(structured_query["/type/object/name"])[0];
+    params['kind'] = $.makeArray(structured_query["/type/object/type"]);
+    params['prop'] = [];
+    for (key in structured_query) {
+      if (key === "/type/object/name" || key === "/type/object/type") {
+        continue;
+      }
+      var values = $.makeArray(structured_query[key]);
+      $.each(values, function(_, value) {
+        if (getType(value) !== 'string') {
+          return; //continue
+        }
+        params['prop'].push(key + ":" + value);
+      });
+    }
+    return params;
+  }
+
+  var base_url = 'https://www.googleapis.com/freebase/v1dev/reconcile?';
+  var defaultLimit = 4;
+  var limit = defaultLimit;
+  if (entity.reconResults)
+    limit = Math.max(entity.reconResults.length * 2, defaultLimit);
+  if (!entity.typelessRecon && typeless){
+    entity.typelessRecon = true;
+    limit = defaultLimit;
+  }
+  var params = getParams();
+  params.limit = limit;
+  getJSON(base_url + "callback=?", $.param(params, true), handler);
+}
+
+function getCandidates(entity, callback, onError, typeless) {
+    getConcordeCandidates(entity, callback, onError, typeless);
 }
