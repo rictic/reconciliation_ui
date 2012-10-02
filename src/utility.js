@@ -1,7 +1,7 @@
 // ========================================================================
 // Copyright (c) 2008-2009, Metaweb Technologies, Inc.
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -11,7 +11,7 @@
 //       copyright notice, this list of conditions and the following
 //       disclaimer in the documentation and/or other materials provided
 //       with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY METAWEB TECHNOLOGIES AND CONTRIBUTORS
 // ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -29,6 +29,8 @@
 /*
 **  Misc utility functions
 */
+
+var api_key = "AIzaSyCECXPKV-s7vRKzVW_hy5ai4OCnWl86aq4"
 
 //perform a shallow copy of a JS object
 function clone(obj) {
@@ -55,7 +57,7 @@ function node(kind, var_args) {
     }
     else
         len = arguments.length;
-    
+
     for (var i = 1; i < len; i++)
         node.append(arguments[i]);
     return node;
@@ -115,8 +117,8 @@ function isCVTType(type) {
         error("type undefined in isCVTType");
         return;
     }
-        
-    return type["/freebase/type_hints/mediator"] 
+
+    return type["/freebase/type_hints/mediator"]
         && type["/freebase/type_hints/mediator"].value;
 }
 
@@ -124,7 +126,7 @@ function toJSON(value) {
     if (typeof value === "object" && 'toJSON' in value)
         return value.toJSON();
     switch(getType(value)){
-    case "array": 
+    case "array":
         return $.map(value, toJSON);
     case "function":
         return undefined;
@@ -252,7 +254,7 @@ function addInterval(f, millis) {
 }
 
 /**
-  @return {string} 
+  @return {string}
 */
 function getType(v) {
     if (typeof v !== "object") return typeof v;
@@ -267,7 +269,7 @@ function getType(v) {
 }
 
 //This set implementation preserves order, but just in case
-var OrderedSet = Set; 
+var OrderedSet = Set;
 
 /**
  * @param {string} url
@@ -299,7 +301,7 @@ function getJSON(url, params, onSuccess, onTimeout, millis) {
 
     if (window.location.host === "data.labs.freebase.com")
         $.post(url, params, responseHandler, "jsonp")
-    else 
+    else
         $.getJSON(url, params, responseHandler);
 }
 
@@ -309,7 +311,7 @@ function onSameDomain() {
 
 /** Returns the standard form that an id should take.
   * Useful for interfacing with other tools.
-  * 
+  *
   * @param {!string} id
   * @returns {!string}
   */
@@ -334,7 +336,7 @@ function RepeatingTimer(interval, onTick) {
 }
 
 RepeatingTimer.prototype.reset = function() {
-    if (this.stopped) 
+    if (this.stopped)
         return;
     this.clear();
     this.id = addInterval(this.onTick, this.interval);

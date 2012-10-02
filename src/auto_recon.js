@@ -1,7 +1,7 @@
 // ========================================================================
 // Copyright (c) 2008-2009, Metaweb Technologies, Inc.
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -11,7 +11,7 @@
 //       copyright notice, this list of conditions and the following
 //       disclaimer in the documentation and/or other materials provided
 //       with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY METAWEB TECHNOLOGIES AND CONTRIBUTORS
 // ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -71,23 +71,17 @@ function autoReconcileResults(entity) {
     automaticQueue.remove(entity);
     // no results, set to None:
     if(entity.reconResults.length == 0) {
-        if (!entity.typelessRecon)
-            getCandidates(entity,autoReconcileResults,function(){automaticQueue.shift();autoReconcile();},true);
-        
-        //If this entity is identical in name to several others then
-        //it's not safe to automatically create new here, we need the
-        //user to do internal reconciliation or duplicate entities could
-        //be created
-        if (internalReconciler.getRecGroup(entity).members.length > 1) {
-            manualQueue.push(entity);
-            autoReconcile();
-            return;
+        if (!entity.typelessRecon) {
+            getCandidates(entity,autoReconcileResults,
+                function(){automaticQueue.shift();autoReconcile();},true);
         }
-        entity.reconcileWith("None", true);
-        warn("No candidates found for the object:");
-        warn(entity);
-        addColumnRecCases(entity);
-    }        
+
+        // With Concorde we never know if we should automatically create,
+        // everything should be reviewed by hand.
+        manualQueue.push(entity);
+        autoReconcile();
+        return;
+    }
     // match found:
     else if(entity.reconResults[0]["match"] == true) {
         var matchedResult = entity.reconResults[0];

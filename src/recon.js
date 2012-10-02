@@ -210,16 +210,22 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
     callback(entity);
   }
   function cleanResults(results) {
+    function transformCandidate(candidate) {
+      return {
+        id: candidate.mid,
+        name: [candidate.name],
+        score: candidate.confidence
+      };
+    }
+    if (results.match) {
+      var match = transformCandidate(results.match);
+      match.match = true;
+      return [match];
+    }
     var candidates = results.candidate || [];
     var to_return = [];
     for (var i = 0; i < candidates.length; i++) {
-      var candidate = candidates[i];
-      var r = {};
-      console.log(JSON.stringify(candidate, null, 2));
-      r.id = candidate.mid
-      r.name = [candidate.name];
-      r.score = candidate.confidence;
-      to_return.push(r);
+      to_return.push(transformCandidate(candidates[i]));
     }
     return to_return;
   }
@@ -269,6 +275,7 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
   }
   var params = getParams();
   params.limit = limit;
+  params.api_key = api_key;
   getJSON(base_url + "callback=?", $.param(params, true), handler);
 }
 
