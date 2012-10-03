@@ -1,7 +1,7 @@
 // ========================================================================
 // Copyright (c) 2008-2009, Metaweb Technologies, Inc.
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -11,7 +11,7 @@
 //       copyright notice, this list of conditions and the following
 //       disclaimer in the documentation and/or other materials provided
 //       with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY METAWEB TECHNOLOGIES AND CONTRIBUTORS
 // ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -26,39 +26,39 @@
 // DAMAGE.
 // ========================================================================
 
-/* 
+/*
     Parsing a spreadsheet into a tree.
-    
+
     Our pipeline goes something like this:
     TSV Text -> [Row] -> [Record] -> [Tree]-> [Entity]
-    
+
     OR
-    
+
     JSON Array (as text) -> [Tree] -> [Entity]
-    
+
     TSV text is a string representing a spreadsheet-like structure,
     tabs delimit the cells, and newlines delimit the rows.  Quoting
     is done usind double-quotes, and quotes are escaped with two adjacent
-    double-quotes.  We support an extension of the TSV format where a row 
+    double-quotes.  We support an extension of the TSV format where a row
     with a blank first cell may be an extension of the row above.  This
     format is ambiguous with normal TSV files, so the user is prompted as
     to which was intended.
-    
+
     Row: an array of unescaped strings.
-    
+
     Record: an array of Rows.  At this point in the processing, the user
     has either chosen to keep every row of their TSV separate, in which case
     every Record will contain a single Row, or they may have chosen to collapse
-    Rows missing the first cell, in which case the Records may consist of 
+    Rows missing the first cell, in which case the Records may consist of
     several Rows.
-    
+
     A Tree is a javascript object, the keys are headers from the TSV text
     and values are arrays of either strings or, when the key is a MQL property
     that is expected to point to a Topic in Freebase, a reified object.
-    
+
     The JSON input format is just an array of Trees, and just skips the input
     pipeline up to that point.
-    
+
 */
 
 //A namespace for types
@@ -119,7 +119,7 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
         parseJSON(input, onComplete, yielder);
         return;
     }
-    
+
     inputType = "TSV";
 
     parseTSV(input,function(spreadsheetRowsWithBlanks) {
@@ -153,10 +153,10 @@ function parseTSV(spreadsheet, onComplete, yielder) {
         }
         function isEndOfLine() {
             switch(spreadsheet.charAt(position)){
-              case "": 
+              case "":
               case "\n": return true;
               case "\r": if (spreadsheet.charAt(position+1) == "\n") {
-                            position++; return true;                            
+                            position++; return true;
                          }
               default: return false;
             }
@@ -183,40 +183,40 @@ function parseTSV(spreadsheet, onComplete, yielder) {
                     nextField();
                     continue;
                 }
-                
+
                 if (c == ""){
                     error("unexpected end of input, no closing double-quote marks found");
                     fields.push(field);
                     position+=1;
                     return fields;
                 }
-                
+
                 //just a character in the quoted field
                 field += c;
                 position++;
                 continue;
             }
-            
+
             //the field is quoted
             if (spreadsheet.charAt(position) == '"'){
                 inQuotes = true;
                 position++;
                 continue;
             }
-            
+
             //end of the field
             if (c == "\t"){
                 nextField();
                 continue;
             }
-            
+
             //end of the line
             if (isEndOfLine()){
                 fields.push(field);
                 position += 1;
                 return fields;
             }
-            
+
             //just a character in the field
             field += c;
             position += 1;
@@ -244,7 +244,7 @@ function removeBlankLines(rows, onComplete, yielder) {
         if (row.length === 1 && row[0] === "")
             return;
         newRows.push(row);
-    }, 
+    },
     function(){onComplete(newRows);}, yielder);
 }
 
@@ -321,13 +321,13 @@ function recordsToEntities(records, onComplete, yielder) {
 function treesToEntities(trees, onComplete, yielder) {
     yielder = yielder || new Yielder();
     findAllProperties(trees, function(props) {
-        freebase.fetchPropertyInfo(props, afterPropertiesFetched, 
+        freebase.fetchPropertyInfo(props, afterPropertiesFetched,
             function onError(errorProps) {
                 $.each(errorProps, warnUnknownProp);
                 afterPropertiesFetched();
             }
         );
-        
+
         function afterPropertiesFetched() {
             mapTreesToEntities(trees, onComplete, yielder);
         }
@@ -346,34 +346,34 @@ function treesToEntities(trees, onComplete, yielder) {
  *
  * Singleline rows:
  * [["1", "2", "3"], ["a", "b", "c"]] returns [[["1", "2", "3"]], [["a", "b", "c"]]]
- 
+
  * @param {!Array.<loader.row>} rows
  * @param {!function(!Array.<loader.record>, Array.<loader.record>=, loader.record=)} onComplete
  * @param {Yielder=} yielder
  */
 function rowsToRecords(rows, onComplete, yielder) {
     yielder = yielder || new Yielder();
-    
+
     var firstMultilineRecord = undefined;
     var multiRecords = [];
     var singleRecords = [];
-    
+
     var currentMultiRecord = []
-    
+
     function addMultiRecord() {
         if (currentMultiRecord.length > 1 && !firstMultilineRecord)
             firstMultilineRecord = currentMultiRecord;
         multiRecords.push(currentMultiRecord)
         currentMultiRecord = []
     }
-    
+
     politeEach(rows, function(_, currentRow) {
         singleRecords.push([currentRow]);
-        
+
         // start new record if the first column is non-empty and the current record is non-empty:
         if(currentRow[0].length > 0 && currentMultiRecord.length > 0)
             addMultiRecord();
-        
+
         currentMultiRecord.push(currentRow);
     }, function() {
         if(currentMultiRecord.length > 0)
@@ -408,18 +408,18 @@ function pathPut(path, topindex, record, value) {
         // if we're at the last path:
         if(atLastPath) {
             // special case for ids:
-            if(currentPart.prop == "id") 
+            if(currentPart.prop == "id")
                 currentRecord["id"] = value
             else {
                 // place the value:
-                if(!(currentPart.prop in currentRecord)) 
+                if(!(currentPart.prop in currentRecord))
                     currentRecord[currentPart.prop] = []
                 currentRecord[currentPart.prop][currentIndex] = value
             }
         }
         // otherwise recurse:
         else {
-            if(!(currentPart.prop in currentRecord)) 
+            if(!(currentPart.prop in currentRecord))
                 currentRecord[currentPart.prop] = []
             var currentList = currentRecord[currentPart.prop]
             if(currentList.length <= currentIndex || currentList[currentIndex] == null)
@@ -441,7 +441,7 @@ function addIdColumns() {
         //only add id columns if they look like mql props
         if (!isMqlProp(headerPath.parts[0].prop))
             return;
-        
+
         $.each(headerPath.parts, function(_, part) {
             var mqlProp = part.prop;
             if (mqlProp == "id") return;
@@ -462,12 +462,12 @@ function addIdColumns() {
             //if there already is an id column for it, then don't create a new one
             if (columnAlreadyExists(idColumn))
                 return;
-            
+
             //otherwise, add an id column
             headerPaths.push(new loader.path(idColumn));
         });
     });
-    
+
     function columnAlreadyExists(header) {
         for (var i = 0; i < headerPaths.length; i++)
             if (headerPaths[i].toString() === header)
@@ -481,16 +481,16 @@ function addIdColumns() {
   * @param {!Array.<loader.tree>} trees
   * @param {!function(Array.<string>)} onComplete
   * @param {Yielder=} yielder
-  */  
+  */
 function findAllProperties(trees, onComplete, yielder) {
     politeEach(trees, findProps, function() {
         onComplete(propertiesSeen.getAll());
     }, yielder);
-    
+
     function findProps(_,obj) {
         switch(getType(obj)) {
         case "array":
-            $.each(obj, findProps); 
+            $.each(obj, findProps);
             break;
         case "object":
             for (var key in obj) {
@@ -534,7 +534,7 @@ function mapTreeToEntity(tree, parent) {
     for (var prop in tree){
         var values = $.makeArray(tree[prop]);
         var propMeta = freebase.getPropMetadata(prop);
-        
+
         values = $.map(values, function(innerTree) {
             if (getType(innerTree) === "string") {
                 if (!propMeta)
@@ -542,11 +542,11 @@ function mapTreeToEntity(tree, parent) {
 
                 if (isValueProperty(prop))
                     return innerTree;
-                
+
                 //treat this string as a tree itself
                 innerTree = {"/type/object/name" : innerTree};
             }
-            
+
             var innerEntity = mapTreeToEntity(innerTree, entity);
             if (propMeta) {
                 if (propMeta.expected_type && !("/type/object/type" in innerEntity))
@@ -554,18 +554,18 @@ function mapTreeToEntity(tree, parent) {
                 if (propMeta.inverse_property)
                     innerEntity.addProperty(propMeta.inverse_property, entity);
             }
-            
+
             if (innerEntity.isCVT())
                 connectCVTProperties(innerEntity);
-            
+
             internalReconciler.register(innerEntity);
             return innerEntity;
         });
-        
+
         validateProperty(prop, values);
         entity.addProperty(prop, values);
     }
-    
+
     //otherwise it will get registered above
     if (!parent)
         internalReconciler.register(entity);
@@ -619,7 +619,7 @@ function connectCVTProperties(entity) {
         $.each(entity[prop], function(_, value) {
             if (!(value instanceof tEntity)) return;
             if (value === entity['/rec_ui/parent']) return;
-            
+
             var otherProps = entity['/rec_ui/mql_props'];
 
             $.each(otherProps, function(_, otherProp) {
@@ -629,7 +629,7 @@ function connectCVTProperties(entity) {
             })
         });
     }
-    
+
 }
 
 /** @param {!string} json
@@ -645,7 +645,7 @@ function parseJSON(json, onComplete, yielder) {
         inputError("JSON error: " + e);
         return;
     }
-    
+
     treesToEntities(trees, function(entities) {
         rows = entities;
         headerPaths = rows[0]['/rec_ui/headerPaths'];

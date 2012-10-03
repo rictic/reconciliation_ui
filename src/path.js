@@ -4,10 +4,10 @@
  *
  * The tree/entity's properties, are all arrays of tree/entities or
  * undefineds (except at the leaves, where they can be strings).
- * 
  *
- * The index is sometimes undefined because knowing that 
- * it wasn't specified is useful in reconstructing the 
+ *
+ * The index is sometimes undefined because knowing that
+ * it wasn't specified is useful in reconstructing the
  * original spreadsheet.  This is treated as "take every branch"
  *
  * "/foo/bar:/baz/asdf[1]:/fdsa[2]" returns
@@ -75,7 +75,7 @@ loader.path.part = (function() {
         if(propsearch == null || propsearch.length != 2) return part
         else return propsearch[1]
     }
-    
+
     //the constructor;
     /** @constructor */
     return function(segmentString) {

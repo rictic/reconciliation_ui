@@ -4,9 +4,9 @@ var assert_naked_properties = false;
 $(document).ready(function() {
     $("#optionsPanel input").each(function(idx, input) {
         var valueKey = "value";
-        if (input.type === 'checkbox') 
+        if (input.type === 'checkbox')
             valueKey = 'checked';
-        
+
         $(input).change(function() {
             window[input.id] = input[valueKey];
         });

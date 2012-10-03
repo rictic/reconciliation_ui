@@ -2,8 +2,8 @@ function onDisplayRenderScreen() {}
 
 function onHideRenderScreen() {}
 
-/** @param {!tEntity|RecGroup} entity 
-  * @param {string=} reconciliationMethod 
+/** @param {!tEntity|RecGroup} entity
+  * @param {string=} reconciliationMethod
   */
 function addReviewItem(entity, reconciliationMethod) {
     var container;
@@ -14,13 +14,13 @@ function addReviewItem(entity, reconciliationMethod) {
         else reconciliationMethod = "automatic";
     }
     switch (reconciliationMethod) {
-        case "automatic": 
+        case "automatic":
             container = $(".automaticReconciliationsToReview");
             break;
-        case "manual": 
+        case "manual":
             container = $(".manualReconciliationsToReview");
             break;
-        case "previously": 
+        case "previously":
             container = $(".oldReconciliationsToReview");
             break;
         default:
@@ -28,12 +28,12 @@ function addReviewItem(entity, reconciliationMethod) {
             return;
     }
 
-    
+
     var newTemplate = $(".templates .reviewNewTemplate");
     var skippedTemplate = $(".templates .reviewSkippedTemplate");
     var reconciledTemplate = $(".templates .reviewReconciledTemplate");
     var recGroupTemplate = $(".templates .reviewRecGroupTemplate");
-    
+
     container.show();
     var template;
     if (entity instanceof RecGroup)
@@ -45,17 +45,17 @@ function addReviewItem(entity, reconciliationMethod) {
           default    : template = reconciledTemplate.clone(); break;
         }
     }
-    
+
     removeReviewItem(entity);
     template.addClass(getReviewClassSelector(entity));
 
-    
+
     if (entity instanceof RecGroup)
         addReviewRecGroup(entity, template);
     else
         addReviewEntity(entity, template);
-        
-    
+
+
     var freebaseName = null;
     if (entity['/rec_ui/freebase_name']){
         $.each(entity['/rec_ui/freebase_name'],function(idx,name){
@@ -71,7 +71,7 @@ function addReviewItem(entity, reconciliationMethod) {
     }
     if (freebaseName) handleName(freebaseName);
     else freebase.getName(entity.getID(), handleName);
-    
+
     container.append(template);
 }
 
@@ -87,7 +87,7 @@ function getReviewClassSelector(item) {
 function makeInternalLink(content, entity) {
     var link = node("a", {
             "href": "#" + entity['/rec_ui/id']
-           ,"class": "internalLink" 
+           ,"class": "internalLink"
     })
     .click(function(val) {
         $("#tabs > ul").tabs("select",0);

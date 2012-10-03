@@ -59,9 +59,9 @@ KeyedQueue.prototype.remove = function(val) {
     this._array = Arr.removeOneMatching(this._array, function(array_val) {
         return getKey(array_val) === key;
     });
-    
+
     this._set.remove(key);
-    
+
     this.emit("changed");
     this.emit("removed", val);
     return val;

@@ -57,7 +57,7 @@ Arr.contains = function(array, value) {
 
 /* Returns a copy of the array with those elements of that
  * don't satisfy the predicate filtered out
- * 
+ *
  * @param {!Array} array
  * @param {!function(*):boolean} predicate
  * @return {!Array}
@@ -66,9 +66,9 @@ Arr.filter = function(array, predicate) {
     return $.grep(array, predicate);
 }
 
-/** Returns two new arrays, the first with those elements that satisfy the 
-  * predicate, the second with those that don't 
-  * 
+/** Returns two new arrays, the first with those elements that satisfy the
+  * predicate, the second with those that don't
+  *
   * @param {!Array} array
   * @param {!function(*):boolean} predicate
   * @return {!Array.<!Array>}

@@ -1,10 +1,10 @@
 /* A collection of utilities for assorted bits of UI functionality*/
 
 /** Returns a function that calls `every()` each time it is called,
-   but only calls `rarely()` at most once per `minimumTimeBetween` milliseconds. 
-   
+   but only calls `rarely()` at most once per `minimumTimeBetween` milliseconds.
+
    Useful for handling events on rapidly changing input elements,
-   
+
    @param {function()} every
    @param {function()} rarely
    @param {number=} minimumTimeBetween
@@ -30,9 +30,9 @@ function throttler(every, rarely, minimumTimeBetween) {
     }
 }
 
-/* Groups a list of complex properties into a hierarchy 
+/* Groups a list of complex properties into a hierarchy
    that is fit for display in a fancy table.
-   
+
    See also: buildTableHeaders below
 */
 function groupProperties(complexProps) {
@@ -43,7 +43,7 @@ function groupProperties(complexProps) {
             map.setIfAbsent(complexProp,new OrderedMap());
             return;
         }
-        
+
         var innerMap = map.setIfAbsent(props.shift(), new OrderedMap());
         groupProp(props.join(":"), innerMap);
     }
@@ -136,7 +136,7 @@ function getPropName(complexProp) {
 
    If the given item is associated with a freebase topic, it's linked to.
    If it's an array, then an html tree will be returned, though it will be
-   wrapped up so that only a few items are visible initially, with the 
+   wrapped up so that only a few items are visible initially, with the
    ability to expand the list out.
 */
 function displayValue(value) {
@@ -176,7 +176,7 @@ function textValue(value) {
 
 /** @param {Array} elementArray an array of html nodes which are wrapped in a single
                                 div, of which at most about cutoff are initially visible, and
-                                a control is rendered to enable the user to expand the list out. 
+                                a control is rendered to enable the user to expand the list out.
     @param {number=} cutoff
 */
 function wrapForOverflow(elementArray, cutoff) {

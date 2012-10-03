@@ -47,7 +47,7 @@ tEntity.prototype.getChainedProperty = function(prop) {
   * @return {Array}
   */
 tEntity.prototype.get = function(path, preservePlace) {
-    if (getType(path) === "string") 
+    if (getType(path) === "string")
         return this.get(new loader.path(/**@type string*/(path)), preservePlace);
     var slots = [this];
     $.each(path.parts, function(_,part) {
@@ -57,19 +57,19 @@ tEntity.prototype.get = function(path, preservePlace) {
                 newSlots.push(undefined);
                 return;
             }
-            
+
             var prop = part.prop;
             if (prop === "id" && ('getIdentifier' in slot)) {
                 newSlots.push(slot.getID());
                 return;
             }
-            
+
             var vals = slot[part.prop];
             if (vals === undefined) {
                 newSlots.push(undefined);
                 return;
             }
-            
+
             vals = $.makeArray(vals);
             if (part.index !== undefined)
                 newSlots = newSlots.concat($.makeArray(vals[part.index]));
@@ -106,7 +106,7 @@ tEntity.prototype.reconcileWith = function(id, automatic) {
     var recGroup = internalReconciler.getRecGroup(this);
     var self = this;
     freebase.getCanonicalID(id, function(new_id) {
-        if (recGroup.shouldMerge) 
+        if (recGroup.shouldMerge)
             recGroup.setID(new_id);
         else
             self.setID(new_id);
@@ -180,7 +180,7 @@ tEntity.prototype.getIdentifier = function() {
     var id = this.getID();
     if (!Arr.contains(["None", "None (merged)"], id))
         return id;
-    
+
     var recGroup = internalReconciler.getRecGroup(this);
     if (recGroup && recGroup.shouldMerge)
         return "$recGroup" + recGroup.internal_id
@@ -204,15 +204,15 @@ tEntity.prototype.toJSON = function() {
         if (startsWith("/rec_ui/",key) || key === "reconResults")
             continue;
         var value = this[key];
-        
+
         //remove cyclic links
         var parent = this['/rec_ui/parent'];
         if (parent && Arr.filter(value, function(e) {return e !== parent;}).length === 0)
             continue;
-        
+
         value = toJSON(value);
         if (value !== undefined)
-            js[key] = value; 
+            js[key] = value;
     }
     return js;
 }

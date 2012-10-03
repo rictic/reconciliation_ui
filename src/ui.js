@@ -8,7 +8,7 @@ function initialInputChanged() {
 }
 function initialInputUpdated() {
     $(".inputLoading").show()
-    
+
     if ($("#initialInput")[0].value === "") {
         $(".inputLoading").hide();
         $("#inputWindow").removeClass("disabled");
@@ -64,7 +64,7 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
     var rowHTML = function(row){
         var html = "<tr>";
         for (var i = 0; i < headerProps.length; i++) {
-            html += "<td>" 
+            html += "<td>"
             var val = row[$.inArray(headerProps[i],headers)] || "";
             if (typeof val == "string")
                 html += val;
@@ -79,7 +79,7 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
 
     var separateRows = $.map(ambiguousRecord, rowHTML).join("");
     var numThings = ambiguousRecord.length;
-    
+
     $("table tbody", context).html(separateRows);
 
     var tree = mapTreeToEntity(recordToTree(ambiguousRecord));
@@ -92,14 +92,14 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
         });
     }
     $(".numThings", context).html(numThings);
-    
+
     function ambiguityWrapper(shouldCombine) {
         $("button", context).attr("disabled","disabled");
         onAmbiguityResolved(shouldCombine);
     }
     $(".doCombine", context).unbind("click").click(function() {ambiguityWrapper(true);});
     $(".dontCombine", context).unbind("click").click(function() {ambiguityWrapper(false);});
-    
+
     $('table tbody tr:odd', context).addClass('odd');
     $('table tbody tr:even', context).addClass('even');
     context.show();
@@ -173,7 +173,7 @@ $(document).ready(function() {
         if (reconciliationBegun)
             return "You may have unsaved changes.  Make sure to copy your updated spreadsheet or upload your data to Freebase on the Retrieve Your Data tab.";
     };
-	
+
 	if ("LOADER_VERSION" in window) {
 	    var version = window['LOADER_VERSION'];
 	    $(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + version);
@@ -203,7 +203,7 @@ $(document).ready(function() {
             return;
         inputThrottler();
     }
-    
+
     $("#initialInput").keyup(inputFilterer).keydown(inputFilterer);
 	$("#initialInput").bind("paste", null, inputThrottler);
 	//for IE
@@ -211,9 +211,9 @@ $(document).ready(function() {
     //for most everyone else's browsers
 	$("#initialInput")[0].oninput = inputThrottler;
     if ($("#initialInput")[0].value != "") inputThrottler();
-    
+
     $("#spreadsheetPreview button.continue").click(continueToReconciliation);
-    
+
     //send feedback to the recon server when a reconciliation takes place
     tEntity.addListener("reconciled", function(entity, automatic) {
         var feedback = {
@@ -237,7 +237,7 @@ function updateMdoInfo() {
     $("#mdo_info")[0].value = JSON.stringify(mdo_info);
 }
 
-var freebase_url = "http://www.freebase.com/";
+var freebase_url = "https://www.freebase.com/";
 var reconciliation_url = "http://data.labs.freebase.com/recon/";
 var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
@@ -253,13 +253,13 @@ function addInputWarning(text) {
         displayInputWarning("Additional warnings hidden");
     else
         displayInputWarning(text);
-    
+
     function displayInputWarning(text) {
-        if (text in inputWarnings) 
+        if (text in inputWarnings)
             return;
         else
             inputWarnings[text] = true;
-        
+
         $(".inputWarnings").show()
         $(".inputWarnings ul").append(node("li", text));
     }

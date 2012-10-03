@@ -30,7 +30,7 @@ InternalReconciler.prototype.setMerged = function(entity, shouldMerge) {
     }
 }
 
-/** @param {!tEntity} entity 
+/** @param {!tEntity} entity
   * @return {(!RecGroup|undefined)}
   */
 InternalReconciler.prototype.getRecGroup = function(entity) {
@@ -79,7 +79,7 @@ RecGroup.prototype.register = function(entity) {
         this.reconciledTo = "None";
         this.shouldMerge = true;
     }
-    
+
     this.members.push(entity);
 }
 

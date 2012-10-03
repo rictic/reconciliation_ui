@@ -1,7 +1,7 @@
 // ========================================================================
 // Copyright (c) 2008-2009, Metaweb Technologies, Inc.
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -11,7 +11,7 @@
 //       copyright notice, this list of conditions and the following
 //       disclaimer in the documentation and/or other materials provided
 //       with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY METAWEB TECHNOLOGIES AND CONTRIBUTORS
 // ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -86,11 +86,11 @@ function encodeRow(row) {
 
 function displayOutput() {
     $("#outputData")[0].value = "One moment, rendering...";
-    
+
     function setOutput(val) {
         $("#outputData")[0].value = val;
     }
-    
+
     if ($("input.outputFormat:checked").val() === "spreadsheet")
         renderSpreadsheet(setOutput)
     else
@@ -206,13 +206,13 @@ function getTriples(entities, assertNakedProperties, callback) {
             return undefined;
         return result;
     }
-    
+
     var triples = [];
     politeEach(entities, function(_,subject) {
         if (!subject || !hasValidID(subject) || subject.isCVT())
             return;
-        
-        
+
+
         var types = new Set();
         function addType(type) {
             types.add(type);
@@ -237,7 +237,7 @@ function getTriples(entities, assertNakedProperties, callback) {
             if (type)
                 triples.push({s:getID(subject), p:"/type/object/type",o:type});
         });
-        
+
         /* If the subject is new to Freebase, give it a name as well */
         if (Arr.contains(["None", "None (merged)"], subject.getID())){
             $.each($.makeArray(subject["/type/object/name"]), function(_, name) {
@@ -245,38 +245,38 @@ function getTriples(entities, assertNakedProperties, callback) {
                     triples.push({s:getID(subject),p:"/type/object/name",o:name});
             });
         }
-        
+
         /* Assert each of the top level mql properties */
         var mqlProps = Arr.unique(Arr.filter($.map(subject['/rec_ui/headers'], function(val){return val.split(":")[0]}), isMqlProp));
         $.each(mqlProps, function(_, predicate) {
-            
+
             $.each($.makeArray(subject[predicate]), function(_, object) {
                 if (object === undefined || object === null)
                     return;
-                
+
                 if (isValueProperty(predicate)) {
                     triples.push({s:getID(subject), p:predicate, o:getValue(predicate, object)});
                     return;
                 }
-                
+
                 if (getType(object) !== "object") {
                     error("expected the target of the property " + predicate + " to be an object, but it was a " + getType(object));
                     return;
                 }
-                
+
                 if (object.isCVT()){
                     if (!(object['/rec_ui/parent']['/rec_ui/id'] === subject['/rec_ui/id']))
                         return; //only create the cvt once, from the 'root' of the parent
                     var cvtTripleObject = cvtObject(object);
                     if (cvtTripleObject)
-                        triples.push({s:getID(subject),p:predicate,o:cvtTripleObject}); 
+                        triples.push({s:getID(subject),p:predicate,o:cvtTripleObject});
                 }
-                
-                
+
+
                 if  (!hasValidID(object))
                     return;
-                
-                
+
+
                 triples.push({s:getID(subject),p:predicate,o:getID(object)});
             })
         });
@@ -290,11 +290,11 @@ function checkLogin() {
         $(".loginUnknown").show();
         return;
     }
-    
+
     $(".uploadSpinner").show();
     $(".uploadLogin").hide();
     $(".uploadForm").hide();
-    
+
     $.ajax({
         //hard coded, because other freeq endpoints don't behave the same for login purposes
         url:standardFreeq,
@@ -324,7 +324,7 @@ function checkLogin() {
 function fillinIds(createdEntities) {
     for (var key in createdEntities) {
         var id = standardizeId(createdEntities[key]);
-        
+
         var entity_match = key.match(/entity(\d+)/);
         if (entity_match) {
             entities[entity_match[1]].setID(id);
@@ -351,7 +351,7 @@ function populateCreatedIds(job_id, onComplete) {
 function getCreatedIds(url, callback) {
     //this request is idempotent, and sometimes fails, so repeat until it works
     var repeatingTimer = new RepeatingTimer(30 * 1000, fetchIds);
-    
+
     function fetchIds() {
         $.getJSON(url, null, function(result) {
             repeatingTimer.reset();
@@ -407,7 +407,7 @@ FreeQMonitor.prototype.checkProgress = function() {
                 actionsRemaining += parseInt(i.count,10);
         });
         $('#upload_progressbar').progressbar('option', 'value', (totalActions-actionsRemaining)*100/totalActions);
-        
+
         if (actionsRemaining === 0) {
             self.repeatingTimer.stop();
             if (self.onComplete) {
@@ -427,7 +427,7 @@ FreeQMonitor.prototype.checkProgress = function() {
 function setupOutput() {
     if (inputType === "JSON")
         $("input.outputFormat[value='json']").attr("checked","checked").change()
-    
+
     //fancy stuff only works with the standard freeq url and when we're on
     //the same domain as freeq
     if (onSameDomain() && freeq_url === standardFreeq) {
@@ -449,11 +449,11 @@ function setupOutput() {
                 $(".freeqLoadInProgress").show();
                 $("#upload_progressbar").progressbar({value:0});
                 $(".peacock_link").attr("href",peacock_url);
-                
+
                 var url=freeq_url+job_id;
                 var freeqMonitor = new FreeQMonitor(job_id, function(job_id) {
                     $(".freeqLoadInProgress").hide();
-                    
+
                     if ($("input.graphport:checked")[0].value === "otg") {
                         populateCreatedIds(job_id, function() {
                             displayOutput();
@@ -483,26 +483,26 @@ $(document).ready(function () {
         $(".uploadToSandboxComplete").hide();
         $(".uploadToFreeQ").show();
     });
-    
+
     $("input.outputFormat").change(function() {
         displayOutput();
         $(".outputFormatText").html(this.value);
     });
-    
+
     $("#assert_naked_properties").change(function() { prepareTriples(); });
     $("#mdo_data_source").suggest({type:"/dataworld/information_source",
                                flyout:true,type_strict:"should"})
-                         .bind("fb-select", function(e, data) { 
+                         .bind("fb-select", function(e, data) {
                                $("#mdo_data_source_id")[0].value = data.id;
                                updateMdoInfo();
                          });
     $("#mdo_name")[0].value = defaultMDOName;
     $("#mdo_name").change(updateMdoInfo);
 	$("input.graphport").change(function(){
-        var warning = $("#otg_upload_warning"); 
-        if (this.value === "otg") 
-            warning.show(); 
-        else 
+        var warning = $("#otg_upload_warning");
+        if (this.value === "otg")
+            warning.show();
+        else
             warning.hide();
     });
 });
