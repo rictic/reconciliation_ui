@@ -1,0 +1,16 @@
+{
+	"folders":
+	[
+		{
+			"path": "/Users/rictic/open/paste",
+      "file_exclude_patterns":[
+        "src/*.js",
+        "*.sublime-workspace"
+      ]
+		}
+	],
+  "settings":
+  {
+
+  }
+}

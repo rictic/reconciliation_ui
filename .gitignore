@@ -7,3 +7,4 @@ jsTestDriver.conf
 src/*.js
 src/events/*.js
 src/util/*.js
+*.sublime-workspace
