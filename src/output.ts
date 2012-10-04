@@ -42,7 +42,7 @@ function onHideOutputScreen() {
         spreadsheetRendererYielder.cancel();
     if (tripleGetterYielder)
         tripleGetterYielder.cancel();
-    $("#outputData")[0].value = "";
+    $("#outputData").val("");
 }
 
 /** @param {!Array.<(string|undefined)>} arr
@@ -85,10 +85,10 @@ function encodeRow(row) {
 }
 
 function displayOutput() {
-    $("#outputData")[0].value = "One moment, rendering...";
+    $("#outputData").val("One moment, rendering...");
 
     function setOutput(val) {
-        $("#outputData")[0].value = val;
+        $("#outputData").val(val);
     }
 
     if ($("input.outputFormat:checked").val() === "spreadsheet")
@@ -118,13 +118,13 @@ function renderSpreadsheet(onComplete) {
 function prepareTriples() {
     $(".renderingTriples").show();
     $(".triplesRendered").hide();
-    getTriples(entities, $("#assert_naked_properties")[0].checked, function(triples) {
+    getTriples(entities, $("#assert_naked_properties").attr('checked'), function(triples) {
         politeMap(triples,function(val){return JSON.stringify(val)},
             function(encodedTriples) {
                 var tripleString = encodedTriples.join("\n");
                 $(".triplesDisplay").html(tripleString);
                 $(".triple_count").html(encodedTriples.length);
-                $('#payload')[0].value = tripleString;
+                $('#payload').val(tripleString);
                 $(".renderingTriples").hide();
                 $(".triplesRendered").show();
             }
@@ -454,7 +454,7 @@ function setupOutput() {
                 var freeqMonitor = new FreeQMonitor(job_id, function(job_id) {
                     $(".freeqLoadInProgress").hide();
 
-                    if ($("input.graphport:checked")[0].value === "otg") {
+                    if ($("input.graphport:checked").val() === "otg") {
                         populateCreatedIds(job_id, function() {
                             displayOutput();
                         });
@@ -493,10 +493,10 @@ $(document).ready(function () {
     $("#mdo_data_source").suggest({type:"/dataworld/information_source",
                                flyout:true,type_strict:"should"})
                          .bind("fb-select", function(e, data) {
-                               $("#mdo_data_source_id")[0].value = data.id;
+                               $("#mdo_data_source_id").val(data.id);
                                updateMdoInfo();
                          });
-    $("#mdo_name")[0].value = defaultMDOName;
+    $("#mdo_name").val(defaultMDOName);
     $("#mdo_name").change(updateMdoInfo);
 	$("input.graphport").change(function(){
         var warning = $("#otg_upload_warning");

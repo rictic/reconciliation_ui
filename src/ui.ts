@@ -9,7 +9,7 @@ function initialInputChanged() {
 function initialInputUpdated() {
     $(".inputLoading").show()
 
-    if ($("#initialInput")[0].value === "") {
+    if ($("#initialInput").val() === "") {
         $(".inputLoading").hide();
         $("#inputWindow").removeClass("disabled");
         $("#inputWindow button").removeAttr("disabled");
@@ -35,7 +35,7 @@ function cancelInputProcessing() {
 
 function handleInput(callback) {
     inputProcessingYielder = new Yielder();
-    var input = $('#initialInput')[0].value;
+    var input = $('#initialInput').val();
     function onProgressMade() {
         $(".inputLoading").hide();
         $("#inputWindow .screen").hide();
@@ -210,7 +210,7 @@ $(document).ready(function() {
 	$("#initialInput")[0].onpaste = inputThrottler;
     //for most everyone else's browsers
 	$("#initialInput")[0].oninput = inputThrottler;
-    if ($("#initialInput")[0].value != "") inputThrottler();
+    if ($("#initialInput").val() != "") inputThrottler();
 
     $("#spreadsheetPreview button.continue").click(continueToReconciliation);
 
@@ -227,14 +227,18 @@ $(document).ready(function() {
 });
 
 function updateMdoInfo() {
-    var mdo_info = {software_tool:"/guid/9202a8c04000641f800000000df257ed"};
-    var name = $("#mdo_name")[0].value;
+    var mdo_info = {
+      software_tool:"/guid/9202a8c04000641f800000000df257ed",
+      name: undefined,
+      info_source: undefined
+    };
+    var name = $("#mdo_name").val()
     if (name != "" && name != defaultMDOName)
        mdo_info.name = name;
-    var info_source = $("#mdo_data_source_id")[0].value;
+    var info_source = $("#mdo_data_source_id").val();
     if (info_source != "")
        mdo_info.info_source = info_source;
-    $("#mdo_info")[0].value = JSON.stringify(mdo_info);
+    $("#mdo_info").val(JSON.stringify(mdo_info));
 }
 
 var freebase_url = "https://www.freebase.com/";
@@ -243,7 +247,7 @@ var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
 /* Takes a string and populates the initialInput textarea. */
 function handlePOSTdata(data) {
-    $('#initialInput')[0].value = data;
+    $('#initialInput').val(data);
     initialInputUpdated();
 }
 

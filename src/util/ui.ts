@@ -10,7 +10,7 @@
    @param {number=} minimumTimeBetween
    @return {function()}
 */
-function throttler(every, rarely, minimumTimeBetween) {
+function throttler(every, rarely, minimumTimeBetween?:number) {
     var timeout = minimumTimeBetween || 250;
     var waiter = null;
     var againAfterWaiting = false;

@@ -79,7 +79,7 @@ function renderReconChoices(entity:tEntity) {
 
     renderInternalReconciliationDialog(entity, template);
 
-    $(".find_topic", template)[0].value = entity['/type/object/name'];
+    $(".find_topic", template).val(entity['/type/object/name']);
     $(".find_topic", template)
         .suggest({type:entity['/type/object/type'],
                   type_strict:"should",

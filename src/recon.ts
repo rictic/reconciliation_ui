@@ -287,6 +287,6 @@ function getConcordeCandidates(entity:tEntity, callback, onError, typeless) {
   getJSON(base_url + "callback=?", $.param(params, true), handler);
 }
 
-function getCandidates(entity, callback, onError, typeless) {
+function getCandidates(entity, callback, onError, typeless?) {
     getConcordeCandidates(entity, callback, onError, typeless);
 }

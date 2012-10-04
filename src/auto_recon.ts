@@ -62,7 +62,10 @@ function autoReconcile() {
             addReviewItem(entity);
         return;
     }
-    getCandidates(entity, autoReconcileResults, function(){automaticQueue.shift();autoReconcile();});
+    getCandidates(entity, autoReconcileResults, function(){
+        automaticQueue.shift();
+        autoReconcile();
+    });
 }
 
 

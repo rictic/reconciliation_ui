@@ -52,7 +52,7 @@ function politeEach(array: any[], f, onComplete?, yielder?) {
     @param {!function(!Array)} onComplete
     @param {Yielder=} yielder
 */
-function politeMap(array, f, onComplete, yielder) {
+function politeMap(array, f, onComplete, yielder?) {
   yielder = yielder || new Yielder();
   var result = [];
   politeEach(array, function(index, value) {

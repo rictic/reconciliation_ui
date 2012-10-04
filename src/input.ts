@@ -397,7 +397,7 @@ function pathPut(path, topindex, record, value) {
       * @param {!number} pathIndex
       * @param {number=} currentIndex
       */
-    function putValue(currentRecord, pathIndex, currentIndex) {
+    function putValue(currentRecord, pathIndex:number, currentIndex?:number) {
         var currentPart = path.parts[pathIndex]
         currentIndex = currentPart.index || currentIndex || 0;
         var atLastPath = pathIndex + 1 >= path.parts.length
@@ -508,7 +508,10 @@ function findAllProperties(trees, onComplete, yielder) {
   */
 function mapTreesToEntities(trees, onComplete, yielder) {
     internalReconciler = new InternalReconciler();
-    politeMap(trees, function(record){return mapTreeToEntity(record)}, onComplete, yielder);
+    politeMap(trees,
+              function(record){return mapTreeToEntity(record)},
+              onComplete,
+              yielder);
 }
 
 /** Assumes that the metadata for all properties encountered
@@ -516,7 +519,7 @@ function mapTreesToEntities(trees, onComplete, yielder) {
   * @param {!Object} tree
   * @param {tEntity=} parent
 */
-function mapTreeToEntity(tree, parent) {
+function mapTreeToEntity(tree, parent?) {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity.addParent(parent);
@@ -668,6 +671,6 @@ function warnUnknownType(typeName) {
   * @param {!string} type
   * @param {string=} msg
   */
-function warnInvalidLiteral(value, type, msg) {
+function warnInvalidLiteral(value, type, msg?) {
     addInputWarning("`" + value + "` is not a valid " + type + ". " + (msg || ""));
 }

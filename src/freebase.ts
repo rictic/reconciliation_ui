@@ -186,7 +186,7 @@ module freebase {
     * @param {!function(!string, !freebase.mqlTree)} onComplete
     * @param {function(!string, !freebase.mqlTree)=} onError
     */
-  export function fetchTypeInfo(types, onComplete, onError) {
+  export function fetchTypeInfo(types, onComplete, onError?) {
       var q_pairs = [];
       $.each(types, function(_,type) {
           if (freebase.getTypeMetadata(type))
@@ -223,7 +223,7 @@ module freebase {
     * @param {!function(string, freebase.mqlTree)} onComplete
     * @param {function(string, freebase.mqlTree)=} onError
     */
-  export function fetchPropertyInfo(properties, onComplete, onError) {
+  export function fetchPropertyInfo(properties, onComplete, onError?) {
       var simpleProps = [];
       var errorProps = [];
 
