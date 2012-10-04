@@ -1,4 +1,17 @@
-// From typescript, released under the Apache license
+/* *****************************************************************************
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+MERCHANTABLITY OR NON-INFRINGEMENT.
+
+See the Apache Version 2.0 License for specific language governing permissions
+and limitations under the License.
+***************************************************************************** */
 
 // Typing for the jQuery library, version 1.7.x
 
@@ -21,7 +34,7 @@ interface JQueryAjaxSettings {
     dataType?: string;
     error?(jqXHR: JQueryXHR, textStatus: string, errorThrow: string): any;
     global?: bool;
-    headers?: { [key: any]: any; };
+    headers?: { [key: string]: any; };
     ifModified?: bool;
     isLocal?: bool;
     jsonp?: string;
@@ -30,7 +43,7 @@ interface JQueryAjaxSettings {
     password?: string;
     processData?: bool;
     scriptCharset?: string;
-    statusCode?: { [key: any]: any; };
+    statusCode?: { [key: string]: any; };
     success?(data: any, textStatus: string, jqXHR: JQueryXHR);
     timeout?: number;
     traditional?: bool;
@@ -38,7 +51,7 @@ interface JQueryAjaxSettings {
     url?: string;
     username?: string;
     xhr?: any;
-    xhrFields?: { [key: any]: any; };
+    xhrFields?: { [key: string]: any; };
 }
 
 /*
@@ -154,6 +167,7 @@ interface JQueryStatic {
     /****
      AJAX
     *****/
+    ajax(settings: JQueryAjaxSettings);
     ajax(url: string, settings: JQueryAjaxSettings);
 
     ajaxSettings: JQueryAjaxSettings;
@@ -199,7 +213,7 @@ interface JQueryStatic {
     ****/
     css(e: any, propertyName: string, value?: any);
     css(e: any, propertyName: any, value?: any);
-    cssHooks: { [key: any]: any; };
+    cssHooks: { [key: string]: any; };
 
     /****
      DATA
@@ -319,7 +333,7 @@ interface JQuery {
 
     attr(attributeName: string): string;
     attr(attributeName: string, value: any): JQuery;
-    attr(map: { [key: any]: any; }): JQuery;
+    attr(map: { [key: string]: any; }): JQuery;
     attr(attributeName: string, func: (index: any, attr: any) => any): JQuery;
 
     hasClass(className: string): bool;
