@@ -44,7 +44,7 @@ function clone(obj) {
   * @param {!string} kind The tag of the created node
   * @param {...*} var_args
   */
-function node(kind, var_args) {
+function node(kind, ...args:any[]) {
     var node = $(document.createElement(arguments[0]));
     var options = arguments[arguments.length-1]
     var len = arguments.length - 1;
@@ -88,39 +88,6 @@ function charIn(string, chr) {
     return string.indexOf(chr) !== -1;
 }
 
-function isValueProperty(propName) {
-    if (Arr.contains(["/type/object/type", "/type/object/name", "id"], propName))
-        return true;
-    if (freebase.getPropMetadata(propName))
-        return isValueType(freebase.getPropMetadata(propName).expected_type);
-    return undefined;
-}
-
-function isValueType(type) {
-    return Arr.contains(type['extends'], "/type/value");
-}
-
-function isCVTProperty(propName) {
-    var prop = freebase.getPropMetadata(propName);
-    if (prop)
-        return isCVTType(prop.expected_type);
-    return undefined;
-}
-
-/** @param {!(string|Object)} type
-  * @return {(boolean|undefined)}
-  */
-function isCVTType(type) {
-    if (getType(type) === "string")
-        type = freebase.getTypeMetadata(type);
-    if (type === undefined) {
-        error("type undefined in isCVTType");
-        return;
-    }
-
-    return type["/freebase/type_hints/mediator"]
-        && type["/freebase/type_hints/mediator"].value;
-}
 
 function toJSON(value) {
     if (typeof value === "object" && 'toJSON' in value)
@@ -185,7 +152,8 @@ function getChainedProperty(entity, prop) {
 }
 
 var isMqlProp = (function(){
-    var invalidList = ["/type/object/name","/type/object/type","/type/object/id",/(^|:)id$/];
+    var invalidList = ["/type/object/name","/type/object/type","/type/object/id",];
+    invalidList.push(/(^|:)id$/);
     return function(prop) {
         for (var i = 0; i<invalidList.length; i++){
             if (prop.match(invalidList[i]))
@@ -235,7 +203,8 @@ function OrderedMap() {
         var self = this;
         return Arr.concatMap(properties, function(prop) {
             var innerProps = self.get(prop).getComplexProperties();
-            return [prop].concat($.map(innerProps,function(innerProp){return prop + ":" + innerProp}));
+            var combined = $.map(innerProps,function(innerProp){return prop + ":" + innerProp})
+            return [prop].concat(combined);
         });
     }
 }
@@ -278,7 +247,7 @@ var OrderedSet = Set;
  * @param {function()} onTimeout
  * @param {number=} millis milliseconds until query times out
  */
-function getJSON(url, params, onSuccess, onTimeout, millis) {
+function getJSON(url, params, onSuccess, onTimeout?, millis?) {
     millis = millis || 120000; //default of 2 minute timeout
     var timedOut = false;
     var responded = false;
@@ -376,7 +345,7 @@ function logger(log_level) {
 }
 
 function insertInto(text, textarea) {
-    var selection = new Selection(textarea[0]).create();
+    var selection = new TSelection(textarea[0]).create();
     var val = textarea.val();
     val = val.substring(0,selection.start) + text + val.substring(selection.end);
     textarea.val(val);

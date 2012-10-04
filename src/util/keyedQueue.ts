@@ -2,31 +2,25 @@
 //KeyedQueue only stores values (numbers, booleans, strings, etc)
 //override getKey to return a unique, identifying value to store non-values
 
-/** @constructor */
-function KeyedQueue() {
-    //for quick existance checks
-    this._set = new Set();
-    //for ordering
-    this._array = [];
-}
+class KeyedQueue extends EventEmitter {
+  private _set = new Set();
+  private _array = [];
 
-KeyedQueue.prototype = new EventEmitter();
-
-KeyedQueue.prototype.peek = function(n) {
+  peek(n) {
     n = n || 1;
     return this._array[n-1];
-}
+  }
 
-KeyedQueue.prototype.shift = function() {
+  shift() {
     var val = this._array.shift();
     this._set.remove(this.getKey(val));
     this.emit("changed");
     this.emit("removed", val);
     return val;
-}
+  }
 
-//adds to the end of the queue
-KeyedQueue.prototype.push = function(val) {
+  //adds to the end of the queue
+  push(val) {
     var key = this.getKey(val);
     if (this._set.contains(key))
         return false;
@@ -35,10 +29,10 @@ KeyedQueue.prototype.push = function(val) {
     this.emit("changed");
     this.emit("added", val);
     return true;
-}
+  }
 
-//adds to the front of the queue
-KeyedQueue.prototype.unshift = function(val) {
+  //adds to the front of the queue
+  unshift(val) {
     var key = this.getKey(val);
     if (this._set.contains(key))
         return false;
@@ -47,9 +41,9 @@ KeyedQueue.prototype.unshift = function(val) {
     this.emit("changed");
     this.emit("added", val);
     return true;
-}
+  }
 
-KeyedQueue.prototype.remove = function(val) {
+  remove(val) {
     var key = this.getKey(val);
     if (!this._set.contains(key))
         return undefined;
@@ -65,21 +59,18 @@ KeyedQueue.prototype.remove = function(val) {
     this.emit("changed");
     this.emit("removed", val);
     return val;
-}
+  }
 
-KeyedQueue.prototype.getKey = function(val) {
+  getKey(val) {
     return val;
+  }
+
+  size() { return this._array.length; }
 }
 
-KeyedQueue.prototype.size = function() { return this._array.length; }
-
-/** @constructor */
-function EntityQueue() {
-    KeyedQueue.call(this);
-}
-
-EntityQueue.prototype = new KeyedQueue();
-
-EntityQueue.prototype.getKey = function(entity) {
+class EntityQueue extends KeyedQueue {
+  getKey(entity) {
     return entity['/rec_ui/id'];
+  }
 }
+

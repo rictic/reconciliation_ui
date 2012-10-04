@@ -1,7 +1,7 @@
 var totalRecords = 0;
 var reconUndoStack;
 
-function isUnreconciled(entity) {
+function isUnreconciled(entity:tEntity):bool {
     if (entity.isCVT())
         return false;
     return Arr.contains([undefined,null,""], entity.id);
@@ -54,7 +54,7 @@ function initializeReconciliation(onReady) {
     });
 }
 
-function handleReconChoice(entity,freebaseId) {
+function handleReconChoice(entity:tEntity, freebaseId:string) {
     manualQueue.remove(entity);
     $("#manualReconcile" + entity['/rec_ui/id']).remove();
     reconUndoStack.push(getReconciliationUndo(entity))
@@ -204,7 +204,7 @@ function getTraditionalCandidates(entity, callback, onError,typeless) {
     getJSON(reconciliation_url + "query?jsonp=?", {q:JSON.stringify(query), limit:limit}, handler, onError);
 }
 
-function getConcordeCandidates(entity, callback, onError, typeless) {
+function getConcordeCandidates(entity:tEntity, callback, onError, typeless) {
   function handler(results) {
     entity.reconResults = cleanResults(results);
     callback(entity);
@@ -214,7 +214,8 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
       return {
         id: candidate.mid,
         name: [candidate.name],
-        score: candidate.confidence
+        score: candidate.confidence,
+        match: false
       };
     }
     if (results.match) {
@@ -231,7 +232,13 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
   }
   function getParams() {
     var structured_query = constructReconciliationQuery(entity,typeless);
-    var params = {};
+    var params = {
+      name: [],
+      kind: [],
+      prop: [],
+      limit: 4,
+      key: '',
+    };
     //Concorde only supports one name for something
     params['name'] = $.makeArray(structured_query["/type/object/name"])[0];
     params['kind'] = $.makeArray(structured_query["/type/object/type"]);
@@ -245,7 +252,7 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
     });
     return params;
   }
-  function walkTree(tree, onLeaf) {
+  function walkTree(tree:Object, onLeaf) {
     var path = [];
     function walk(node) {
       for (var key in node) {
@@ -255,10 +262,11 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
           if (type === "object") {
             walk(value);
           } else {
+            var pathCopy = path.slice();
             onLeaf(path.slice(), value);
           }
         });
-        path.pop(key);
+        path.pop();
       }
     }
     walk(tree);
@@ -275,7 +283,7 @@ function getConcordeCandidates(entity, callback, onError, typeless) {
   }
   var params = getParams();
   params.limit = limit;
-  params.api_key = api_key;
+  params.key = api_key;
   getJSON(base_url + "callback=?", $.param(params, true), handler);
 }
 

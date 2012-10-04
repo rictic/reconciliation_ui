@@ -1,15 +1,17 @@
-/** @constructor */
-function InternalReconciler() {
+class InternalReconciler {
     /** @type !Object.<!string,!Object.<!string,!RecGroup>> */
-    this.byType = {};
+    private byType = {};
+
+    register(entity) {
+      var recGroup = this.getRecGroup(entity);
+      if (recGroup === undefined)
+          return;
+      recGroup.register(entity);
+    }
 }
 
 /** @param {!tEntity} entity */
 InternalReconciler.prototype.register = function(entity) {
-    var recGroup = this.getRecGroup(entity);
-    if (recGroup === undefined)
-        return;
-    recGroup.register(entity);
 }
 
 /** @param {!tEntity} entity

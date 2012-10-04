@@ -179,7 +179,7 @@ function textValue(value) {
                                 a control is rendered to enable the user to expand the list out.
     @param {number=} cutoff
 */
-function wrapForOverflow(elementArray, cutoff) {
+function wrapForOverflow(elementArray, cutoff?) {
     var result = node("div")
     cutoff = cutoff || 3;
     if (elementArray.length > cutoff+1){

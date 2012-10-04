@@ -4,7 +4,7 @@
 
 function manualReconcile() {
     if ($(".manualReconChoices:visible").length === 0) {
-        var val = manualQueue.peek();
+        var val:tEntity = manualQueue.peek();
         while (val && val.getID() !== undefined) {
             manualQueue.shift();
             if (!internalReconciler.getRecGroup(val).shouldMerge)
@@ -40,7 +40,7 @@ function displayReconChoices(entityID) {
         $(".displayArea").empty().append($("#" + getManualReconId(entity)))
 }
 
-function renderReconChoices(entity) {
+function renderReconChoices(entity:tEntity) {
     if (entity == undefined) return;
     var template = $("#manualReconcileTemplate").clone();
     template[0].id = getManualReconId(entity);

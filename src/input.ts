@@ -61,15 +61,12 @@
 
 */
 
-//A namespace for types
-var loader = {row:null, record:null, tree:null};
-
 /** @typedef {!Array.<!string>}*/
-loader.row;
+//loader.row;
 /** @typedef {!Array.<!Array.<!string>>} */
-loader.record;
+//loader.record;
 /** @typedef {!Object.<!string,(!string,!loader.tree)>} */
-loader.tree;
+//loader.tree;
 
 //Some globals that various components poke into
 /** @type {!Array.<!string>} */
