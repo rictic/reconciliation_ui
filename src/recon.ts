@@ -181,30 +181,8 @@ function constructReconciliationQuery(entity, typeless) {
     }
 }
 
-/**
- *  @param {tEntity} entity
- *  @param {function(tEntity)} callback
- *  @param {function(...)} onError
- *  @param {boolean=} typeless
- */
-function getTraditionalCandidates(entity, callback, onError,typeless) {
-    function handler(results) {
-        entity.reconResults = results;
-        callback(entity);
-    }
-    var defaultLimit = 4;
-    var limit = defaultLimit;
-    if (entity.reconResults)
-        limit = Math.max(entity.reconResults.length * 2, defaultLimit);
-    if (!entity.typelessRecon && typeless){
-        entity.typelessRecon = true;
-        limit = defaultLimit;
-    }
-    var query = constructReconciliationQuery(entity,typeless);
-    getJSON(reconciliation_url + "query?jsonp=?", {q:JSON.stringify(query), limit:limit}, handler, onError);
-}
-
-function getConcordeCandidates(entity:tEntity, callback, onError, typeless) {
+function getCandidates(entity:tEntity, callback:(tEntity)=>any,
+                       onError, typeless?:bool) {
   function handler(results) {
     entity.reconResults = cleanResults(results);
     callback(entity);
@@ -272,7 +250,7 @@ function getConcordeCandidates(entity:tEntity, callback, onError, typeless) {
     walk(tree);
   }
 
-  var base_url = 'https://www.googleapis.com/freebase/v1dev/reconcile?';
+  var base_url = reconciliation_url;
   var defaultLimit = 4;
   var limit = defaultLimit;
   if (entity.reconResults)
@@ -285,8 +263,4 @@ function getConcordeCandidates(entity:tEntity, callback, onError, typeless) {
   params.limit = limit;
   params.key = api_key;
   getJSON(base_url + "callback=?", $.param(params, true), handler);
-}
-
-function getCandidates(entity, callback, onError, typeless?) {
-    getConcordeCandidates(entity, callback, onError, typeless);
 }

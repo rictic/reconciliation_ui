@@ -194,7 +194,8 @@ $(document).ready(function() {
     $("#initialInput").keypress(capture_tab).keydown(capture_tab);
 
     var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
-    var harmlessKeys = new Set(37,38,39,40,91,93,20,35,36,33,34,27,18,17,16,224);
+    var harmlessKeys = new Set('37','38','39','40','91','93','20','35','36',
+                               '33','34','27','18','17','16','224');
     var inputFilterer = function(event) {
         if (harmlessKeys.contains(event.keyCode))
             return;
@@ -205,11 +206,11 @@ $(document).ready(function() {
     }
 
     $("#initialInput").keyup(inputFilterer).keydown(inputFilterer);
-	$("#initialInput").bind("paste", null, inputThrottler);
-	//for IE
-	$("#initialInput")[0].onpaste = inputThrottler;
+    $("#initialInput").bind("paste", null, inputThrottler);
+    //for IE
+    $("#initialInput")[0].onpaste = inputThrottler;
     //for most everyone else's browsers
-	$("#initialInput")[0].oninput = inputThrottler;
+    $("#initialInput")[0].oninput = inputThrottler;
     if ($("#initialInput").val() != "") inputThrottler();
 
     $("#spreadsheetPreview button.continue").click(continueToReconciliation);
@@ -242,7 +243,7 @@ function updateMdoInfo() {
 }
 
 var freebase_url = "https://www.freebase.com/";
-var reconciliation_url = "http://data.labs.freebase.com/recon/";
+var reconciliation_url = "https://www.googleapis.com/freebase/v1dev/reconcile?"
 var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
 /* Takes a string and populates the initialInput textarea. */
