@@ -1,0 +1,31 @@
+application: paste
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /
+  static_files: recon.html
+  upload: recon.html
+
+- url: /recon.html
+  static_files: recon.html
+  upload: recon.html
+
+- url: /recon.css
+  static_files: recon.css
+  upload: recon.css
+
+- url: /src/
+  static_dir: src/
+
+- url: /resources/
+  static_dir: resources/
+
+- url: /lib/
+  static_dir: lib/
+
+- url: /examples/
+  static_dir: examples/
+
