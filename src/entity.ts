@@ -216,7 +216,10 @@ class tEntity {
         recGroup.unreconcile();
     }
   }
+
+  //TODO(rictic): this is really hacky:
+  static addListener(name:string, handler:Function){};
+  static emit(name:string, ...args:any[]){};
 }
 
 copyInto(new EventEmitter(), tEntity);
-
