@@ -498,7 +498,7 @@ $(document).ready(function () {
                          });
     $("#mdo_name").val(defaultMDOName);
     $("#mdo_name").change(updateMdoInfo);
-	$("input.graphport").change(function(){
+    $("input.graphport").change(function(){
         var warning = $("#otg_upload_warning");
         if (this.value === "otg")
             warning.show();

@@ -174,13 +174,13 @@ $(document).ready(function() {
             return "You may have unsaved changes.  Make sure to copy your updated spreadsheet or upload your data to Freebase on the Retrieve Your Data tab.";
     };
 
-	if ("LOADER_VERSION" in window) {
-	    var version = window['LOADER_VERSION'];
-	    $(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + version);
-	    var bugReportDetails = "&description=" + escape("Found in version: " + version + "\r\n\r\n");
-	    $(".bugReportLink").attr("href", $(".bugReportLink").attr("href") + bugReportDetails);
-	    freebase.beacon("ready");
-	}
+    if ("LOADER_VERSION" in window) {
+        var version = window['LOADER_VERSION'];
+        $(".versionLink").attr("href","http://github.com/freebase/reconciliation_ui/commit/" + version);
+        var bugReportDetails = "&description=" + escape("Found in version: " + version + "\r\n\r\n");
+        $(".bugReportLink").attr("href", $(".bugReportLink").attr("href") + bugReportDetails);
+        freebase.beacon("ready");
+    }
 
     var capture_tab = function(event) {
         if (event.keyCode == 9) {
