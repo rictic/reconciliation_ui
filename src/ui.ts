@@ -165,7 +165,17 @@ function continueToReconciliation() {
 }
 var reconciliationBegun = false;
 var defaultMDOName = "Spreadsheet Upload about (kind of data)"
-$(document).ready(function() {
+
+var onReady = combineCallbacks(2, initialSetup);
+
+function OnGoogleClientLoaded() {
+  gapi.client.setApiKey(api_key);
+  onReady();
+}
+
+$(document).ready(onReady)
+
+function initialSetup() {
     jQuery.ajaxSettings.cache = true; //keeps jquery from inserting cache-busting timecodes into json requests
 
     $("#progressbar").progressbar({value:0});
@@ -225,7 +235,7 @@ $(document).ready(function() {
         }
         $.getJSON(reconciliation_url + "feedback", {feedback:JSON.stringify(feedback)}, function(){});
     });
-});
+};
 
 function updateMdoInfo() {
     var mdo_info = {

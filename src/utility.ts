@@ -253,14 +253,14 @@ function getJSON(url, params, onSuccess, onTimeout?, millis?) {
     var responded = false;
     function timeout() {
         if (responded) return;
-        warn("timed out");
+        console.warn("timed out");
         timedOut = true;
         if (onTimeout) onTimeout();
     }
     var timer = addTimeout(timeout, millis);
     function responseHandler(response) {
         if (timedOut) {
-            warn("got response after timeout")
+            console.warn("got response after timeout")
             return;
         }
         responded = true;
@@ -328,21 +328,6 @@ function copyInto(source, destination) {
         destination[key] = source[key];
 }
 
-/*
-** create debugging tools if they're not available
-*/
-function logger(log_level) {
-    if (console[log_level])
-        return function(message) {
-          try {
-            return console[log_level](message);
-          }
-          catch(e) {
-            return console[log_level](JsObjDump.annotate(message));
-          }
-        };
-    return function(message){/*node("div",JSON.stringify(message)).appendTo("#" + log_level + "Log");*/ return message;}
-}
 
 function insertInto(text, textarea) {
     var selection = new TSelection(textarea[0]).create();
@@ -352,23 +337,8 @@ function insertInto(text, textarea) {
     textarea.focus();
 }
 
-//These messages don't go anywhere at the moment, but it'd be very easy to create the
-// places where they'd go
-if (!window.console)
-    var console = {};
-var error  = logger("error");
-var warn   = logger("warn" );
-var log    = logger("log"  );
-var info   = logger("info" );
-var assert = function() {
-    if (console.assert)
-        return function(bool, message) {return console.assert(bool,message);};
-    return function(bool,message){if (!bool) error(message)};
-}()
-
-
 var debug = function(val) {
-    log(JSON.stringify(JsObjDump.annotate(val), null, 2))
+    console.log(JSON.stringify(JsObjDump.annotate(val), null, 2))
 }
 
 var p = function(val) {
@@ -376,4 +346,19 @@ var p = function(val) {
         debug(val.toJSON());
     else
         debug(val);
+}
+
+function combineCallbacks(expected, trueCallback) {
+  if (expected === 0) {
+    setTimeout(trueCallback, 0);
+    return function(){};
+  }
+
+  var received = 0;
+  return function callBack() {
+    received += 1;
+    if (received === expected) {
+      trueCallback();
+    }
+  }
 }

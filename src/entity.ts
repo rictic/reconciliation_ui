@@ -114,7 +114,7 @@ class tEntity {
 
   addProperty(prop:string, value) {
     if (getType(prop) !== "string"){
-      warn("called tEntity.property.addProperty with prop of type `" + getType(prop) + "`, expected string.  The value was: " + JSON.stringify(JsObjDump.annotate(value)));
+      console.warn("called tEntity.property.addProperty with prop of type `" + getType(prop) + "`, expected string.  The value was: " + JSON.stringify(JsObjDump.annotate(value)));
       return;
     }
 

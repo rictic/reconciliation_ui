@@ -182,7 +182,7 @@ function parseTSV(spreadsheet, onComplete, yielder) {
                 }
 
                 if (c == ""){
-                    error("unexpected end of input, no closing double-quote marks found");
+                    console.error("unexpected end of input, no closing double-quote marks found");
                     fields.push(field);
                     position+=1;
                     return fields;

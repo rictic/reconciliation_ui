@@ -151,7 +151,7 @@ function getTriples(entities, assertNakedProperties, callback) {
             return $.map(value, function(val){return getValue(property, val)});
         }
         if (getType(value) === "object") {
-            error("found an object for the value property " + property + "!");
+            console.error("found an object for the value property " + property + "!");
             return undefined;
         }
         var stringValue = value;
@@ -177,7 +177,7 @@ function getTriples(entities, assertNakedProperties, callback) {
             var predicate = props[i];
             if (predicate.indexOf(type) !== 0){
                 if (predicate !== "/type/object/type")
-                    warn("bad predicate " + predicate + " in CVT with type" + type);
+                    console.warn("bad predicate " + predicate + " in CVT with type" + type);
                 continue;
             }
             var value = cvt[predicate];
@@ -260,7 +260,7 @@ function getTriples(entities, assertNakedProperties, callback) {
                 }
 
                 if (getType(object) !== "object") {
-                    error("expected the target of the property " + predicate + " to be an object, but it was a " + getType(object));
+                    console.error("expected the target of the property " + predicate + " to be an object, but it was a " + getType(object));
                     return;
                 }
 
@@ -302,7 +302,7 @@ function checkLogin() {
         complete:function(response){
             $(".uploadSpinner").hide();
             if (!response || !response.status){
-                error(response);
+                console.error(response);
                 return;
             }
             if (response.status === 200){
@@ -314,7 +314,7 @@ function checkLogin() {
                 $(".uploadForm").hide();
             }
             else
-                error(response);
+                console.error(response);
         }
     });
 }

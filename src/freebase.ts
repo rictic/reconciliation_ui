@@ -36,8 +36,8 @@ module freebase {
     * @param {freebase.mqlTree} envelope
     * @param {function(freebase.mqlTree)} handler
     */
-  export function mqlRead(envelope, handler, errorHandler?) {
-      $.getJSON(getMqlReadURL(envelope), null, handler, errorHandler);
+  export function mqlRead(envelope, handler) {
+      $.getJSON(getMqlReadURL(envelope), null, handler);
   };
 
   /** Used below, thus the odd style above
@@ -54,7 +54,7 @@ module freebase {
       console.log(envelope);
       throw new Error("can't use queries");
     }
-    param['api_key'] = api_key;
+    param['key'] = api_key;
     return fbapi_url + "mqlread?callback=?&" + $.param(param);
   }
 
@@ -77,36 +77,14 @@ module freebase {
       @param {function(!string, !freebase.mqlTree)=} errorHandler
   */
   export function mqlReads(q_pairs, handler, onComplete, errorHandler?) {
-    if (q_pairs.length === 0){
-      onComplete();
-      return;
-    }
-    var keys = $.map(q_pairs, function(q_pair){return q_pair[0]});
-    var encoded_queries = $.each(q_pairs, function(_,q_pair){q_pair[0] = idToQueryName(q_pair[0]);});
-    multiQuery(encoded_queries);
 
-    function multiQuery(queries) {
-      var results = {};
-      var combiner = combineCallbacks(queries.length, function() {
-        onComplete(results);
-      })
-      $.each(queries, function(_,qparts) {
-        freebase.mqlRead(qparts[1], function(res) {
-          results[qparts[0]] = res;
-          combiner();
-        });
+    var combiner = combineCallbacks(q_pairs.length, onComplete)
+    $.each(q_pairs, function(_,q_pair) {
+      freebase.mqlRead(q_pair[1], function(res) {
+        handler(q_pair[0], res['result']);
+        combiner();
       });
-    }
-  }
-
-  function combineCallbacks(expected, trueCallback) {
-    var received = 0;
-    return function callBack() {
-      received += 1;
-      if (received === expected) {
-        trueCallback();
-      }
-    }
+    });
   }
 
   var nameCache = {};
@@ -270,7 +248,7 @@ module freebase {
   /** @param {freebase.mqlTree} mqlResult
       @return {boolean} */
   export function isBadOrEmptyResult(mqlResult) {
-      return mqlResult.code != "/api/status/ok" || mqlResult.result === null;
+      return mqlResult.result === null;
   }
 
   /** @param {string=} info */
@@ -329,7 +307,7 @@ function isCVTType(type) {
     if (getType(type) === "string")
         type = freebase.getTypeMetadata(type);
     if (type === undefined) {
-        error("type undefined in isCVTType");
+        console.error("type undefined in isCVTType");
         return;
     }
 
