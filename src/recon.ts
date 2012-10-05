@@ -262,5 +262,8 @@ function getCandidates(entity:tEntity, callback:(tEntity)=>any,
   var params = getParams();
   params.limit = limit;
   params.key = api_key;
-  getJSON(base_url + "callback=?", $.param(params, true), handler);
+  gapi.client.request({
+    "path": "/freebase/v1dev/reconcile",
+    "params": params
+  }).execute(handler);
 }
