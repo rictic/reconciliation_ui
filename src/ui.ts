@@ -243,6 +243,7 @@ function updateMdoInfo() {
 }
 
 var freebase_url = "https://www.freebase.com/";
+var fbapi_url = "https://www.googleapis.com/freebase/v1/";
 var reconciliation_url = "https://www.googleapis.com/freebase/v1dev/reconcile?"
 var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 

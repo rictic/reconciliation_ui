@@ -3,9 +3,9 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    
+
     <title>Freebase Loader</title>
-    
+
     <link rel="stylesheet" href="lib/dataTables/media/css/demos.css" type="text/css" media="screen">
     <link rel="stylesheet" href="lib/jquery.ui/themes/cupertino/ui.all.css" type="text/css" media="screen" title="Cupertino">
     <link rel="stylesheet" href="lib/suggest/freebase-controls.css" type="text/css" media="screen">
@@ -16,7 +16,7 @@
 </head>
 <body>
     <div id='main_app'>
-        
+
 <!--    Handling the input from the user      -->
       <div id="gettingInput">
         <!--    Ask for a spreadsheet        -->
@@ -26,7 +26,7 @@
             <div class="spinnerHolder">
               <img src='resources/spinner.gif' class='inputLoading invisible'>
             </div>
-            
+
             <div class='examples'>
               Try Freebase Loader with these example spreadsheets:
               <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Load Simple Movie Example</button>
@@ -34,20 +34,20 @@
 
             </div>
         </div>
-        
-        
+
+
         <div id='inputWindow'>
             <div class="inputWarnings invisible">
                 <ul>
                 </ul>
             </div>
-            
+
             <!--    If the spreadsheet is ambiguous, ask for clarification     -->
             <div id="formatDisambiguation" class="container invisible screen">
                 <h3>Are these <span class='numThings'>several</span> rows about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'></span>"?</h3>
 
                 <button class='dontCombine'>
-                    This is about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s. 
+                    This is about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s.
                 </button>
                 <button class='doCombine'>
                     These rows are all about "<span class='thingName'>one thing</span>"
@@ -62,7 +62,7 @@
                     </tbody>
                 </table>
             </div>
-    
+
             <!--    Confirm that the parse was correct      -->
             <div id="spreadsheetPreview" class="container invisible screen">
                 <h3>Does this look right?</h3>
@@ -89,7 +89,7 @@
                     <h3>Loading, just a moment...</h3>
                 </div>
                 <div class="nowReconciling invisible">
-                  <h3>Everything's working fine automatically</h3>  
+                  <h3>Everything's working fine automatically</h3>
                   As the auto-reconciler finds topics that it's unable to reconcile, they will appear here to give you a chance at resolving them
                 </div>
                 <div class="notReconciling invisible">
@@ -97,12 +97,12 @@
                   All of your records are now reconciled.  Retrieve your spreadsheet by clicking the tab up above.
                 </div>
               </div>
-              
+
 <!--          Templates are moved here to be displayed       -->
               <div class='displayArea'>
-              
+
               </div>
-              
+
               <div class='holdingArea invisible'>
                   <!--  Template for a manual reconciliation case. This is copied and the holes are filled in
                       in code, so this is safe to edit so long as it has the same general structure.
@@ -125,7 +125,7 @@
                             <tr><th class='title' colspan='4'>to one of these Freebase topics:</th></tr>
 
                             <tbody class="manualReconciliationChoices">
-                                
+
                             </tbody>
                       </table>
 
@@ -142,7 +142,7 @@
               </div>
           </div>
           </div>
-          
+
 <!--      Review what's been reconciled so far      -->
           <div id='reviewScreen'>
               <h3>Items reconciled so far:</h3>
@@ -153,17 +153,17 @@
                   </thead>
                   <tbody class="manualReconciliationsToReview invisible">
                     <tr><th class='mid-table-subheading' colspan='2'>Manual Reconciliations</th></tr>
-                  </tbody> 
+                  </tbody>
                   <tbody><tr><th></th><th></th></tr></tbody>
                   <tbody class="automaticReconciliationsToReview invisible">
                     <tr><th class='mid-table-subheading' colspan='2'>Automatic Reconciliations</th></tr>
-                  </tbody> 
+                  </tbody>
                   <tbody><tr><th></th><th></th></tr></tbody>
                   <tbody class="oldReconciliationsToReview invisible">
                     <tr><th class='mid-table-subheading' colspan='2'>Items Reconciled Previously</th></tr>
-                  </tbody> 
+                  </tbody>
               </table>
-              
+
               <table class='invisible templates'>
               <tr class='reviewReconciledTemplate'><td><span class='candidateName'>Stevie wonder</span></td><td class='freebaseName'>Stevie Wonder</td></tr>
               <tr class='reviewNewTemplate'><td><span class='candidateName'>Stevie wonder</span></td><td>None - create a new one</td></tr>
@@ -171,40 +171,40 @@
               <tr class='reviewRecGroupTemplate'><td class="candidate"><span class="count">Several</span> <span class="type">topic</span>s named <span class="name">Stevie wonder</span></td><td class='freebaseName'>Stevie Wonder</td></tr>
               </table>
           </div>
-          
+
 <!--      Give the user their data back      -->
           <div id="spreadsheetRender" class="container">
-              
+
               <h3>Copy your updated <span class='outputFormatText'>spreadsheet</span> from here:</h3>
               <textarea id="outputData" class='spreadsheet'></textarea><br>
               Format: <label for="spreadsheet_out">Spreadsheet</label><input type="radio" name='outputFormat' class='outputFormat' value="spreadsheet" id="spreadsheet_out" checked> | <label for="json_out">JSON</label><input type="radio" name='outputFormat' class='outputFormat' value="json" id="json_out">
-              
-              
-              
-              
-              
+
+
+
+
+
               <h3>Upload your data to Freebase:</h3>
               <div class="uploadToFreeQ">
                   <div class='uploadLogin invisible'>
                       You need to <a href='http://www.freebase.com/signin/login' target='_blank'>login at Freebase.com</a> before uploading.  <button class="checkLogin">Then Click Here To Continue</button>
                   </div>
-                  <div class='uploadForm invisible'> 
+                  <div class='uploadForm invisible'>
                       <div class="renderingTriples invisible">
                           One moment, preparing your data for upload... <img src="resources/spinner.gif">
                       </div>
-                      
+
                       <div class="triplesRendered invisible">
                           We've found <span class='triple_count'></span> assertions that you can upload.
                           <button class="displayTriples">Detailed view &darr;</button>
                           <div>
                               <pre class='triplesDisplay invisible'></pre>
                           </div>
-                  
+
                           <br>
                           <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
                           <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
-              
-              
+
+
                           <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
                           <form id="freeq_form" target="_blank" method="POST" accept-charset="utf-8">
                               <input type='hidden' name='user' value='' id='user'>
@@ -217,13 +217,13 @@
                               Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
                               <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
                               <input type="submit" value="Upload">
-                      
+
                               <div class="loginUnknown invisible">
                                   Unable to tell if you're logged in or not.<br>
                                   If you get a 401 Unauthenticated error when uploading, be sure that you're <a href='http://www.freebase.com/signin/login' target='_blank'>logged in on freebase.com</a>.
                               </div>
                               <div class="error invisible">
-                              
+
                               </div>
                           </form>
                       </div>
@@ -243,12 +243,12 @@
                   </div>
 
                   <div class="uploadToOTGComplete invisible">
-                      Your data has been uploaded to Freebase.  
-                      
+                      Your data has been uploaded to Freebase.
+
                       <div class="fetchingFreeqIds">
                           Fetching the ids of newly created topics... <img src="resources/spinner.gif">
                       </div>
-                      
+
                       <div class="idsFetched invisible">
                           The ids of any new topics that were created have been added into to your spreadsheet.
                       </div>
@@ -256,27 +256,27 @@
 
                   <a class="peacock_link" target="_blank">View the status of your data on Peacock</a><br/>
               </div>
-              
+
               <div class='uploadSpinner invisible'>
                   <img src="resources/spinner.gif">
-              </div>              
+              </div>
           </div>
       </div>
-      
+
       <div id="progresscontainer" class="nowReconciling invisible">
         <label class='kind'>Finding automatic topic matches...</label>
         <div id='progressbar'>
           <label>50%</label>
         </div>
       </div>
-      
+
       <span class='app_info'>
       <a href="http://wiki.freebase.com/wiki/Freebase_Loader" target='_blank' class="documentation">Documentation</a>
-      | <a href="http://github.com/freebase/reconciliation_ui/" target='_blank' class='view_source'>Source Code</a> 
-      | <a href="http://github.com/rictic/reconciliation_ui/tree/development" class='versionLink' target='_blank'>Version</a> 
+      | <a href="http://github.com/freebase/reconciliation_ui/" target='_blank' class='view_source'>Source Code</a>
+      | <a href="http://github.com/rictic/reconciliation_ui/tree/development" class='versionLink' target='_blank'>Version</a>
       | <a href="https://bugs.freebase.com/secure/CreateIssueDetails!init.jspa?pid=10148&amp;issuetype=1&amp;priority=3&amp;components=10402&amp;assignee=peter" class='bugReportLink' target="_blank">Found a Bug?</a>
       </span>
-      
+
       <a href="#optionsPanel" class='optionsButton' onclick='$("#main_app").hide();$("#optionsPanel").show(); return false;'>Options</a>
     </div>
 
@@ -286,25 +286,25 @@
       <label for="freebase_url">Freebase URL: </label><input type="text" name="freebase_url" value="" id="freebase_url" size='60'><br>
       <label for="freeq_url">FreeQ URL: </label><input type="text" name="freeq_url" value="" id="freeq_url" size='60'><br>
       <label for="assert_naked_properties" alt="If this isn't checked then Loader will assert any types which are implied by the properties hanging off of a topic">Assert 'naked' properties</label><input type="checkbox" name="assert_naked_properties" id="assert_naked_properties">
-      
-      
+
+
       <button onclick='$("#optionsPanel").hide();$("#main_app").show();'>Ok</button>
     </div>
-    
-    
+
+
     <div id="miniTopicFloater" class="invisible" style="position:absolute;"></div>
-    
+
     <noscript>
       <div class="fullShadow"> </div>
       <div class="noscriptError">
         <p>You have javascript disabled.  Freebase Loader is a javascript application that runs in your browser, and it can't run with javascript disabled.</p>
-        
+
         <p>You can re-enable javascript in the preferences pane of your browser.</p>
       </div>
     </noscript>
-    
+
     <div class='invisible'>
-      
+
 <!--  Begin scripts to compile -->
         <script charset="utf-8" src="lib/json2.js"></script>
         <script charset="utf-8" src="lib/jquery.js"></script>
@@ -315,14 +315,14 @@
         <script charset="utf-8" src="lib/jquery.form.js"></script>
         <script charset="utf-8" src="lib/jsobjdump.js"></script>
         <script charset="utf-8" src="lib/isISO8601.js"></script>
-        
+
         <script charset="utf-8" src="lib/dataTables/media/js/jquery.dataTables.js"></script>
-        
+
         <script charset="utf-8" src="lib/selection.js"></script>
-                
+
         <script charset="utf-8" src="lib/suggest/jquery.freebase.minitopic.js"></script>
         <script charset="utf-8" src="lib/suggest/freebase.suggest.js"></script>
-        
+
         <script charset="utf-8" src="src/events/eventEmitter.js"></script>
         <script charset="utf-8" src="src/util/set.js"></script>
         <script charset="utf-8" src="src/util/keyedQueue.js"></script>
@@ -343,16 +343,17 @@
         <script charset="utf-8" src="src/freebase.js"></script>
         <script charset="utf-8" src="src/options.js"></script>
         <script charset="utf-8" src="src/internalReconciler.js"></script>
-                
-                
+
+
         <script charset="utf-8" src="src/ui.js"></script>
 <!--  End scripts to compile -->
 
+        <script src="https://apis.google.com/js/client.js?onload=OnGoogleClientLoaded"></script>
         <script charset="utf-8" src="examples/sampledata.js" defer async></script>
         <script charset="utf-8" src="examples/complexdata.js" defer async></script>
-                
+
         <script charset="utf-8" src="version.js"></script>
-        
+
 <!--    POSTed data goes here      -->
     </div>
 </body>

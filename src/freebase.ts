@@ -36,8 +36,8 @@ module freebase {
     * @param {freebase.mqlTree} envelope
     * @param {function(freebase.mqlTree)} handler
     */
-  export function mqlRead(envelope, handler) {
-      $.getJSON(getMqlReadURL(envelope), null, handler);
+  export function mqlRead(envelope, handler, errorHandler?) {
+      $.getJSON(getMqlReadURL(envelope), null, handler, errorHandler);
   };
 
   /** Used below, thus the odd style above
@@ -46,27 +46,28 @@ module freebase {
     * @returns {!string}
     */
   function getMqlReadURL(envelope) {
-      var param;
-      if ('query' in envelope) {
-        param = {query:JSON.stringify(envelope)};
-      } else {
-        param = {queries:JSON.stringify(envelope)}
-      }
-      return freebase_url + "/api/service/mqlread?callback=?&" + $.param(param);
+    var param;
+    if ('query' in envelope) {
+      param = envelope;
+      param.query = JSON.stringify(envelope.query);
+    } else {
+      console.log(envelope);
+      throw new Error("can't use queries");
+    }
+    param['api_key'] = api_key;
+    return fbapi_url + "mqlread?callback=?&" + $.param(param);
   }
 
-  /** Maps a freebase ID into a valid MQL query id
-    * @param {string} id
-    * @return {string}
-    */
-  function idToQueryName(id) {
-      return id.replace(/\//g,'ZZZZ');
+  /** Maps a freebase ID into a valid MQL query id */
+  function idToQueryName(id:string):string {
+    return id.replace(/\//g,'ZZZZ');
   }
 
   var maxURLLength = 2048;
 
-  /** freebase.mqlReads takes a list of pairs of [fb_key, query] and wraps them in a minimal
-      number of HTTP GET requests needed to perform them.  For each query result
+  /** freebase.mqlReads takes a list of pairs of [fb_key, query] and wraps
+      them in a minimal number of HTTP GET requests needed to perform them.
+      For each query result
       it calls handler(fb_key, result) if the query is successful, and onError(fb_key, response)
       if the mql query fails.  After all of the queries have been handled, it calls onComplete()
 
@@ -75,65 +76,38 @@ module freebase {
       @param {!function()} onComplete
       @param {function(!string, !freebase.mqlTree)=} errorHandler
   */
-  export function mqlReads(q_pairs, handler, onComplete, errorHandler) {
-      if (q_pairs.length === 0){
-          onComplete();
-          return;
-      }
-      var keys = $.map(q_pairs, function(q_pair){return q_pair[0]});
-      var encoded_queries = $.each(q_pairs, function(_,q_pair){q_pair[0] = idToQueryName(q_pair[0]);});
-      multiQuery(encoded_queries);
+  export function mqlReads(q_pairs, handler, onComplete, errorHandler?) {
+    if (q_pairs.length === 0){
+      onComplete();
+      return;
+    }
+    var keys = $.map(q_pairs, function(q_pair){return q_pair[0]});
+    var encoded_queries = $.each(q_pairs, function(_,q_pair){q_pair[0] = idToQueryName(q_pair[0]);});
+    multiQuery(encoded_queries);
 
-      /* multiQuery takes a list of pairs of [name, query] and breaks them up so that it
-         each mql query fits in an HTTP GET request, calling handler on each container
-         query result
-      */
-      function multiQuery(queries) {
-          var query = {};
-          $.each(queries, function(_,qparts) {
-              query[qparts[0]] = qparts[1];
-          });
-          if (queries.length > 1 && getMqlReadURL(query).length > maxURLLength) {
-              var splitPoint = queries.length / 2;
-              multiQuery(queries.slice(0, splitPoint));
-              multiQuery(queries.slice(splitPoint));
-          }
-          else
-              freebase.mqlRead(query, dispatcher);
-      }
-
-      /* Takes the result of multiple mql queries all wrapped up together
-         and dispatches them to handler if they succeeded, errorHandler
-         if they failed, and calls onComplete if all of the keys have
-         been handled. */
-      function dispatcher(responseGroup) {
-          //FIXME: need to run unique over the query key set
-          assert(keys.length > 0, "freebase.mqlReads.dispatcher: keys.length should be >0, found: " + keys.length);
-          var i = 0;
-          while(i < keys.length) {
-              var key = keys[i];
-              var response = responseGroup[idToQueryName(key)];
-              if (!response) {
-                  i++;
-                  continue;
-              }
-
-              //We've handled the ith key, remove it from the list of keys
-              keys = Arr.removeAt(keys, i);
-              if (freebase.isBadOrEmptyResult(response)) {
-                  if (errorHandler)
-                      errorHandler(key, response);
-                  else
-                      error(response);
-              }
-              else
-                  handler(key, response.result);
-          }
-          if (keys.length === 0)
-              onComplete();
-      }
+    function multiQuery(queries) {
+      var results = {};
+      var combiner = combineCallbacks(queries.length, function() {
+        onComplete(results);
+      })
+      $.each(queries, function(_,qparts) {
+        freebase.mqlRead(qparts[1], function(res) {
+          results[qparts[0]] = res;
+          combiner();
+        });
+      });
+    }
   }
 
+  function combineCallbacks(expected, trueCallback) {
+    var received = 0;
+    return function callBack() {
+      received += 1;
+      if (received === expected) {
+        trueCallback();
+      }
+    }
+  }
 
   var nameCache = {};
   /** Given an id and a callback, immediately calls the callback with the freebase name
