@@ -79,11 +79,13 @@ function renderReconChoices(entity:tEntity) {
 
     renderInternalReconciliationDialog(entity, template);
 
-    $(".find_topic", template).val(entity['/type/object/name']);
+    var search = entity['/type/object/name'];
+    $.each($.makeArray(entity['/type/object/type']), function(_,type) {
+      search += " type:" + type;
+    })
+    $(".find_topic", template).val(search);
     $(".find_topic", template)
-        .suggest({type:entity['/type/object/type'],
-                  type_strict:"should",
-                  flyout:true,
+        .suggest({flyout:true,
                   key: api_key})
         .bind("fb-select", function(e, data) {
           entity['/rec_ui/freebase_name'] = $.makeArray(data.name);
