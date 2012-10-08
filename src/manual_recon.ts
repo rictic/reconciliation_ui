@@ -147,7 +147,7 @@ function renderCandidate(result, mqlProps, entity) {
     button.click(function(val) {entity['/rec_ui/freebase_name'] = result.name; handleReconChoice(entity, result.id)})
 
     node("td",
-         node("img",{src:freebase_url + "/api/trans/image_thumb/"+result['id']+"?maxwidth=100&maxheight=100"})
+         node("img",{src: freebase.imageUrl(result['id'], {maxwidth:100,maxheight:100})})
     ).appendTo(tableRow);
 
     tableRow.append(node("td",displayValue(result)));

@@ -30,7 +30,6 @@ module freebase {
       }
   };
 
-
   /** Simple mql read
     *
     * @param {freebase.mqlTree} envelope
@@ -66,10 +65,12 @@ module freebase {
   var maxURLLength = 2048;
 
   /** freebase.mqlReads takes a list of pairs of [fb_key, query] and wraps
-      them in a minimal number of HTTP GET requests needed to perform them.
-      For each query result
-      it calls handler(fb_key, result) if the query is successful, and onError(fb_key, response)
-      if the mql query fails.  After all of the queries have been handled, it calls onComplete()
+      them in a bunch of HTTP GET requests to perform them. This used to be
+      efficient, but it isn't any longer.
+
+      For each query result it calls handler(fb_key, result) if the query is
+      successful, and onError(fb_key, response) if the mql query fails.  After
+      all of the queries have been handled, it calls onComplete()
 
       @param {!Array.<!Array.<!string>>} q_pairs
       @param {!function(!string, !freebase.mqlTree)} handler
@@ -77,7 +78,6 @@ module freebase {
       @param {function(!string, !freebase.mqlTree)=} errorHandler
   */
   export function mqlReads(q_pairs, handler, onComplete, errorHandler?) {
-
     var combiner = combineCallbacks(q_pairs.length, onComplete)
     $.each(q_pairs, function(_,q_pair) {
       freebase.mqlRead(q_pair[1], function(res) {
@@ -87,12 +87,31 @@ module freebase {
     });
   }
 
-  var nameCache = {};
-  /** Given an id and a callback, immediately calls the callback with the freebase name
-      if it has been looked up before.
+  export function mqlReadQueries(queries:Object,
+                                 onComplete:(res:Object)=>any) {
+    var response = {
+      code: '/api/status/ok',
+      warnings: []
+    };
+    var combiner = combineCallbacks(numProperties(queries), function() {
+      onComplete(response);
+    });
+    for (var key in queries) {
+      (function(key){
+        freebase.mqlRead(queries[key], function(result) {
+          response[key] = result;
+          combiner();
+        });
+      })(key);
+    }
+  }
 
-      If it hasn't, then the callback is called once with the id immediately, and once again
-      with the name after it has been looked up.
+  var nameCache = {};
+  /** Given an id and a callback, immediately calls the callback with the
+      freebase name if it has been looked up before.
+
+      If it hasn't, then the callback is called once with the id immediately,
+      and once again with the name after it has been looked up.
 
       @param {!string} id
       @param {!function(string)} callback
@@ -109,8 +128,7 @@ module freebase {
       });
   }
 
-  /** @param {!string} id */
-  export function makeLink(id) {
+  export function makeLink(id:string) {
       var simpleEl = node("span",id);
       var link = freebase.link(simpleEl, id);
       freebase.getName(id, function(name) {
@@ -266,11 +284,28 @@ module freebase {
       });
   }
 
-  export function getBlurb(id, options, onComplete) {
-    options = options || {};
-    $.getJSON("https://api.freebase.com/api/trans/blurb" + id + "?callback=?&", options, function(response) {
-      onComplete(response.result ? response.result.body : "");
-    });
+  declare interface BlurbOptions {
+    format? :string;
+    lang? : string;
+    maxlength? : number;
+    key?: string; // apikey
+  }
+  export function getBlurb(id:string, options:BlurbOptions, onSuccess) {
+    options.key = api_key;
+    $.getJSON(fbapi_url + "text/" + id + "?callback=?", options, onSuccess);
+  }
+
+  declare interface ImageOptions {
+    fallbackid?:string;
+    maxheight?:number;
+    maxwidth?:number;
+    mode?:string;
+    pad?:string;
+    key?:string; // apikey
+  }
+  export function imageUrl(id:string, options:ImageOptions) {
+    options.key = api_key;
+    return fbapi_url + "image/" + id + "?" + $.param(options);
   }
 
   /** @param {string} s
@@ -279,6 +314,7 @@ module freebase {
   export function isMqlDatetime(s) {
     return isISO8601(s);
   }
+
 }
 
 function isValueProperty(propName) {

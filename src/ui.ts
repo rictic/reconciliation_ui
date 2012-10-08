@@ -170,7 +170,7 @@ var onReady = combineCallbacks(2, initialSetup);
 
 function OnGoogleClientLoaded() {
   gapi.client.setApiKey(api_key);
-  onReady();
+  gapi.client.load('freebase', 'v1dev', onReady);
 }
 
 $(document).ready(onReady)
