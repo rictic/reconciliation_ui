@@ -83,7 +83,8 @@ function renderReconChoices(entity:tEntity) {
     $(".find_topic", template)
         .suggest({type:entity['/type/object/type'],
                   type_strict:"should",
-                  flyout:true})
+                  flyout:true,
+                  key: api_key})
         .bind("fb-select", function(e, data) {
           entity['/rec_ui/freebase_name'] = $.makeArray(data.name);
           handleReconChoice(entity, data.id);

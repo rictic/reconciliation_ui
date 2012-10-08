@@ -491,7 +491,7 @@ $(document).ready(function () {
 
     $("#assert_naked_properties").change(function() { prepareTriples(); });
     $("#mdo_data_source").suggest({type:"/dataworld/information_source",
-                               flyout:true,type_strict:"should"})
+                               flyout:true,type_strict:"should", key:api_key})
                          .bind("fb-select", function(e, data) {
                                $("#mdo_data_source_id").val(data.id);
                                updateMdoInfo();

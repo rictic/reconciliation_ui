@@ -1,3 +1,3 @@
 interface JQuery {
-  suggest(options?:Object);
+  suggest(options:Object);
 }
