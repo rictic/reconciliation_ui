@@ -184,7 +184,15 @@ function constructReconciliationQuery(entity, typeless) {
 function getCandidates(entity:tEntity, callback:(tEntity)=>any,
                        onError, typeless?:bool) {
   function handler(results) {
-    entity.reconResults = cleanResults(results);
+    if (results[0]['error']) {
+      // Probably over rate, wait for a minute and then retry.
+      setTimeout(function retry() {
+        getCandidates(entity, callback, onError, typeless);
+      }, 60 * 1000);
+      return;
+    }
+
+    entity.reconResults = cleanResults(results[0]['result']);
     callback(entity);
   }
   function cleanResults(results) {
@@ -262,8 +270,20 @@ function getCandidates(entity:tEntity, callback:(tEntity)=>any,
   var params = getParams();
   params.limit = limit;
   params.key = api_key;
-  gapi.client.request({
-    "path": "/freebase/v1dev/reconcile",
-    "params": params
-  }).execute(handler);
+
+  $.ajax('https://www.googleapis.com/rpc', {
+    dataType:'json',
+    contentType:'application/json-rpc',
+    type:'POST',
+    data:JSON.stringify([{
+      "jsonrpc" : "2.0",
+      "id" : "1",
+
+      "method" : "freebase.reconcile",
+      "apiVersion" : "v1",
+
+      "params" : params
+    }]),
+    success:handler
+  });
 }

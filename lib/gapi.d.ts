@@ -17,4 +17,9 @@ declare module gapi {
   export var client : GapiClient;
     //export request();
     //declare request(p:GapiClientRequest):GapiClientQuery;
+
+  export var auth : {
+    getToken():string;
+    authorize(params:Object, handler:(Object)=>any);
+  };
 }

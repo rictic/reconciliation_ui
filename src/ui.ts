@@ -225,7 +225,9 @@ function initialSetup() {
 
     $("#spreadsheetPreview button.continue").click(continueToReconciliation);
 
-    //send feedback to the recon server when a reconciliation takes place
+    // Send feedback to the recon server when a reconciliation takes
+    // place. Not supported in Concorde at the moment.
+    /*
     tEntity.addListener("reconciled", function(entity, automatic) {
         var feedback = {
             query:entity['/rec_ui/recon_query'],
@@ -235,6 +237,7 @@ function initialSetup() {
         }
         $.getJSON(reconciliation_url + "feedback", {feedback:JSON.stringify(feedback)}, function(){});
     });
+    */
 };
 
 function updateMdoInfo() {
