@@ -284,7 +284,7 @@ module freebase {
       });
   }
 
-  declare interface BlurbOptions {
+  export interface BlurbOptions {
     format? :string;
     lang? : string;
     maxlength? : number;
@@ -295,7 +295,7 @@ module freebase {
     $.getJSON(fbapi_url + "text/" + id + "?callback=?", options, onSuccess);
   }
 
-  declare interface ImageOptions {
+  export interface ImageOptions {
     fallbackid?:string;
     maxheight?:number;
     maxwidth?:number;
