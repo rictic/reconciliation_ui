@@ -186,7 +186,7 @@
               <h3>Upload your data to Freebase:</h3>
               <div class="uploadToFreeQ">
                   <div class='uploadLogin invisible'>
-                      You need to <a href='http://www.freebase.com/signin/login' target='_blank'>login at Freebase.com</a> before uploading.  <button class="checkLogin">Then Click Here To Continue</button>
+                      <button class="loginButton">Click Here To Login!</button>
                   </div>
                   <div class='uploadForm invisible'>
                       <div class="renderingTriples invisible">
@@ -205,26 +205,9 @@
                           <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
 
 
-                          <input type='hidden' name='mdo_data_source_id' value='' id='mdo_data_source_id'>
-                          <form id="freeq_form" target="_blank" method="POST" accept-charset="utf-8">
-                              <input type='hidden' name='user' value='' id='user'>
-                              <input type='hidden' name="action_type" value="LOAD_TRIPLE" id="action_type">
-                              <input type="hidden" name="operator" value="/user/spreadsheet_bot" id="operator">
-                              <input type="hidden" name="check_params" value="false" id="check_params">
-                              <input type='hidden' name='mdo_info' value='' id='mdo_info'>
-                              <input type="hidden" name="payload" value="" id="payload">
-                              <input type="hidden" name="followMerges" value="true" id="followMerges">
-                              Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
-                              <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
-                              <input type="submit" value="Upload">
-
-                              <div class="loginUnknown invisible">
-                                  Unable to tell if you're logged in or not.<br>
-                                  If you get a 401 Unauthenticated error when uploading, be sure that you're <a href='http://www.freebase.com/signin/login' target='_blank'>logged in on freebase.com</a>.
-                              </div>
-                              <div class="error invisible">
-
-                              </div>
+                          Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
+                          <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
+                          <button id='upload_button'>Upload</button>
                           </form>
                       </div>
                       <br>
@@ -254,7 +237,7 @@
                       </div>
                   </div>
 
-                  <a class="peacock_link" target="_blank">View the status of your data on Peacock</a><br/>
+                  <a class="peacock_link" target="_blank">View the status of your load.</a><br/>
               </div>
 
               <div class='uploadSpinner invisible'>

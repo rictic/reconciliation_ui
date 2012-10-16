@@ -19,7 +19,12 @@ declare module gapi {
     //declare request(p:GapiClientRequest):GapiClientQuery;
 
   export var auth : {
-    getToken():string;
+    getToken():{
+      access_token: string;
+      expires_in: string;
+      state: string;
+      token_type: string;
+    };
     authorize(params:Object, handler:(Object)=>any);
   };
 }

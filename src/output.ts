@@ -32,10 +32,9 @@
 */
 
 function onDisplayOutputScreen() {
-    addTimeout(checkLogin,0);
-    addTimeout(displayOutput,0);
-    addTimeout(prepareTriples,0);
-    $("#freeq_form").attr("action", freeq_url)
+    addTimeout(() => checkLogin(),0);
+    addTimeout(() => displayOutput(),0);
+    addTimeout(() => prepareTriples(),0);
 }
 function onHideOutputScreen() {
     if (spreadsheetRendererYielder)
@@ -115,15 +114,21 @@ function renderSpreadsheet(onComplete) {
 }
 
 
-function prepareTriples() {
+function prepareTriples(callback?:(triples:SuperFreeq.Triple[])=>any) {
     $(".renderingTriples").show();
     $(".triplesRendered").hide();
-    getTriples(entities, $("#assert_naked_properties").attr('checked'), function(triples) {
+    var assertNaked = !! $("#assert_naked_properties").attr('checked');
+    getSFTriples(entities, assertNaked,
+      function(triples) {
+        if (callback) {
+          callback(triples);
+        }
+
         politeMap(triples,function(val){return JSON.stringify(val)},
             function(encodedTriples) {
                 var tripleString = encodedTriples.join("\n");
                 $(".triplesDisplay").html(tripleString);
-                $(".triple_count").html(encodedTriples.length);
+                $(".triple_count").html("" + encodedTriples.length);
                 $('#payload').val(tripleString);
                 $(".renderingTriples").hide();
                 $(".triplesRendered").show();
@@ -132,8 +137,47 @@ function prepareTriples() {
     });
 }
 
+
+
+function getSFTriples(entities, assertNakedProperties,
+                      callback:(triples:SuperFreeq.Triple[])=>any) {
+  function tripToSfTrip(triple:OldFreeqTriple):SuperFreeq.Triple {
+    if ($.type(triple.o) === "object") {
+      // TODO(rictic): when SuperFreeq supports CVTs, fill this in.
+      return;
+    }
+
+    return {
+      sub: triple.s,
+      pred: triple.p,
+      obj: triple.o
+    };
+  }
+
+  getTriples(entities, assertNakedProperties,
+    function(triples) {
+      var results : SuperFreeq.Triple[] = [];
+      politeEach(triples, function(_, triple) {
+        var sfTriple = tripToSfTrip(triple);
+        if (sfTriple) {
+          results.push(sfTriple);
+        }
+      }, function() {
+        callback(results);
+      }, tripleGetterYielder);
+    }
+  )
+}
+
+interface OldFreeqTriple {
+  s: string;
+  p: string;
+  o: any;
+}
+
 var tripleGetterYielder;
-function getTriples(entities, assertNakedProperties, callback) {
+function getTriples(entities:tEntity[], assertNakedProperties:bool,
+                    callback:(triples:OldFreeqTriple[])=>any) {
     tripleGetterYielder = new Yielder();
     function hasValidID(entity) {
         var id = getID(entity);
@@ -285,38 +329,13 @@ function getTriples(entities, assertNakedProperties, callback) {
 
 var standardFreeq = "http://data.labs.freebase.com/freeq/spreadsheet/";
 function checkLogin() {
-    if (!onSameDomain()) {
-        $(".uploadForm").show();
-        $(".loginUnknown").show();
-        return;
-    }
-
-    $(".uploadSpinner").show();
-    $(".uploadLogin").hide();
+  SuperFreeq.isAuthorized(function() {
+    $(".uploadLogin").show();
     $(".uploadForm").hide();
-
-    $.ajax({
-        //hard coded, because other freeq endpoints don't behave the same for login purposes
-        url:standardFreeq,
-        type:"GET",
-        complete:function(response){
-            $(".uploadSpinner").hide();
-            if (!response || !response.status){
-                console.error(response);
-                return;
-            }
-            if (response.status === 200){
-                $(".uploadLogin").hide();
-                $(".uploadForm").show();
-            }
-            else if (response.status === 401){
-                $(".uploadLogin").show();
-                $(".uploadForm").hide();
-            }
-            else
-                console.error(response);
-        }
-    });
+  }, function() {
+    $(".uploadLogin").hide();
+    $(".uploadForm").show();
+  });
 }
 
 
@@ -380,104 +399,93 @@ function getCreatedIds(url, callback) {
 }
 
 
-/** @constructor
-  * @param {!number} job_id
-  * @param {function(!number)=} onComplete
-  */
-function FreeQMonitor(job_id, onComplete) {
-    /** @const */
-    this.job_id = job_id;
-    /** @const */
-    this.url = freeq_url + job_id;
-    this.onComplete = onComplete;
-    var self = this;
-    //for reliability, no matter what happens we'll check FreeQ at least once every 30 seconds
-    this.repeatingTimer = new RepeatingTimer(30 * 1000, function() {self.checkProgress();})
+class FreeqMonitor {
+  repeatingTimer;
+  constructor(public job:SuperFreeq.Job, public onComplete) {
+    this.repeatingTimer = new RepeatingTimer(30 * 1000,
+                                             ()=>this.checkProgress());
     this.checkProgress();
+  }
+
+  checkProgress() {
+    this.job.get((result:SuperFreeq.JobStatus) => {
+      this.repeatingTimer.reset();
+      if (!result.stats) {
+        addTimeout(() => this.checkProgress(), 1000);
+        return;
+      }
+      var totalActions = 0;
+      var actionsRemaining = result.stats.num_ready;
+      for (var key in result.stats) {
+        totalActions += result.stats[key];
+      }
+      $('#upload_progressbar').progressbar('option', 'value', (totalActions-actionsRemaining)*100/totalActions);
+
+      if (actionsRemaining === 0) {
+        this.repeatingTimer.stop();
+        if (this.onComplete) {
+            //ensures that onComplete is called at most once
+            var onComplete = this.onComplete;
+            this.onComplete = undefined;
+            onComplete(this.job);
+        }
+      }
+      else {
+        addTimeout(() => this.checkProgress(), 1000);
+      }
+    });
+  }
 }
 
-FreeQMonitor.prototype.checkProgress = function() {
-    var self = this;
-    function handler(result){
-        self.repeatingTimer.reset();
-        var totalActions = result.result.count;
-        var actionsRemaining = 0;
-        $.each(result.result.details, function(_,i){
-            if (Arr.contains([null, "proc", "queued"], i.status))
-                actionsRemaining += parseInt(i.count,10);
-        });
-        $('#upload_progressbar').progressbar('option', 'value', (totalActions-actionsRemaining)*100/totalActions);
-
-        if (actionsRemaining === 0) {
-            self.repeatingTimer.stop();
-            if (self.onComplete) {
-                //ensures that onComplete is called at most once
-                var onComplete = self.onComplete;
-                self.onComplete = undefined;
-                onComplete(self.job_id);
-            }
-        }
-        else {
-            addTimeout(function() {self.checkProgress()}, 1000);
-        }
-    }
-    $.getJSON(this.url, null, handler);
-}
 
 function setupOutput() {
     if (inputType === "JSON")
         $("input.outputFormat[value='json']").attr("checked","checked").change()
+}
 
-    //fancy stuff only works with the standard freeq url and when we're on
-    //the same domain as freeq
-    if (onSameDomain() && freeq_url === standardFreeq) {
-        $('#freeq_form').ajaxForm({
-            dataType:'json'
-            ,beforeSend: function() {
-                $(".uploadToFreeQ").hide();
-                $(".uploadForm .error").hide();
-                $(".uploadSpinner").show();
-            }
-            ,error: function(x, msg, error) {
-                $(".uploadToFreeQ").show();
-                $(".uploadForm .error").show().html("There was an error uploading to TripleLoader: " + escape(msg) + " " + error);
-            }
-            ,success: function(result) {
-                var job_id=result.result.job_id;
-                var peacock_url="http://peacock.freebaseapps.com/stats/data.labs/spreadsheet/"+job_id;
-                $(".freeqLoad").show();
-                $(".freeqLoadInProgress").show();
-                $("#upload_progressbar").progressbar({value:0});
-                $(".peacock_link").attr("href",peacock_url);
+function doLoad() {
+  var name = $("#mdo_name").val()
+  var info_source = $("#mdo_data_source_id").val();
+  var graph = $(".graphport").val();
 
-                var url=freeq_url+job_id;
-                var freeqMonitor = new FreeQMonitor(job_id, function(job_id) {
-                    $(".freeqLoadInProgress").hide();
 
-                    if ($("input.graphport:checked").val() === "otg") {
-                        populateCreatedIds(job_id, function() {
-                            displayOutput();
-                        });
-                        $(".uploadToOTGComplete").show();
-                    }
-                    else {
-                        $(".uploadToSandboxComplete").show();
-                    }
-                });
+  $(".uploadToFreeQ").hide();
+  $(".uploadForm .error").hide();
+  $(".uploadSpinner").show();
+  SuperFreeq.createJob(name, graph, info_source, function(job:SuperFreeq.Job) {
+    prepareTriples(function(triples) {
+      job.load(triples, function() {
+        job.start(() => {
+          console.log("job started!")
+          $(".freeqLoad").show();
+          $(".freeqLoadInProgress").show();
+          $(".uploadSpinner").hide();
+          $("#upload_progressbar").progressbar({value:0});
+          $(".peacock_link").attr("href",job.base_url);
+          new FreeqMonitor(job, function() {
+            $(".freeqLoadInProgress").hide();
+
+            if ($("input.graphport:checked").val() === "otg") {
+              //TODO(rictic): here's where we'll do id population when
+              //              superfreeq supports it.
+              //populateCreatedIds(job_id, function() {
+              //  displayOutput();
+              //});
+              $(".uploadToOTGComplete").show();
             }
-            ,complete: function() {
-                $(".uploadSpinner").hide();
+            else {
+              $(".uploadToSandboxComplete").show();
             }
+          });
         });
-    }
-    if (freeq_url !== standardFreeq) {
-        $("#freeq_form").append("<input type='hidden' name='fb_user' value='/user/spreadsheet_bot'>")
-    }
+      });
+    });
+  });
 }
 
 $(document).ready(function () {
     $(".displayTriples").click(function(){$(".triplesDisplay").slideToggle(); return false;});
-    $(".uploadLogin button.checkLogin").click(checkLogin);
+    $(".uploadLogin .loginButton").click(function() {SuperFreeq.authorize(checkLogin)});
     $(".loadAgainButton").click(function() {
         $(".freeqLoad").hide();
         $(".uploadToSandboxComplete").hide();
@@ -505,4 +513,5 @@ $(document).ready(function () {
         else
             warning.hide();
     });
+    $("#upload_button").click(doLoad);
 });

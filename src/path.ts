@@ -53,7 +53,7 @@ module loader {
     }
 
   }
-  class part {
+  export class part {
     public index : number;
     public prop : string;
     constructor(segment:string) {
