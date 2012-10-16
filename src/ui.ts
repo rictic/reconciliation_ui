@@ -170,7 +170,7 @@ var onReady = combineCallbacks(2, initialSetup);
 
 function OnGoogleClientLoaded() {
   gapi.client.setApiKey(api_key);
-  gapi.client.load('freebase', 'v1dev', onReady);
+  gapi.client.load('freebase', 'v1', onReady);
 }
 
 $(document).ready(onReady)
@@ -257,7 +257,7 @@ function updateMdoInfo() {
 
 var freebase_url = "https://www.freebase.com/";
 var fbapi_url = "https://www.googleapis.com/freebase/v1/";
-var reconciliation_url = "https://www.googleapis.com/freebase/v1dev/reconcile?"
+var reconciliation_url = "https://www.googleapis.com/freebase/v1/reconcile?"
 var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
 /* Takes a string and populates the initialInput textarea. */
