@@ -1,0 +1,37 @@
+application: spreadsheet-loader
+version: superfreeq
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /
+  static_files: recon.html
+  upload: recon.html
+  secure: always
+
+- url: /recon.html
+  static_files: recon.html
+  upload: recon.html
+  secure: always
+
+- url: /recon.css
+  static_files: recon.css
+  upload: recon.css
+  secure: always
+
+- url: /src/
+  static_dir: src/
+  secure: always
+
+- url: /resources/
+  static_dir: resources/
+  secure: always
+
+- url: /lib/
+  static_dir: lib/
+  secure: always
+
+- url: /examples/
+  static_dir: examples/
+  secure: always
