@@ -1,1 +1,1 @@
-./build.sh && appcfg.py --oauth2 update ./
+./build.sh && appcfg --oauth2 update ./
