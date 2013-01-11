@@ -5,7 +5,10 @@ build
 related
 jsTestDriver.conf
 src/*.js
+src/*.js.map
 src/events/*.js
+src/events/*.js.map
 src/util/*.js
+src/util/*.js.map
 *.sublime-workspace
 .DS_Store

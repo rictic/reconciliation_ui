@@ -5,6 +5,7 @@
 			"path": "/Users/rictic/open/paste",
       "file_exclude_patterns":[
         "src/*.js",
+        "src/*.js.map",
         "*.sublime-workspace"
       ]
 		}
