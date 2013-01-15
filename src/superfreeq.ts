@@ -67,8 +67,10 @@ module SuperFreeq {
     return base + "/freebase/" + graphToVersion[graph] + "/freeq";
   }
 
+
   export class Job {
     base_url: string;
+    vars = new Set();
 
     constructor(public id:string, public graph:string) {
       this.base_url = getUrlForGraph(graph) + "/jobs/" + id;
@@ -92,7 +94,52 @@ module SuperFreeq {
         "load_triples": commands
       };
 
-      doRequest(this.base_url + "/tasks", request, callback);
+      var trackValue = (s:string) => {
+        if (s && /^\$.*\d+$/.test(s)) {
+          this.vars.add(s);
+        }
+      }
+
+      politeEach(commands, (i, command:TripleLoadCommand) => {
+        // Track the variables we're uploading to this job, so that we can
+        // later ask for them back.
+        trackValue(command.triple.sub);
+        trackValue(command.triple.pred);
+        trackValue(command.triple.obj);
+        if (!command.cvt_triples) {
+          return;
+        }
+        for (var i = 0; i < command.cvt_triples.length; i++) {
+          var cvt : CVTTriple = command.cvt_triples[i];
+          trackValue(cvt.pred);
+          trackValue(cvt.obj);
+        }
+      }, () => {
+        doRequest(this.base_url + '/tasks', request, callback);
+      })
+    }
+
+    getIdMapping(callback:(Object)=>void) {
+      var var_ids = this.vars.getAll();
+      var result = {};
+      var BATCH_SIZE = 100;
+
+      var getSome = () => {
+        if (var_ids.length === 0) {
+          callback(result);
+          return;
+        }
+        var batch = [];
+        for (var i = 0; var_ids.length > 0 && i < BATCH_SIZE; i++) {
+          batch.push(var_ids.shift());
+        }
+        var vars = batch.join(',').replace(/\$/g,'');
+        doRequest(this.base_url + '/mids', 'vars=' + vars, (v) =>{
+          $.extend(result, v);
+          addTimeout(5 * 1000, getSome());
+        } , 'GET')
+      }
+      getSome();
     }
   }
 
@@ -154,7 +201,7 @@ module SuperFreeq {
     }, callback);
   }
 
-  function doRequest(url:string, params, onResponse?, method='POST') {
+  function doRequest(url:string, params:any, onResponse?, method='POST') {
     console.log("starting a request to " + url);
     if ($.type(params) === "object") {
       var contentType = 'application/json';

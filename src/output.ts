@@ -357,8 +357,6 @@ function checkLogin() {
   });
 }
 
-
-
 function fillinIds(createdEntities) {
     for (var key in createdEntities) {
         var id = standardizeId(createdEntities[key]);
@@ -380,7 +378,7 @@ function fillinIds(createdEntities) {
   * @param {function()=} onComplete
   */
 function populateCreatedIds(job_id, onComplete) {
-    getCreatedIds(freeq_url + job_id + "?view=list", function(createdEntities) {
+    getCreatedIds(freeq_url + job_id + "?view=list", (createdEntities) => {
         fillinIds(createdEntities);
         if (onComplete) onComplete();
     });
@@ -430,7 +428,7 @@ class FreeqMonitor {
     this.job.get((result:SuperFreeq.JobStatus) => {
       this.repeatingTimer.reset();
       if (!result.stats) {
-        addTimeout(() => this.checkProgress(), 1000);
+        addTimeout(() => this.checkProgress(), 5000);
         return;
       }
       var totalActions = 0;
@@ -450,7 +448,7 @@ class FreeqMonitor {
         }
       }
       else {
-        addTimeout(() => this.checkProgress(), 1000);
+        addTimeout(() => this.checkProgress(), 5000);
       }
     });
   }
@@ -484,12 +482,15 @@ function doLoad() {
           new FreeqMonitor(job, function() {
             $(".freeqLoadInProgress").hide();
 
+            job.getIdMapping((v) => {
+              fillinIds(v);
+              $(".fetchingFreeqIds").hide();
+              $(".idsFetched").show();
+              displayOutput();
+            }); // Move this into the below
             if ($("input.graphport:checked").val() === "otg") {
               //TODO(rictic): here's where we'll do id population when
               //              superfreeq supports it.
-              //populateCreatedIds(job_id, function() {
-              //  displayOutput();
-              //});
               $(".uploadToOTGComplete").show();
             }
             else {
