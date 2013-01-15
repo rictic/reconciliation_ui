@@ -54,7 +54,7 @@ module SuperFreeq {
   }
 
   function getUrlForGraph(graph:string) {
-    var base = 'https://www-googleapis-staging.sandbox.google.com';
+    var base = 'https://www.googleapis.com';
     var graphToVersion = {
       'otg': 'v1',
       'sandbox': 'v1sandbox'
