@@ -237,9 +237,6 @@ function getType(v) {
     return "object";
 }
 
-//This set implementation preserves order, but just in case
-var OrderedSet = Set;
-
 /**
  * @param {string} url
  * @param {Object} params
@@ -288,40 +285,39 @@ function standardizeId(id) {
     return id.replace(/\#([0-9a-f]{32})/, "/guid/$1");
 }
 
-/** A wrapper around setInterval that can be reset, so that
-  * onTick fires at most once every interval millis.
-  *
-  * @constructor
-  * @param {!number} interval
-  * @param {!function()} onTick
-  */
-function RepeatingTimer(interval, onTick) {
-    /** @const */
-    this.interval = interval;
-    /** @const */
-    this.onTick = onTick;
-    this.stopped = false;
+/**
+ * A wrapper around setInterval that can be reset, so that
+ * onTick fires at most once every interval millis.
+ */
+class RepeatingTimer {
+  stopped = false;
+  id : number = undefined;
+  constructor(public interval:number, public onTick:()=>void) {
     this.reset();
-}
+  }
 
-RepeatingTimer.prototype.reset = function() {
-    if (this.stopped)
-        return;
+  reset() {
+    if (this.stopped) {
+      return;
+    }
     this.clear();
     this.id = addInterval(this.onTick, this.interval);
-}
+  }
 
-RepeatingTimer.prototype.stop = function() {
+  stop() {
     this.clear();
     this.stopped = true;
+  }
+
+  clear() {
+    if (this.id) {
+      clearTimeout(this.id)
+      this.id = undefined;
+    }
+  }
 }
 
-RepeatingTimer.prototype.clear = function() {
-    if (this.id) {
-        clearTimeout(this.id)
-        this.id = undefined;
-    }
-}
+
 
 function copyInto(source, destination) {
     for (var key in source)
