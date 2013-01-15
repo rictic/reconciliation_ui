@@ -374,48 +374,6 @@ function fillinIds(createdEntities) {
     }
 }
 
-/** @param {!number} job_id
-  * @param {function()=} onComplete
-  */
-function populateCreatedIds(job_id, onComplete) {
-    getCreatedIds(freeq_url + job_id + "?view=list", (createdEntities) => {
-        fillinIds(createdEntities);
-        if (onComplete) onComplete();
-    });
-}
-
-function getCreatedIds(url, callback) {
-    //this request is idempotent, and sometimes fails, so repeat until it works
-    var repeatingTimer = new RepeatingTimer(30 * 1000, fetchIds);
-
-    function fetchIds() {
-        $.getJSON(url, null, function(result) {
-            repeatingTimer.reset();
-            //this request should succeed, so retry
-            if (!result || !result.status || result.status.code !== 200) {
-                addTimeout(function() {
-                    getCreatedIds(url, callback);
-                }, 2000);
-            }
-            $(".fetchingFreeqIds").hide();
-            $(".idsFetched").show();
-            var actions=result.result.actions;
-            var keymap = {};
-            $.each(actions, function(_,i) {
-                var summary = JSON.parse(i.result);
-                for (var key in summary) {
-                    if (key.match(/(entity\d+)|(recGroup\d+)/)){
-                        keymap[key] = summary[key];
-                    }
-                }
-            });
-            repeatingTimer.stop();
-            callback(keymap);
-        });
-    }
-}
-
-
 class FreeqMonitor {
   repeatingTimer;
   constructor(public job:SuperFreeq.Job, public onComplete) {
@@ -482,15 +440,13 @@ function doLoad() {
           new FreeqMonitor(job, function() {
             $(".freeqLoadInProgress").hide();
 
-            job.getIdMapping((v) => {
-              fillinIds(v);
-              $(".fetchingFreeqIds").hide();
-              $(".idsFetched").show();
-              displayOutput();
-            }); // Move this into the below
             if ($("input.graphport:checked").val() === "otg") {
-              //TODO(rictic): here's where we'll do id population when
-              //              superfreeq supports it.
+              job.getIdMapping((v) => {
+                fillinIds(v);
+                $(".fetchingFreeqIds").hide();
+                $(".idsFetched").show();
+                displayOutput();
+              });
               $(".uploadToOTGComplete").show();
             }
             else {
