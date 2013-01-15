@@ -114,7 +114,7 @@ function renderSpreadsheet(onComplete) {
 }
 
 
-function prepareTriples(callback?:(triples:SuperFreeq.Triple[])=>any) {
+function prepareTriples(callback?:(triples:SuperFreeq.TripleLoadCommand[])=>any) {
     $(".renderingTriples").show();
     $(".triplesRendered").hide();
     var assertNaked = !! $("#assert_naked_properties").attr('checked');
@@ -125,7 +125,7 @@ function prepareTriples(callback?:(triples:SuperFreeq.Triple[])=>any) {
         }
 
         politeMap(triples,function(val){return JSON.stringify(val)},
-            function(encodedTriples) {
+            function(encodedTriples:string[]) {
                 var tripleString = encodedTriples.join("\n");
                 $(".triplesDisplay").html(tripleString);
                 $(".triple_count").html("" + encodedTriples.length);
@@ -140,23 +140,40 @@ function prepareTriples(callback?:(triples:SuperFreeq.Triple[])=>any) {
 
 
 function getSFTriples(entities, assertNakedProperties,
-                      callback:(triples:SuperFreeq.Triple[])=>any) {
-  function tripToSfTrip(triple:OldFreeqTriple):SuperFreeq.Triple {
+                      callback:(triples:SuperFreeq.TripleLoadCommand[])=>any) {
+  function tripToSfTrip(triple:OldFreeqTriple):SuperFreeq.TripleLoadCommand {
+
     if ($.type(triple.o) === "object") {
-      // TODO(rictic): when SuperFreeq supports CVTs, fill this in.
-      return;
+      var cvt_triples : SuperFreeq.CVTTriple[] = [];
+      for (var prop in triple.o) {
+        cvt_triples.push({
+          pred: prop,
+          obj: triple.o[prop]
+        });
+      }
+      return {
+        triple: {
+          sub: triple.s,
+          pred: triple.p,
+        },
+        cvt_triples: cvt_triples,
+        assert_ids: true
+      };
     }
 
     return {
-      sub: triple.s,
-      pred: triple.p,
-      obj: triple.o
+      triple: {
+        sub: triple.s,
+        pred: triple.p,
+        obj: triple.o
+      },
+      assert_ids: true
     };
   }
 
   getTriples(entities, assertNakedProperties,
     function(triples) {
-      var results : SuperFreeq.Triple[] = [];
+      var results : SuperFreeq.TripleLoadCommand[] = [];
       politeEach(triples, function(_, triple) {
         var sfTriple = tripToSfTrip(triple);
         if (sfTriple) {
@@ -225,7 +242,9 @@ function getTriples(entities:tEntity[], assertNakedProperties:bool,
                 continue;
             }
             var value = cvt[predicate];
-            var outputPredicate = predicate.replace(type + "/","");
+            // For SuperFreeq it's best if this predicate isn't shortened,
+            // though that's how freeq liked it.
+            var outputPredicate = predicate;
             if (isValueProperty(predicate)) {
                 value = getValue(predicate, value);
                 if (value){

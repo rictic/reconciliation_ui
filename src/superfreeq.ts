@@ -3,7 +3,7 @@ module SuperFreeq {
     sub: string;
     pred: string;
     obj_type?: string;
-    obj: string;
+    obj?: string;
   };
 
   interface CreateJobRequest {
@@ -17,6 +17,21 @@ module SuperFreeq {
     id: string;
     name: string;
   }
+
+  export interface CVTTriple {
+    obj: string;
+    pred: string;
+    text_lang?: string;
+    obj_type?: string;
+  }
+
+  export interface TripleLoadCommand {
+    triple: Triple;
+    assert_ids: bool;
+    cvt_triples?: CVTTriple[];
+  }
+
+
 
   // Returns the id of the new job.
   export function createJob(name:string, graph:string,
@@ -72,26 +87,15 @@ module SuperFreeq {
                 $.param(request), onStarted);
     }
 
-    load(triples: Triple[], callback:(LoadTriplesResponse)=>any) {
-      politeMap(triples, (triple:Triple):TripleLoadCommand => {
-        return {
-          triple: triple,
-          assert_ids: true
-        }
-      }, (commands:TripleLoadCommand[]) => {
-        var request : LoadTriplesRequest = {
-          "load_triples": commands
-        };
+    load(commands: TripleLoadCommand[], callback:(LoadTriplesResponse)=>any) {
+      var request : LoadTriplesRequest = {
+        "load_triples": commands
+      };
 
-        doRequest(this.base_url + "/tasks", request, callback);
-      });
+      doRequest(this.base_url + "/tasks", request, callback);
     }
   }
 
-  interface TripleLoadCommand {
-      triple: Triple;
-      assert_ids: bool;
-  }
 
   interface LoadTriplesRequest {
     load_triples : TripleLoadCommand[];

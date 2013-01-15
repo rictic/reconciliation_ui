@@ -32,4 +32,4 @@
 # src/options.js
 # src/internalReconciler.js
 
-tsc --sourcemap lib/*.d.ts src/events/*.ts src/util/set.ts src/util/keyedQueue.ts src/yielder.ts src/utility.ts src/util/array.ts src/util/ui.ts src/auto_recon.ts src/manual_recon.ts src/recon.ts src/input.ts src/review.ts src/output.ts src/undo.ts src/entity.ts src/path.ts src/freebase.ts src/options.ts src/internalReconciler.ts src/ui.ts src/superfreeq.ts -c
+tsc --sourcemap lib/*.d.ts src/events/*.ts src/util/set.ts src/util/keyedQueue.ts src/yielder.ts src/utility.ts src/util/array.ts src/util/ui.ts src/auto_recon.ts src/manual_recon.ts src/recon.ts src/input.ts src/review.ts src/superfreeq.ts src/output.ts src/undo.ts src/entity.ts src/path.ts src/freebase.ts src/options.ts src/internalReconciler.ts src/ui.ts -c
