@@ -143,12 +143,14 @@ function getSFTriples(entities, assertNakedProperties,
                       callback:(triples:SuperFreeq.TripleLoadCommand[])=>any) {
   function tripToSfTrip(triple:OldFreeqTriple):SuperFreeq.TripleLoadCommand {
 
-    if ($.type(triple.o) === "object") {
+    var obj = triple.o;
+
+    if ($.type(obj) === "object") {
       var cvt_triples : SuperFreeq.CVTTriple[] = [];
       for (var prop in triple.o) {
         cvt_triples.push({
           pred: prop,
-          obj: triple.o[prop]
+          obj: obj[prop]
         });
       }
       return {
@@ -161,11 +163,17 @@ function getSFTriples(entities, assertNakedProperties,
       };
     }
 
+    if ($.type(obj) === "number") {
+      // SuperFreeq only wants strings, never numbers.
+      // obj is the only place where this could have taken place.
+      obj = '' + obj;
+    }
+
     return {
       triple: {
         sub: triple.s,
         pred: triple.p,
-        obj: triple.o
+        obj: obj
       },
       assert_ids: true
     };
