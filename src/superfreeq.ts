@@ -90,9 +90,6 @@ module SuperFreeq {
     }
 
     load(commands: TripleLoadCommand[], callback:(LoadTriplesResponse)=>any) {
-      var request : LoadTriplesRequest = {
-        "load_triples": commands
-      };
 
       var trackValue = (s:string) => {
         if (s && /^\$.*\d+$/.test(s)) {
@@ -115,7 +112,22 @@ module SuperFreeq {
           trackValue(cvt.obj);
         }
       }, () => {
-        doRequest(this.base_url + '/tasks', request, callback);
+        var BATCH_SIZE = 300;
+        var loadSome = () => {
+          if (commands.length === 0) {
+            callback();
+            return;
+          }
+          var batch = [];
+          for (var i = 0; commands.length > 0 && i < BATCH_SIZE; i++) {
+            batch.push(commands.shift());
+          }
+          var request = {
+            'load_triples': batch
+          }
+          doRequest(this.base_url + '/tasks', request, loadSome);
+        }
+        loadSome();
       })
     }
 
