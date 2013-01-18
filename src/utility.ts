@@ -265,14 +265,7 @@ function getJSON(url, params, onSuccess, onTimeout?, millis?) {
         onSuccess(response);
     }
 
-    if (window.location.host === "data.labs.freebase.com")
-        $.post(url, params, responseHandler, "jsonp")
-    else
-        $.getJSON(url, params, responseHandler);
-}
-
-function onSameDomain() {
-    return window.location.host === "data.labs.freebase.com";
+    $.getJSON(url, params, responseHandler);
 }
 
 /** Returns the standard form that an id should take.

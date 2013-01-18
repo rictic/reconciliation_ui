@@ -255,10 +255,9 @@ function updateMdoInfo() {
     $("#mdo_info").val(JSON.stringify(mdo_info));
 }
 
-var freebase_url = "https://www.freebase.com/";
+var freebase_url = "https://dev.freebase.com/";
 var fbapi_url = "https://www.googleapis.com/freebase/v1/";
 var reconciliation_url = "https://www.googleapis.com/freebase/v1/reconcile?"
-var freeq_url = "http://data.labs.freebase.com/freeq/spreadsheet/";
 
 /* Takes a string and populates the initialInput textarea. */
 function handlePOSTdata(data) {
