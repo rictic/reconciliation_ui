@@ -429,7 +429,7 @@ function setupOutput() {
 function doLoad() {
   var name = $("#mdo_name").val()
   var info_source = $("#mdo_data_source_id").val();
-  var graph = $(".graphport").val();
+  var graph = $(".graphport:checked").val();
 
 
   $(".uploadToFreeQ").hide();
