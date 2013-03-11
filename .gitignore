@@ -12,3 +12,4 @@ src/util/*.js
 src/util/*.js.map
 *.sublime-workspace
 .DS_Store
+/node
