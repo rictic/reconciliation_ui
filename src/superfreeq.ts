@@ -115,7 +115,7 @@ module SuperFreeq {
         var BATCH_SIZE = 300;
         var loadSome = () => {
           if (commands.length === 0) {
-            callback();
+            callback({});
             return;
           }
           var batch = [];
