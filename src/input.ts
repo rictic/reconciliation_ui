@@ -142,8 +142,10 @@ function parseTSV(spreadsheet, onComplete, yielder) {
     function parseLine() {
         var fields = [];
         var inQuotes = false;
+        var startOfCell = true;
         var field = "";
         function nextField() {
+            startOfCell = true;
             fields.push(field);
             field = "";
             position++;
@@ -161,6 +163,8 @@ function parseTSV(spreadsheet, onComplete, yielder) {
         //If this gives me any more trouble, I'm just doing a state machine
         while(true) {
             var c = spreadsheet.charAt(position);
+            var wasAtStart = startOfCell;
+            startOfCell = false;
             if (inQuotes){
                 //quotes are quoted with two adjacent quotes
                 if (c == '"' && spreadsheet.charAt(position+1) == '"'){
@@ -195,7 +199,7 @@ function parseTSV(spreadsheet, onComplete, yielder) {
             }
 
             //the field is quoted
-            if (spreadsheet.charAt(position) == '"'){
+            if (wasAtStart && spreadsheet.charAt(position) == '"'){
                 inQuotes = true;
                 position++;
                 continue;
