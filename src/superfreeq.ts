@@ -226,14 +226,31 @@ module SuperFreeq {
 
     function _doRequest() {
       console.log("doing a request to " + url);
-      $.ajax(url, {
+      $.ajax({
+        url: url,
         dataType:'json',
         contentType: contentType,
         type: method,
         data: data,
         success: onResponse,
+        retryLimit: 10,
+        tryCount: 0,
+        timeouts: [1, 1, 2, 3, 5, 8], // back-off by tryCount, in seconds
         headers: {
           'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
+        },
+        error: function(xhr, textStatus) {
+          if ($.inArray(textStatus, ['timeout', 'abort', 'error']) > -1) {
+            this.tryCount++;
+            if (this.tryCount <= this.retryLimit) {
+              var retryIndex = Math.min(this.tryCount - 1, this.timeouts.length - 1);
+              var retryIn = this.timeouts[retryIndex] * 1000;
+              console.log('RPC failed, retrying in', retryIn / 1000, 'seconds');
+              setTimeout(() => { $.ajax(this); }, retryIn);
+            } else {
+              window.alert('RPC failed after ' + this.tryCount + ' requests');
+            }
+          }
         }
       });
     }
