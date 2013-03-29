@@ -1,1 +1,1 @@
-declare function isISO8601(s:string):bool;
+function isISO8601(s:string):bool;

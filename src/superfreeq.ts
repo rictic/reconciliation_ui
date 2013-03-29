@@ -80,7 +80,7 @@ module SuperFreeq {
       doRequest(this.base_url, {}, callback, 'GET');
     }
 
-    start(onStarted?=()=>null) {
+    start(onStarted=()=>null) {
       var request : ChangeStatusRequest = {
         "jobStatus": "running"
       };

@@ -1,8 +1,8 @@
-declare interface JQueryProgressBarOptions {
+interface JQueryProgressBarOptions {
   value:number;
 }
 
-declare interface JQuery {
+interface JQuery {
   tabs(); //initialize
   tabs(name:string, index:number); //jump to tab
   progressbar(name:string, value:number);

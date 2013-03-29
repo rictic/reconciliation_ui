@@ -1,8 +1,8 @@
-declare interface JQueryDataTableFormat {
+interface JQueryDataTableFormat {
   aoColumns : any[];
   aaData : any[];
 }
 
-declare interface JQuery {
+interface JQuery {
   dataTable(table:JQueryDataTableFormat):JQuery;
 }

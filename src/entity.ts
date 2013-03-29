@@ -36,7 +36,7 @@ class tEntity {
 
   setInitialHeaders(headers:string[]) {
     var self = this;
-    $.each(headers, function(_,header) => {
+    $.each(headers, (_, header) => {
         self.propSeen(header);
     });
   }
@@ -218,8 +218,8 @@ class tEntity {
   }
 
   //TODO(rictic): this is really hacky:
-  static addListener(name:string, handler:Function){};
-  static emit(name:string, ...args:any[]){};
+  static addListener(name:string, handler:Function) { }
+  static emit(name:string, ...args:any[]) { }
 }
 
 copyInto(new EventEmitter(), tEntity);
