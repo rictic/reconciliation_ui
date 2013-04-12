@@ -91,4 +91,6 @@ interface JQuery {
     droppable(optionLiteral: string, optionName: string, optionValue: any): JQuery;
     droppable(optionLiteral: string, optionName: string): any;
     droppable(methodName: string): any;
+
+    dialog(options: any): JQuery;
 }
