@@ -233,9 +233,9 @@ module SuperFreeq {
         type: method,
         data: data,
         success: onResponse,
-        retryLimit: 10,
+        retryLimit: 20,
         tryCount: 0,
-        timeouts: [1, 1, 2, 3, 5, 8], // back-off by tryCount, in seconds
+        timeouts: [10, 10, 20, 30, 50, 80], // back-off by tryCount, in seconds
         headers: {
           'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
         },
@@ -248,7 +248,12 @@ module SuperFreeq {
               console.log('RPC failed, retrying in', retryIn / 1000, 'seconds');
               setTimeout(() => { $.ajax(this); }, retryIn);
             } else {
-              window.alert('RPC failed after ' + this.tryCount + ' requests');
+              $('#freeqErrorDialog')
+                .text('RPC failed after ' + this.tryCount + ' requests');
+              $('#freeqErrorDialog').dialog({
+                modal: true,
+                resizable: false
+              });
             }
           }
         }
