@@ -66,7 +66,7 @@ function renderReconChoices(entity:tEntity) {
     var tableBody = $(".manualReconciliationChoices", template).empty();
     var reconResultsFetched = entity.reconResults !== undefined;
     entity.reconResults = entity.reconResults || [];
-    for (var i = 0; i < entity.reconResults.length; i++)
+    for (i = 0; i < entity.reconResults.length; i++)
         tableBody.append(renderCandidate(entity.reconResults[i], uniqueMqlProps, entity));
 
     var numCandidates;

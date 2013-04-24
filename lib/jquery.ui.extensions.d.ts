@@ -10,3 +10,8 @@ interface JQuery {
   progressbar(name:string, option:string, value:number);
   ajaxForm(options:Object);
 }
+
+// this is core, but missing
+interface JQueryStatic {
+  ajaxSettings : JQueryAjaxSettings;
+}

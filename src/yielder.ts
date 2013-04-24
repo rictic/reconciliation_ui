@@ -27,13 +27,8 @@ class Yielder {
 }
 
 
-/** @param {!Array} array
-    @param {!function(number, *)} f
-    @param {function()=} onComplete
-    @param {Yielder=} yielder
-*/
-function politeEach(array: any[], f:(i:number, val:any)=>any,
-                    onComplete?:()=>any, yielder?:Yielder) {
+function politeEach<T>(array: T[], f:(i:number, val:T)=>any,
+                       onComplete?:()=>any, yielder?:Yielder) {
   yielder = yielder || new Yielder();
   var index = 0;
   function iterate() {
@@ -53,8 +48,8 @@ function politeEach(array: any[], f:(i:number, val:any)=>any,
     @param {!function(!Array)} onComplete
     @param {Yielder=} yielder
 */
-function politeMap(array: any[], f:(val:any)=>any,
-                   onComplete:(mapped:any[])=>any,
+function politeMap<T,V>(array: T[], f:(val:T)=>V,
+                   onComplete:(mapped:V[])=>any,
                    yielder?:Yielder) {
   yielder = yielder || new Yielder();
   var result = [];

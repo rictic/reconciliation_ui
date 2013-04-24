@@ -275,6 +275,7 @@ function getCandidates(entity:tEntity, callback:(tEntity)=>any,
     dataType:'json',
     contentType:'application/json-rpc',
     type:'POST',
+    beforeSend: () => {},
     data:JSON.stringify([{
       "jsonrpc" : "2.0",
       "id" : "1",

@@ -97,7 +97,7 @@ module SuperFreeq {
         }
       }
 
-      politeEach(commands, (i, command:TripleLoadCommand) => {
+      politeEach(commands, (_, command:TripleLoadCommand) => {
         // Track the variables we're uploading to this job, so that we can
         // later ask for them back.
         trackValue(command.triple.sub);
@@ -215,12 +215,13 @@ module SuperFreeq {
 
   function doRequest(url:string, params:any, onResponse?, method='POST') {
     console.log("starting a request to " + url);
+    var contentType, data;
     if ($.type(params) === "object") {
-      var contentType = 'application/json';
-      var data = JSON.stringify(params, null, 2);
+      contentType = 'application/json';
+      data = JSON.stringify(params, null, 2);
     } else { // string
-      var contentType = 'application/x-www-form-urlencoded';
-      var data = params;
+      contentType = 'application/x-www-form-urlencoded';
+      data = params;
     }
 
 

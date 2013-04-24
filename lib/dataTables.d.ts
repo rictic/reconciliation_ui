@@ -1,6 +1,10 @@
+interface JQueryDataTableColumn {
+  sTitle: string;
+}
+
 interface JQueryDataTableFormat {
-  aoColumns : any[];
-  aaData : any[];
+  aoColumns : JQueryDataTableColumn[];
+  aaData : string[][];
 }
 
 interface JQuery {

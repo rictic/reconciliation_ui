@@ -30,12 +30,22 @@ function throttler(every, rarely, minimumTimeBetween?:number) {
     }
 }
 
+interface OrderedMap<V> {
+  set(key: string, value: V);
+  setIfAbsent(key: string, value: V):V;
+  add(key: string, value: V);
+  get(key: string, defaultValue?: V):V;
+  getProperties(): string[];
+  getComplexProperties(): string[];
+  getPropsForRows(): string[];
+}
+
 /* Groups a list of complex properties into a hierarchy
    that is fit for display in a fancy table.
 
    See also: buildTableHeaders below
 */
-function groupProperties(complexProps) {
+function groupProperties(complexProps):OrderedMap {
     var groupedProps = new OrderedMap();
     function groupProp(complexProp, map) {
         var props = complexProp.split(":");
@@ -48,10 +58,11 @@ function groupProperties(complexProps) {
         groupProp(props.join(":"), innerMap);
     }
     $.each(complexProps, function(_,complexProp){groupProp(complexProp,groupedProps)});
-    groupedProps.getPropsForRows = function() {
+    groupedProps['getPropsForRows'] = function() {
         return Arr.union(this.getComplexProperties(), complexProps);
     }
-    return groupedProps;
+    var result = groupedProps;
+    return result;
 }
 
 /* Given some grouped properties, returns a thead element with
@@ -186,7 +197,7 @@ function wrapForOverflow(elementArray, cutoff?) {
         for (var i = 0; i < cutoff; i++)
             result.append(elementArray[i]).append("<br>");
         var overflowContainer = node("div", {"class":"overflowContainer"}).appendTo(result);
-        for (var i = cutoff; i < elementArray.length; i++)
+        for (i = cutoff; i < elementArray.length; i++)
             overflowContainer.append(elementArray[i]).append("<br>");
         var showMoreLink = node("a",
                                 "More &darr;",
@@ -195,7 +206,7 @@ function wrapForOverflow(elementArray, cutoff?) {
                           .appendTo(result);
     }
     else
-        for (var i = 0; i < elementArray.length; i++)
+        for (i = 0; i < elementArray.length; i++)
             result.append(elementArray[i]).append("<br>");
     return result;
 }

@@ -157,11 +157,13 @@ module freebase {
     * @param {function(!string, !freebase.mqlTree)=} onError
     */
   export function fetchTypeInfo(types, onComplete, onError?) {
-      var q_pairs = [];
+      var q_pairs : any[] = [];
       $.each(types, function(_,type) {
           if (freebase.getTypeMetadata(type))
               return;
-          q_pairs.push([type, {query:getTypeQuery(type)}]);
+          // a hack until typescript supports tuple types
+          var val : any = [type, {query:getTypeQuery(type)}];
+          q_pairs.push(val);
       })
 
       var errorTypes = [];
@@ -210,7 +212,8 @@ module freebase {
 
       var q_pairs = [];
       $.each(simpleProps, function(_,simpleProp) {
-          q_pairs.push([simpleProp, {query: getQuery(simpleProp)}]);
+          var val : any = [simpleProp, {query: getQuery(simpleProp)}];
+          q_pairs.push(val);
       });
 
       freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);

@@ -223,7 +223,7 @@ function parseTSV(spreadsheet, onComplete, yielder) {
             position += 1;
         }
     }
-    var rows = [];
+    var rows : string[][] = [];
     function parseSpreadsheet() {
         while(spreadsheet.charAt(position) != "") {
             rows.push(parseLine());
@@ -356,8 +356,8 @@ function rowsToRecords(rows, onComplete, yielder) {
     yielder = yielder || new Yielder();
 
     var firstMultilineRecord = undefined;
-    var multiRecords = [];
-    var singleRecords = [];
+    var multiRecords : string[][] = [];
+    var singleRecords : string[][] = [];
 
     var currentMultiRecord = []
 

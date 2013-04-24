@@ -173,7 +173,6 @@ function getProperties(headerPaths) {
     })
 }
 
-/** @constructor */
 function OrderedMap() {
     var properties = [];
     var map = {};
@@ -207,8 +206,10 @@ function OrderedMap() {
             return [prop].concat(combined);
         });
     }
+    this.getPropsForRows = (): string[] => {
+      throw new Error('must be overridden');
+    }
 }
-
 
 /** Wrapper function for setTimeout.  Todo: add error handling
   * @param {function()} f

@@ -13,7 +13,7 @@ interface GapiClient {
   load(api:string, version:string, onSetup:()=>void);
 }
 
-module gapi {
+declare module gapi {
   export var client : GapiClient;
     //export request();
     //declare request(p:GapiClientRequest):GapiClientQuery;

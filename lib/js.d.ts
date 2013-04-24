@@ -1,7 +1,9 @@
 // These are things missing from the built in javascript types.
 
-interface Array {
-  slice():any[]; // called with zero arguments, shallow copy of array.
+interface Array<T> {
+  slice():T[]; // called with zero arguments,
+               // makes a shallow copy.
 }
 
-var escape : (string)=>string;
+// TODO: remove this, it's not a good idea to use this.
+declare var escape : (string)=>string;

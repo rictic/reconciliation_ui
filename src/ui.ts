@@ -105,12 +105,14 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
     context.show();
 }
 function showConfirmationSpreadsheet(beforeDisplay) {
-    var spreadSheetData = {"aoColumns":[], "aaData":[]};
+    var spreadSheetData : JQueryDataTableFormat = {
+        "aoColumns":[], "aaData":[]};
     var columnNames = $.map(headerPaths, function(header) {return header.getDisplayName();});
-    for (var i = 0; i < columnNames.length; i++)
+    for (var i = 0; i < columnNames.length; i++){
         spreadSheetData.aoColumns.push({"sTitle":columnNames[i]});
+    }
     politeEach(rows, function(_,entity) {
-        var row = [];
+        var row : string[] = [];
         for (var j = 0; j < headerPaths.length; j++){
             var val = entity.get(headerPaths[j]);
             if (val == undefined)
