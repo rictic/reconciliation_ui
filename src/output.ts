@@ -148,14 +148,7 @@ function getSFTriples(entities, assertNakedProperties,
     if ($.type(obj) === "object") {
       var cvt_triples : SuperFreeq.CVTTriple[] = [];
       for (var prop in triple.o) {
-
-        cvt_triples.push(
-          populateTriple({pred: prop}, obj[prop])
-          {
-          pred: prop,
-          obj: '' + obj[prop],
-          obj_type: getObjType(prop)
-        });
+        cvt_triples.push(populateTriple({pred: prop}, obj[prop]));
       }
       return {
         triple: {
@@ -184,12 +177,12 @@ function getSFTriples(entities, assertNakedProperties,
     if (triple.obj_type in {'TEXT':1, 'INT':1, 'FLOAT':1, 'BOOLEAN':1}) {
       triple.value
     }
-    {
+    return {
         sub: triple.s,
         pred: triple.p,
         obj: obj,
         obj_type: getObjType(triple.p)
-      }
+    }
   }
 
   function getObjType(pred) {
