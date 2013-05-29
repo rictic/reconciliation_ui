@@ -7,10 +7,17 @@ interface GapiClientRequest {
   execute(callBack:(Object)=>void):void;
 }
 
+interface GapiHttpBatch {
+  add(req:GapiClientRequest, opt?:Object);
+  execute();
+}
+
 interface GapiClient {
   setApiKey(key:string);
   request(p:GapiClientRequestParams):GapiClientRequest;
   load(api:string, version:string, onSetup:()=>void);
+  register(method:Object);
+  newHttpBatch():GapiHttpBatch;
 }
 
 module gapi {
