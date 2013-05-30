@@ -178,10 +178,10 @@ function getSFTriples(entities, assertNakedProperties,
       triple.value
     }
     return {
-        sub: triple.s,
-        pred: triple.p,
+        sub: triple.sub,
+        pred: triple.pred,
         obj: obj,
-        obj_type: getObjType(triple.p)
+        obj_type: getObjType(triple.pred)
     }
   }
 
