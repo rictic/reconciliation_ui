@@ -152,7 +152,11 @@ function getChainedProperty(entity, prop) {
 }
 
 var isMqlProp = (function(){
-    var invalidList = ["/type/object/name","/type/object/type","/type/object/id",];
+    var invalidList = [
+        /\/type\/object\/name/,
+        /\/type\/object\/type/,
+        /\/type\/object\/id/
+    ];
     invalidList.push(/(^|:)id$/);
     return function(prop) {
         for (var i = 0; i<invalidList.length; i++){

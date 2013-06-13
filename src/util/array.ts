@@ -61,7 +61,7 @@ module Arr {
    * @param {!function(*):boolean} predicate
    * @return {!Array}
    */
-  export function filter(array, predicate) {
+  export function filter<T>(array:T[], predicate:(T)=>boolean):T[] {
       return $.grep(array, predicate);
   }
 
