@@ -1,10 +1,7 @@
 /* Convenient functions for handling arrays */
 module Arr {
-  /** @param {!Array} source
-      @param {!Array} toRemove
-      @return {!Array}
-  */
-  export function difference(source, toRemove) {
+
+  export function difference<T>(source:T[], toRemove:T[]):T[] {
       source = $.makeArray(source); toRemove = $.makeArray(toRemove);
       var result = [];
       $.each(source, function(_,val){
@@ -14,11 +11,7 @@ module Arr {
       return result;
   }
 
-  /** @param {!Array} a
-      @param {!Array} b
-      @return {!Array}
-  */
-  export function union(a, b) {
+  export function union<T>(a:T[], b:T[]):T[] {
       a = $.makeArray(a); b = $.makeArray(b);
       var result = [];
       $.each(a, function(_,val) {
@@ -28,16 +21,13 @@ module Arr {
       return result;
   }
 
-  /** @param {!Array} a
-      @param {!number} i
-  */
-  export function removeAt(a, i) {
+  export function removeAt<T>(a:T[], i:number):T[] {
       // assert(i >= 0, "Arr.removeAt i>=0");
       // assert(i <= a.length, "Arr.removeAt i<=a.length");
       return a.slice(0,i).concat(a.slice(i+1));
   }
 
-  export function removeOneMatching(a, p) {
+  export function removeOneMatching<T>(a:T[], p:(T)=>boolean):T[] {
       for (var i = 0; i < a.length; i++) {
           if (p(a[i]))
               return Arr.removeAt(a,i);
@@ -45,34 +35,18 @@ module Arr {
       return a;
   }
 
-  /** Is value in array?
-    * @param {!Array} array
-    * @param {*} value
-    * @return {!boolean}
-    */
-  export function contains(array, value) {
+  export function contains<T>(array:T[], value:any):boolean {
       return $.inArray(value, array) !== -1;
   }
 
-  /* Returns a copy of the array with those elements of that
-   * don't satisfy the predicate filtered out
-   *
-   * @param {!Array} array
-   * @param {!function(*):boolean} predicate
-   * @return {!Array}
-   */
   export function filter<T>(array:T[], predicate:(T)=>boolean):T[] {
       return $.grep(array, predicate);
   }
 
   /** Returns two new arrays, the first with those elements that satisfy the
     * predicate, the second with those that don't
-    *
-    * @param {!Array} array
-    * @param {!function(*):boolean} predicate
-    * @return {!Array.<!Array>}
-  */
-  export function partition(array, predicate) {
+    */
+  export function partition<T>(array:T[], predicate:(T)=>boolean):T[][] {
       var good = [];
       var bad = [];
       $.each(array, function(i, val) {
