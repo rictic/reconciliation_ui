@@ -148,10 +148,7 @@ function getSFTriples(entities, assertNakedProperties,
     if ($.type(obj) === "object") {
       var cvt_triples : SuperFreeq.CVTTriple[] = [];
       for (var prop in triple.o) {
-        cvt_triples.push({
-          pred: prop,
-          obj: obj[prop]
-        });
+        cvt_triples.push(populateTriple({pred: prop}, obj[prop]));
       }
       return {
         triple: {
@@ -170,13 +167,36 @@ function getSFTriples(entities, assertNakedProperties,
     }
 
     return {
-      triple: {
-        sub: triple.s,
-        pred: triple.p,
-        obj: obj
-      },
+      triple: populateTriple({sub: triple.s, pred: triple.p}, obj),
       assert_ids: true
     };
+  }
+
+  function populateTriple(triple, obj) {
+    triple.obj_type = getObjType(triple.pred);
+    if (triple.obj_type in {'TEXT':1, 'INT':1, 'FLOAT':1, 'BOOLEAN':1}) {
+      triple.value
+    }
+    return {
+        sub: triple.sub,
+        pred: triple.pred,
+        obj: obj,
+        obj_type: getObjType(triple.pred)
+    }
+  }
+
+  function getObjType(pred) {
+    var objType = {
+      '/type/text': 'TEXT',
+      '/type/datetime': 'DATETIME',
+      '/type/boolean': 'BOOLEAN',
+      '/type/int': 'INT',
+      '/type/rawstring': 'RAWSTRING',
+      '/type/uri': 'URL',
+      '/type/key': 'KEY',
+      '/type/float': 'FLOAT'
+    }[freebase.getPropMetadata(pred).expected_type.id]
+    return objType || 'ID'
   }
 
   getTriples(entities, assertNakedProperties,
