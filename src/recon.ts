@@ -6,6 +6,7 @@ interface Candidate {
   name: string[];
   score: number;
   match: boolean;
+  type: string;
 }
 
 function isUnreconciled(entity:tEntity):boolean {

@@ -12,7 +12,7 @@
 */
 function throttler(every:()=>void, rarely:()=>void, minimumTimeBetween?:number) {
     var timeout = minimumTimeBetween || 250;
-    var waiter = null;
+    var waiter : number = null;
     var againAfterWaiting = false;
     return function() {
         every();
@@ -31,9 +31,10 @@ function throttler(every:()=>void, rarely:()=>void, minimumTimeBetween?:number) 
 }
 
 interface OrderedMap<V> {
-  set(key: string, value: V);
+  new():OrderedMap<V>;
+  set(key: string, value: V):boolean;
   setIfAbsent(key: string, value: V):V;
-  add(key: string, value: V);
+  add(key: string, value: V):boolean;
   get(key: string, defaultValue?: V):V;
   getProperties(): string[];
   getComplexProperties(): string[];
@@ -45,12 +46,12 @@ interface OrderedMap<V> {
 
    See also: buildTableHeaders below
 */
-function groupProperties(complexProps):OrderedMap<any> {
+function groupProperties(complexProps:string[]):OrderedMap<any> {
     var groupedProps = new OrderedMap();
-    function groupProp(complexProp, map) {
+    function groupProp(complexProp:string, map:OrderedMap<any>) {
         var props = complexProp.split(":");
         if (props.length === 1){
-            map.setIfAbsent(complexProp,new OrderedMap());
+            map.setIfAbsent(complexProp, new OrderedMap());
             return;
         }
 
@@ -68,16 +69,16 @@ function groupProperties(complexProps):OrderedMap<any> {
 /* Given some grouped properties, returns a thead element with
    one or more rows to form the header for a fancy table.
 */
-function buildTableHeaders(groupedProps) {
-    var rows = [];
-    function forcePush(idx, val) {
+function buildTableHeaders(groupedProps:OrderedMap<any>) {
+    var rows : any[] = [];
+    function forcePush(idx:number, val:any) {
         rows[idx] = rows[idx] || [];
         rows[idx].push(val);
     }
-    function header(value, columnspan) {
+    function header(value:any, columnspan:number) {
         return node("th",value,{colspan:columnspan});
     }
-    function padTo(idx,amt) {
+    function padTo(idx:number, amt:number) {
         rows[idx] = rows[idx] || [];
         var currentPadding = 0;
         $.each(rows[idx],function(_,header) {
@@ -87,7 +88,7 @@ function buildTableHeaders(groupedProps) {
         if (amtToPad > 0)
             rows[idx].push(header("",amt - currentPadding));
     }
-    function buildHeaders(group, prop) {
+    function buildHeaders(group:OrderedMap<any>, prop:string) {
         var innerGroup = group.get(prop);
         var innerProps = innerGroup.getProperties();
         if (innerProps.length === 0) {
@@ -127,7 +128,7 @@ function buildTableHeaders(groupedProps) {
    @param {!string} complexProp
    @return {!string}
 */
-function getPropName(complexProp) {
+function getPropName(complexProp:string) {
     if (complexProp.charAt(0) !== "/")
         return complexProp;
     var props = complexProp.split(":");
@@ -150,7 +151,7 @@ function getPropName(complexProp) {
    wrapped up so that only a few items are visible initially, with the
    ability to expand the list out.
 */
-function displayValue(value) {
+function displayValue(value:any):any {
     if ($.isArray(value)){
         if (value.length === 1)
             return displayValue(value[0]);
@@ -172,7 +173,7 @@ function displayValue(value) {
   *
   * @return {string}
   */
-function textValue(value) {
+function textValue(value:any):string {
     if ($.isArray(value))
         return "[" + $.map(value, textValue).join(", ") + "]";
     if (value == undefined || value == null)
@@ -190,7 +191,7 @@ function textValue(value) {
                                 a control is rendered to enable the user to expand the list out.
     @param {number=} cutoff
 */
-function wrapForOverflow(elementArray, cutoff?) {
+function wrapForOverflow(elementArray:JQuery[], cutoff?:number):JQuery {
     var result = node("div")
     cutoff = cutoff || 3;
     if (elementArray.length > cutoff+1){

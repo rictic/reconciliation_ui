@@ -7,7 +7,7 @@ class KeyedQueue extends EventEmitter {
   private _set = new PSet();
   private _array : any[] = [];
 
-  peek(n:number):any {
+  peek(n?:number):any {
     n = n || 1;
     return this._array[n-1];
   }

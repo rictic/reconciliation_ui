@@ -22,11 +22,11 @@ function manualReconcile() {
     }
 }
 
-function getManualReconId(entity) {
+function getManualReconId(entity:tEntity):string {
     return "manualReconcile" + entity['/rec_ui/id'];
 }
 
-function displayReconChoices(entityID) {
+function displayReconChoices(entityID:string) {
     var entity = entities[entityID];
     if (entity === undefined) return;
     $(".manualQueueEmpty").hide();
@@ -71,7 +71,7 @@ function renderReconChoices(entity:tEntity) {
     for (i = 0; i < entity.reconResults.length; i++)
         tableBody.append(renderCandidate(entity.reconResults[i], uniqueMqlProps, entity));
 
-    var numCandidates;
+    var numCandidates : number;
     function updateCandidates() {
         $('tr:odd', tableBody).addClass('odd');
         $('tr:even', tableBody).addClass('even');
@@ -89,7 +89,7 @@ function renderReconChoices(entity:tEntity) {
     $(".find_topic", template)
         .suggest({flyout:true,
                   key: api_key})
-        .bind("fb-select", function(e, data) {
+        .bind("fb-select", function(_:any, data:any) {
           entity['/rec_ui/freebase_name'] = $.makeArray(data.name);
           handleReconChoice(entity, data.id);
         });
@@ -113,7 +113,7 @@ function renderReconChoices(entity:tEntity) {
     template.insertAfter("#manualReconcileTemplate");
 }
 
-function renderInternalReconciliationDialog(entity, template) {
+function renderInternalReconciliationDialog(entity:tEntity, template:JQuery) {
     var recGroup = internalReconciler.getRecGroup(entity);
     //don't prompt if there isn't a RecGroup to speak of
     if (!recGroup || recGroup.members.length <= 1)
@@ -121,7 +121,7 @@ function renderInternalReconciliationDialog(entity, template) {
 
     var context = $(".internalReconciliationPrompt", template);
     $(".count", context).html(recGroup.members.length + "");
-    freebase.getName(recGroup.type, function(type_name) {
+    freebase.getName(recGroup.type, function(type_name:string) {
         $(".type", context).html(type_name);
     });
     $(".name", context).html(recGroup.name);
@@ -141,7 +141,7 @@ function renderInternalReconciliationDialog(entity, template) {
     context.removeClass("invisible");
 }
 
-function renderCandidate(result, mqlProps, entity) {
+function renderCandidate(result:Candidate, mqlProps:string[], entity:tEntity) {
     var url = freebase_url + "/view/" + result['id'];
     var tableRow = node("tr", {"class":idToClass(result["id"])});
 
@@ -157,7 +157,7 @@ function renderCandidate(result, mqlProps, entity) {
     ).appendTo(tableRow);
 
     tableRow.append(node("td",displayValue(result)));
-    var displayTypes = [];
+    var displayTypes : JQuery[] = [];
     $.each($.makeArray(result.type), function(_,typeId) {
         //types that end in /topic are uninteresting
         if (typeId.match(/\/topic$/)) return;
@@ -172,14 +172,14 @@ function renderCandidate(result, mqlProps, entity) {
                  {"class":"replaceme "+idToClass(mqlProps[j])})
         );
 
-    fetchMqlProps(result, mqlProps, entity, tableRow);
+    fetchMqlProps(result, mqlProps, entity);
 
     node("td", {"class": "blurb"}).appendTo(tableRow);
 
     return tableRow;
 }
 
-function fetchMqlProps(reconResult, mqlProps, entity, context) {
+function fetchMqlProps(reconResult:Candidate, mqlProps:string[], entity:tEntity) {
     var query = {"id":reconResult["id"],
                  "/common/topic/article" : { "id" : null, "optional" : true, "limit" : 1 }};
     $.each(mqlProps, function(_, prop) {
@@ -202,7 +202,7 @@ function fetchMqlProps(reconResult, mqlProps, entity, context) {
 
     })
     var envelope = {query:query};
-    function handler(results) {
+    function handler(results:Object) {
         fillInMQLProps(entity, mqlProps, results);
         //don't show annoying loading symbols indefinitely if there's an error
         $("#manualReconcile" + entity["/rec_ui/id"] + " .replaceme").empty();
@@ -210,7 +210,7 @@ function fetchMqlProps(reconResult, mqlProps, entity, context) {
     freebase.mqlRead(envelope,handler);
 }
 
-function fillInMQLProps(entity, mqlProps, mqlResult) {
+function fillInMQLProps(entity:tEntity, mqlProps:string[], mqlResult:any) {
     var context = $("#manualReconcile" + entity["/rec_ui/id"]);
     if (!mqlResult || mqlResult["result"] == null) {
         console.error(mqlResult);

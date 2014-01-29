@@ -30,8 +30,8 @@
 /*
 **  Automatic reconciliation
 */
-var manualQueue;
-var automaticQueue;
+var manualQueue : EntityQueue;
+var automaticQueue : EntityQueue;
 
 function beginAutoReconciliation() {
     $(".nowReconciling").show();
@@ -54,7 +54,7 @@ function autoReconcile() {
         return;
     }
 
-    var entity = automaticQueue.peek();
+    var entity : tEntity = automaticQueue.peek();
     if (entity.getID() !== undefined) {
         automaticQueue.shift();
         addTimeout(autoReconcile, 0);
