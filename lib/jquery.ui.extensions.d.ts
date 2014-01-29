@@ -3,10 +3,10 @@ interface JQueryProgressBarOptions {
 }
 
 interface JQuery {
-  tabs(); //initialize
-  tabs(name:string, index:number); //jump to tab
-  progressbar(name:string, value:number);
-  progressbar(options:JQueryProgressBarOptions);
-  progressbar(name:string, option:string, value:number);
-  ajaxForm(options:Object);
+  tabs():JQuery; //initialize
+  tabs(name:string, index:number):JQuery; //jump to tab
+  progressbar(name:string, value:number):JQuery;
+  progressbar(options:JQueryProgressBarOptions):JQuery;
+  progressbar(name:string, option:string, value:number):JQuery;
+  ajaxForm(options:Object):JQuery;
 }

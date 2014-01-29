@@ -6,4 +6,4 @@ interface Array<T> {
 }
 
 // TODO: remove this, it's not a good idea to use this.
-declare var escape : (string)=>string;
+declare var escape : (s:string)=>string;

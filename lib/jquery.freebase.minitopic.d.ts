@@ -1,3 +1,3 @@
 interface JQuery {
-  freebaseMiniTopic(id:string, onComplete?:()=>any);
+  freebaseMiniTopic(id:string, onComplete?:()=>any):JQuery;
 }
