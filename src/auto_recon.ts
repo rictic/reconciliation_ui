@@ -70,7 +70,7 @@ function autoReconcile() {
 
 
 /** @param {tEntity} entity */
-function autoReconcileResults(entity) {
+function autoReconcileResults(entity:tEntity) {
     automaticQueue.remove(entity);
     // no results, set to None:
     if(entity.reconResults.length == 0) {

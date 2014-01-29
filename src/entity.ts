@@ -22,7 +22,7 @@ class tEntity {
   id:string;
   reconResults;
   typelessRecon = false;
-  constructor(initialVals?) {
+  constructor(initialVals?:Object) {
     this["/rec_ui/id"] = internalIDCounter++
     this["/rec_ui/mql_props"] = [];
     this["/rec_ui/mql_paths"] = []
@@ -44,6 +44,9 @@ class tEntity {
   getChainedProperty(prop:string):any[] {
     return getChainedProperty(this, prop);
   }
+
+  get(path:string, preservePlace?:boolean):any[];
+  get(path:loader.path, preservePlace?:boolean):any[];
 
   get(path, preservePlace?:boolean):any[] {
     if (getType(path) === "string") {
