@@ -45,7 +45,7 @@ class tEntity {
     return getChainedProperty(this, prop);
   }
 
-  get(path, preservePlace?:bool):any[] {
+  get(path, preservePlace?:boolean):any[] {
     if (getType(path) === "string") {
       var spath:string = path;
       return this.get(new loader.path(spath), preservePlace);
@@ -99,7 +99,7 @@ class tEntity {
     return this.freebaseLink();
   }
 
-  reconcileWith(id:string, automatic:bool) {
+  reconcileWith(id:string, automatic:boolean) {
     this['/rec_ui/was_automatically_reconciled'] = automatic;
     var recGroup = internalReconciler.getRecGroup(this);
     var self = this;
@@ -150,7 +150,7 @@ class tEntity {
     }
   }
 
-  isCVT():bool {
+  isCVT():boolean {
     //an entity is a CVT if any of its types are CVT types
     return Arr.any($.makeArray(this['/type/object/type']), isCVTType);
   }

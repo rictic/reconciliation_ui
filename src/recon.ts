@@ -1,7 +1,7 @@
 var totalRecords = 0;
 var reconUndoStack;
 
-function isUnreconciled(entity:tEntity):bool {
+function isUnreconciled(entity:tEntity):boolean {
     if (entity.isCVT())
         return false;
     return Arr.contains([undefined,null,""], entity.id);
@@ -182,7 +182,7 @@ function constructReconciliationQuery(entity, typeless) {
 }
 
 function getCandidates(entity:tEntity, callback:(tEntity)=>any,
-                       onError, typeless?:bool) {
+                       onError, typeless?:boolean) {
   function handler(results) {
     if (results[0]['error']) {
       // Probably over rate, wait for a minute and then retry.

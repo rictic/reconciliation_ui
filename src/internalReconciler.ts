@@ -9,7 +9,7 @@ class InternalReconciler {
       recGroup.register(entity);
     }
 
-  setMerged(entity:tEntity, shouldMerge:bool) {
+  setMerged(entity:tEntity, shouldMerge:boolean) {
     var recGroup = this.getRecGroup(entity);
     recGroup.shouldMerge = shouldMerge;
     if (shouldMerge === false) {

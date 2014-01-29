@@ -45,7 +45,7 @@ interface OrderedMap<V> {
 
    See also: buildTableHeaders below
 */
-function groupProperties(complexProps):OrderedMap {
+function groupProperties(complexProps):OrderedMap<any> {
     var groupedProps = new OrderedMap();
     function groupProp(complexProp, map) {
         var props = complexProp.split(":");

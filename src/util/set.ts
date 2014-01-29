@@ -1,7 +1,7 @@
 /** @constructor
   * @param {...*} var_args the initial elements of the set
   */
-class Set {
+class PSet {
   private set = {};
   add(val: string) {
     this.set[val] = true;

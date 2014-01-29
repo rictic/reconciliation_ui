@@ -201,7 +201,7 @@ interface OldFreeqTriple {
 }
 
 var tripleGetterYielder;
-function getTriples(entities:tEntity[], assertNakedProperties:bool,
+function getTriples(entities:tEntity[], assertNakedProperties:boolean,
                     callback:(triples:OldFreeqTriple[])=>any) {
     tripleGetterYielder = new Yielder();
     function hasValidID(entity) {
@@ -284,7 +284,7 @@ function getTriples(entities:tEntity[], assertNakedProperties:bool,
             return;
 
 
-        var types = new Set();
+        var types = new PSet();
         function addType(type) {
             types.add(type);
             var metadata = freebase.getTypeMetadata(type);

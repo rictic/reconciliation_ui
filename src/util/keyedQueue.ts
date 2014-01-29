@@ -3,7 +3,7 @@
 //override getKey to return a unique, identifying value to store non-values
 
 class KeyedQueue extends EventEmitter {
-  private _set = new Set();
+  private _set = new PSet();
   private _array = [];
 
   peek(n) {

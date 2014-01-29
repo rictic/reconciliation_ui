@@ -115,19 +115,20 @@ function showConfirmationSpreadsheet(beforeDisplay) {
         var row : string[] = [];
         for (var j = 0; j < headerPaths.length; j++){
             var val = entity.get(headerPaths[j]);
+            var cell;
             if (val == undefined)
-                val = "";
+                cell = "";
             else if ($.isArray(val)){
                 var arr = Arr.filter(val, function(elem) {return elem !== undefined;});
                 if (arr.length === 0)
-                    val = "";
+                    cell = "";
                 else if (arr.length === 1)
-                    val = "" + textValue(arr[0]);
+                    cell = "" + textValue(arr[0]);
                 else
-                    val = textValue(val);
+                    cell = textValue(val);
             }
 
-            row[j] = val;
+            row[j] = cell;
         }
         spreadSheetData.aaData.push(row);
     }, function() {
@@ -206,7 +207,7 @@ function initialSetup() {
     $("#initialInput").keypress(capture_tab).keydown(capture_tab);
 
     var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
-    var harmlessKeys = new Set('37','38','39','40','91','93','20','35','36',
+    var harmlessKeys = new PSet('37','38','39','40','91','93','20','35','36',
                                '33','34','27','18','17','16','224');
     var inputFilterer = function(event) {
         if (harmlessKeys.contains(event.keyCode))

@@ -72,9 +72,9 @@
 /** @type {!Array.<!string>} */
 var originalHeaders;
 /** @type {!Array.<!tEntity>} */
-var rows;
-var typesSeen = new Set();
-var propertiesSeen = new Set();
+var rows : tEntity[];
+var typesSeen = new PSet();
+var propertiesSeen = new PSet();
 /** @type {InternalReconciler} */
 var internalReconciler;
 /** @type {string} */
@@ -90,8 +90,8 @@ function resetGlobals() {
     headerPaths = [];
     internalReconciler = new InternalReconciler();
     resetEntities();
-    typesSeen = new Set();
-    propertiesSeen = new Set();
+    typesSeen = new PSet();
+    propertiesSeen = new PSet();
 }
 
 
@@ -239,7 +239,7 @@ function parseTSV(spreadsheet, onComplete, yielder) {
     @param {!function(Array.<loader.row>)} onComplete
     @param {Yielder=} yielder
 */
-function removeBlankLines(rows, onComplete, yielder) {
+function removeBlankLines(rows:string[][], onComplete, yielder) {
     var newRows = [];
     politeEach(rows, function(_,row) {
         if (row.length === 1 && row[0] === "")
@@ -305,7 +305,7 @@ function recordToTree(record) {
 function recordsToEntities(records, onComplete, yielder) {
     recordsToTrees(records, function(trees) {
         resetEntities();
-        typesSeen = new Set();
+        typesSeen = new PSet();
 
 
         treesToEntities(trees, function(entities) {
@@ -352,12 +352,12 @@ function treesToEntities(trees, onComplete, yielder) {
  * @param {!function(!Array.<loader.record>, Array.<loader.record>=, loader.record=)} onComplete
  * @param {Yielder=} yielder
  */
-function rowsToRecords(rows, onComplete, yielder) {
+function rowsToRecords(rows:string[][], onComplete, yielder) {
     yielder = yielder || new Yielder();
 
     var firstMultilineRecord = undefined;
-    var multiRecords : string[][] = [];
-    var singleRecords : string[][] = [];
+    var multiRecords : string[][][] = [];
+    var singleRecords : string[][][] = [];
 
     var currentMultiRecord = []
 
@@ -438,7 +438,7 @@ function addIdColumns() {
     if (!columnAlreadyExists("id"))
         headerPaths.push(new loader.path("id"));
     $.each(headerPaths, function(_,headerPath) {
-        var partsSoFar = [];
+        var partsSoFar : string[] = [];
         //only add id columns if they look like mql props
         if (!isMqlProp(headerPath.parts[0].prop))
             return;

@@ -27,7 +27,7 @@ module SuperFreeq {
 
   export interface TripleLoadCommand {
     triple: Triple;
-    assert_ids: bool;
+    assert_ids: boolean;
     cvt_triples?: CVTTriple[];
   }
 
@@ -70,7 +70,7 @@ module SuperFreeq {
 
   export class Job {
     base_url: string;
-    vars = new Set();
+    vars = new PSet();
 
     constructor(public id:string, public graph:string) {
       this.base_url = getUrlForGraph(graph) + "/jobs/" + id;
