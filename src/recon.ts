@@ -247,8 +247,8 @@ function getCandidates(entity:tEntity, callback:(entity:tEntity)=>void,
     return params;
   }
   function walkTree(tree:Object, onLeaf:(path:string[], value:any)=>void) {
-    var path = [];
-    function walk(node) {
+    var path : string[] = [];
+    function walk(node:Object) {
       for (var key in node) {
         path.push(key);
         $.each($.makeArray(node[key]), function(_, value) {

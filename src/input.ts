@@ -96,12 +96,18 @@ function resetGlobals() {
 ** Parsing and munging the input
 */
 
+interface AmbiguityResolver {
+    (rows:string[][], f:(combineRows:boolean)=>void):void;
+}
+
 /** @param {!string} input Either a tsv or a json array of trees
   * @param {!function(loader.record, function(boolean))} ambiguityResolver
   * @param {!function()} onComplete
   * @param {Yielder=} yielder
   */
-function parseInput(input, ambiguityResolver, onComplete, yielder) {
+function parseInput(input:string,
+                    ambiguityResolver:AmbiguityResolver,
+                    onComplete:()=>void, yielder:Yielder) {
     yielder = yielder || new Yielder();
 
     //reset global values
@@ -116,8 +122,8 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
 
     inputType = "TSV";
 
-    parseTSV(input,function(spreadsheetRowsWithBlanks) {
-        removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows) {
+    parseTSV(input, function(spreadsheetRowsWithBlanks:string[][]) {
+        removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows:string[][]) {
             buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder);
         }, yielder)
     }, yielder);
@@ -133,11 +139,12 @@ function parseInput(input, ambiguityResolver, onComplete, yielder) {
  * @param {function(Array.<loader.row>)} onComplete
  * @param {Yielder=} yielder
  */
-function parseTSV(spreadsheet, onComplete, yielder) {
+function parseTSV(spreadsheet:string, onComplete:(result:string[][])=>void,
+                  yielder:Yielder) {
     yielder = yielder || new Yielder();
     var position = 0;
     function parseLine() {
-        var fields = [];
+        var fields : string[] = [];
         var inQuotes = false;
         var startOfCell = true;
         var field = "";
@@ -236,8 +243,9 @@ function parseTSV(spreadsheet, onComplete, yielder) {
     @param {!function(Array.<loader.row>)} onComplete
     @param {Yielder=} yielder
 */
-function removeBlankLines(rows:string[][], onComplete, yielder) {
-    var newRows = [];
+function removeBlankLines(rows:string[][], onComplete:(rows:string[][])=>void,
+                          yielder:Yielder) {
+    var newRows : string[][] = [];
     politeEach(rows, function(_,row) {
         if (row.length === 1 && row[0] === "")
             return;
@@ -250,7 +258,8 @@ function removeBlankLines(rows:string[][], onComplete, yielder) {
   * @param {!function()} onComplete
   * @param {Yielder=} yielder
   */
-function buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder) {
+function buildRowInfo(spreadsheetRows:string[][], ambiguityResolver:AmbiguityResolver,
+                      onComplete:()=>void, yielder:Yielder) {
     //keeps us from crashing on blank input
     if (spreadsheetRows.length === 0) return;
 
@@ -265,7 +274,7 @@ function buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder) {
 
     //fetching property metadata early helps in the UI
     freebase.fetchPropertyInfo(getProperties(headerPaths), function() {
-        rowsToRecords(spreadsheetRows, function(singleRecords, multiRecords, exampleRecord) {
+        rowsToRecords(spreadsheetRows, function(singleRecords:string[][][], multiRecords?:string[][][], exampleRecord?:string[][]) {
             if (exampleRecord === undefined)
                 handleRecords(singleRecords);
             else
@@ -275,14 +284,14 @@ function buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder) {
         }, yielder);
     });
 
-    function handleRecords(records) {recordsToEntities(records, onComplete, yielder)}
+    function handleRecords(records:string[][][]) {recordsToEntities(records, onComplete, yielder)}
 }
 
-function recordsToTrees(records, onComplete, yielder) {
+function recordsToTrees(records:string[][][], onComplete:(trees:any[])=>void, yielder:Yielder) {
     politeMap(records, recordToTree, onComplete, yielder);
 }
 
-function recordToTree(record) {
+function recordToTree(record:string[][]):any {
     var tree = {}
     $.each(record, function(j, row) {
         for(var k in row) {
@@ -299,7 +308,7 @@ function recordToTree(record) {
     return tree;
 }
 
-function recordsToEntities(records, onComplete, yielder) {
+function recordsToEntities(records:string[][][], onComplete:()=>void, yielder:Yielder) {
     recordsToTrees(records, function(trees) {
         resetEntities();
         typesSeen = new PSet();
@@ -316,11 +325,11 @@ function recordsToEntities(records, onComplete, yielder) {
   * @param {!function(!Array.<!tEntity>)} onComplete
   * @param {Yielder=} yielder
   */
-function treesToEntities(trees, onComplete, yielder) {
+function treesToEntities(trees:any[], onComplete:(entities:tEntity[])=>void, yielder:Yielder) {
     yielder = yielder || new Yielder();
-    findAllProperties(trees, function(props) {
+    findAllProperties(trees, function(props: string[]) {
         freebase.fetchPropertyInfo(props, afterPropertiesFetched,
-            function onError(errorProps) {
+            function onError(errorProps:string[]) {
                 $.each(errorProps, warnUnknownProp);
                 afterPropertiesFetched();
             }
@@ -349,14 +358,14 @@ function treesToEntities(trees, onComplete, yielder) {
  * @param {!function(!Array.<loader.record>, Array.<loader.record>=, loader.record=)} onComplete
  * @param {Yielder=} yielder
  */
-function rowsToRecords(rows:string[][], onComplete, yielder) {
+function rowsToRecords(rows:string[][], onComplete:(records:string[][][], multirecords?:string[][][], firstMultiline?:string[][])=>void, yielder:Yielder) {
     yielder = yielder || new Yielder();
 
-    var firstMultilineRecord = undefined;
+    var firstMultilineRecord : string[][] = undefined;
     var multiRecords : string[][][] = [];
     var singleRecords : string[][][] = [];
 
-    var currentMultiRecord = []
+    var currentMultiRecord : string[][] = []
 
     function addMultiRecord() {
         if (currentMultiRecord.length > 1 && !firstMultilineRecord)
@@ -393,12 +402,12 @@ function rowsToRecords(rows:string[][], onComplete, yielder) {
  * @param {!string} value
  *
  */
-function pathPut(path, topindex, record, value) {
+function pathPut(path:loader.path, topindex:number, record:any, value:string) {
     /** @param {!loader.tree} currentRecord
       * @param {!number} pathIndex
       * @param {number=} currentIndex
       */
-    function putValue(currentRecord, pathIndex:number, currentIndex?:number) {
+    function putValue(currentRecord:any, pathIndex:number, currentIndex?:number) {
         var currentPart = path.parts[pathIndex]
         currentIndex = currentPart.index || currentIndex || 0;
         var atLastPath = pathIndex + 1 >= path.parts.length
@@ -466,7 +475,7 @@ function addIdColumns() {
         });
     });
 
-    function columnAlreadyExists(header) {
+    function columnAlreadyExists(header:string) {
         for (var i = 0; i < headerPaths.length; i++)
             if (headerPaths[i].toString() === header)
                 return true;
@@ -480,12 +489,12 @@ function addIdColumns() {
   * @param {!function(Array.<string>)} onComplete
   * @param {Yielder=} yielder
   */
-function findAllProperties(trees, onComplete, yielder) {
+function findAllProperties(trees:any, onComplete:(props:string[])=>void, yielder:Yielder) {
     politeEach(trees, findProps, function() {
         onComplete(propertiesSeen.getAll());
     }, yielder);
 
-    function findProps(_,obj) {
+    function findProps(_:any, obj:any) {
         switch(getType(obj)) {
         case "array":
             $.each(obj, findProps);
@@ -507,7 +516,7 @@ function findAllProperties(trees, onComplete, yielder) {
   * @param {!function(!Array.<tEntity>)} onComplete
   * @param {Yielder=} yielder
   */
-function mapTreesToEntities(trees, onComplete, yielder) {
+function mapTreesToEntities(trees:any[], onComplete:(entity:tEntity[])=>void, yielder:Yielder) {
     internalReconciler = new InternalReconciler();
     politeMap(trees,
               function(record){return mapTreeToEntity(record)},
@@ -520,7 +529,7 @@ function mapTreesToEntities(trees, onComplete, yielder) {
   * @param {!Object} tree
   * @param {tEntity=} parent
 */
-function mapTreeToEntity(tree, parent?) {
+function mapTreeToEntity(tree:any, parent?:tEntity):tEntity {
     var entity = new tEntity({'/rec_ui/toplevel_entity': !parent});
     if (parent)
         entity.addParent(parent);
@@ -573,16 +582,16 @@ function mapTreeToEntity(tree, parent?) {
     return entity;
 }
 
-function validateProperty(prop, values) {
+function validateProperty(prop:string, values:string[]) {
     if (prop === '/type/object/type') {
-        freebase.fetchTypeInfo(values, function(){}, function(invalidTypes) {
+        freebase.fetchTypeInfo(values, function(){}, function(invalidTypes:string[]) {
             $.map(invalidTypes, warnUnknownType);
         });
     }
     var propMetadata = freebase.getPropMetadata(prop);
     if (propMetadata && propMetadata.expected_type && propMetadata.expected_type.id) {
         var type = propMetadata.expected_type;
-        $.each(values, function(_, value) {
+        $.each(values, function(_:number, value:string) {
             validateValueForType(value, type.id);
         })
     }
@@ -596,7 +605,7 @@ var literalValidationRegexes = {
     "/type/text": /^.{0,4096}$/,
     "/type/rawstring": /^.{0,4096}$/
 }
-function validateValueForType(value, type) {
+function validateValueForType(value:string, type:string) {
     var regex = literalValidationRegexes[type];
     if (regex && !value.match(regex))
         warnInvalidLiteral(value, type);
@@ -608,7 +617,7 @@ function validateValueForType(value, type) {
 }
 
 /** @param {tEntity} entity */
-function connectCVTProperties(entity) {
+function connectCVTProperties(entity:tEntity) {
     for (var prop in entity) {
         var propMeta = freebase.getPropMetadata(prop);
         if (!propMeta)
@@ -637,7 +646,7 @@ function connectCVTProperties(entity) {
   * @param {!function()} onComplete
   * @param {Yielder=} yielder
   */
-function parseJSON(json, onComplete, yielder) {
+function parseJSON(json:string, onComplete:()=>void, yielder:Yielder) {
     yielder = yielder || new Yielder();
     try {
         var trees = JSON.parse(json);
@@ -654,17 +663,17 @@ function parseJSON(json, onComplete, yielder) {
     }, yielder);
 }
 
-function warnUnknownProp(_, errorProp) {
+function warnUnknownProp(_:any, errorProp:string) {
     addInputWarning("Cannot find property '" + errorProp + "'");
 }
 
 /** @const */
 var requiredProperties = ["/type/object/type", "/type/object/name"];
-function warnPropertyMissing(propName) {
+function warnPropertyMissing(propName:string) {
     addInputWarning(propName + " is required for Freebase Loader to function correctly");
 }
 
-function warnUnknownType(typeName) {
+function warnUnknownType(typeName:string) {
     addInputWarning("Cannot find a type with the id " + typeName);
 }
 
@@ -672,6 +681,6 @@ function warnUnknownType(typeName) {
   * @param {!string} type
   * @param {string=} msg
   */
-function warnInvalidLiteral(value, type, msg?) {
+function warnInvalidLiteral(value:string, type:string, msg?:string) {
     addInputWarning("`" + value + "` is not a valid " + type + ". " + (msg || ""));
 }
