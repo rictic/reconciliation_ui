@@ -45,9 +45,11 @@ function renderReconChoices(entity:tEntity) {
     var template = $("#manualReconcileTemplate").clone();
     template[0].id = getManualReconId(entity);
     var headerPaths = entity["/rec_ui/headerPaths"];
-    var mqlPaths = entity["/rec_ui/mql_paths"];
-    var uniqueMqlProps = Arr.unique($.map(mqlPaths, function(path){return path.toComplexProp()}));
-    var uniqueMqlPaths = $.map(["/type/object/name","/type/object/type"].concat(uniqueMqlProps), function(prop) {return new loader.path(prop)});
+    var mqlPaths : loader.path[] = entity["/rec_ui/mql_paths"];
+    var baseMqlProps = $.map(mqlPaths, function(path){return path.toComplexProp()});
+    var uniqueMqlProps : string[] = Arr.unique(baseMqlProps);
+    var someProps = ["/type/object/name","/type/object/type"].concat(uniqueMqlProps);
+    var uniqueMqlPaths = $.map(someProps, function(prop) {return new loader.path(prop)});
 
     var currentRecord = $(".recordVals",template);
     for(var i = 0; i < uniqueMqlPaths.length; i++) {

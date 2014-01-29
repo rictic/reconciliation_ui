@@ -1,6 +1,13 @@
 var totalRecords = 0;
 var reconUndoStack;
 
+interface Candidate {
+  id: string;
+  name: string[];
+  score: number;
+  match: boolean;
+}
+
 function isUnreconciled(entity:tEntity):boolean {
     if (entity.isCVT())
         return false;

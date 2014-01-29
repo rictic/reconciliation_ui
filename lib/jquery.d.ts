@@ -73,7 +73,7 @@ interface JQueryAjaxSettings {
      */
     dataFilter? (data: any, ty: any): any;
     /**
-     * The type of data that you're expecting back from the server. If none is specified, jQuery will try to infer it based on the MIME type of the response (an XML MIME type will yield XML, in 1.4 JSON will yield a JavaScript object, in 1.4 script will execute the script, and anything else will be returned as a string). 
+     * The type of data that you're expecting back from the server. If none is specified, jQuery will try to infer it based on the MIME type of the response (an XML MIME type will yield XML, in 1.4 JSON will yield a JavaScript object, in 1.4 script will execute the script, and anything else will be returned as a string).
      */
     dataType?: string;
     /**
@@ -163,7 +163,7 @@ interface JQueryAjaxSettings {
  */
 interface JQueryXHR extends XMLHttpRequest, JQueryPromise<any> {
     /**
-     * The .overrideMimeType() method may be used in the beforeSend() callback function, for example, to modify the response content-type header. As of jQuery 1.5.1, the jqXHR object also contains the overrideMimeType() method (it was available in jQuery 1.4.x, as well, but was temporarily removed in jQuery 1.5). 
+     * The .overrideMimeType() method may be used in the beforeSend() callback function, for example, to modify the response content-type header. As of jQuery 1.5.1, the jqXHR object also contains the overrideMimeType() method (it was available in jQuery 1.4.x, as well, but was temporarily removed in jQuery 1.5).
      */
     overrideMimeType(mimeType: string): any;
     abort(statusText?: string): void;
@@ -175,13 +175,13 @@ interface JQueryXHR extends XMLHttpRequest, JQueryPromise<any> {
 interface JQueryCallback {
     /**
      * Add a callback or a collection of callbacks to a callback list.
-     * 
+     *
      * @param callbacks A function, or array of functions, that are to be added to the callback list.
      */
     add(callbacks: Function): JQueryCallback;
     /**
      * Add a callback or a collection of callbacks to a callback list.
-     * 
+     *
      * @param callbacks A function, or array of functions, that are to be added to the callback list.
      */
     add(callbacks: Function[]): JQueryCallback;
@@ -203,7 +203,7 @@ interface JQueryCallback {
 
     /**
      * Call all of the callbacks with the given arguments
-     * 
+     *
      * @param arguments The argument or list of arguments to pass back to the callback list.
      */
     fire(...arguments: any[]): JQueryCallback;
@@ -215,7 +215,7 @@ interface JQueryCallback {
 
     /**
      * Call all callbacks in a list with the given context and arguments.
-     * 
+     *
      * @param context A reference to the context in which the callbacks in the list should be fired.
      * @param arguments An argument, or array of arguments, to pass to the callbacks in the list.
      */
@@ -223,7 +223,7 @@ interface JQueryCallback {
 
     /**
      * Determine whether a supplied callback is in a list
-     * 
+     *
      * @param callback The callback to search for.
      */
     has(callback: Function): boolean;
@@ -240,13 +240,13 @@ interface JQueryCallback {
 
     /**
      * Remove a callback or a collection of callbacks from a callback list.
-     * 
+     *
      * @param callbacks A function, or array of functions, that are to be removed from the callback list.
      */
     remove(callbacks: Function): JQueryCallback;
     /**
      * Remove a callback or a collection of callbacks from a callback list.
-     * 
+     *
      * @param callbacks A function, or array of functions, that are to be removed from the callback list.
      */
     remove(callbacks: Function[]): JQueryCallback;
@@ -405,14 +405,14 @@ interface JQuerySupport {
 interface JQueryParam {
     /**
      * Create a serialized representation of an array or object, suitable for use in a URL query string or Ajax request.
-     * 
+     *
      * @param obj An array or object to serialize.
      */
     (obj: any): string;
 
     /**
      * Create a serialized representation of an array or object, suitable for use in a URL query string or Ajax request.
-     * 
+     *
      * @param obj An array or object to serialize.
      * @param traditional A Boolean indicating whether to perform a traditional "shallow" serialization.
      */
@@ -438,47 +438,47 @@ interface JQueryCoordinates {
     top: number;
 }
 
-interface JQueryAnimationOptions { 
+interface JQueryAnimationOptions {
     /**
      * A string or number determining how long the animation will run.
      */
-    duration?: any; 
+    duration?: any;
     /**
      * A string indicating which easing function to use for the transition.
      */
-    easing?: string; 
+    easing?: string;
     /**
      * A function to call once the animation is complete.
      */
-    complete?: Function; 
+    complete?: Function;
     /**
      * A function to be called for each animated property of each animated element. This function provides an opportunity to modify the Tween object to change the value of the property before it is set.
      */
-    step?: (now: number, tween: any) => any; 
+    step?: (now: number, tween: any) => any;
     /**
      * A function to be called after each step of the animation, only once per animated element regardless of the number of animated properties. (version added: 1.8)
      */
-    progress?: (animation: JQueryPromise<any>, progress: number, remainingMs: number) => any; 
+    progress?: (animation: JQueryPromise<any>, progress: number, remainingMs: number) => any;
     /**
      * A function to call when the animation begins. (version added: 1.8)
      */
-    start?: (animation: JQueryPromise<any>) => any; 
+    start?: (animation: JQueryPromise<any>) => any;
     /**
      * A function to be called when the animation completes (its Promise object is resolved). (version added: 1.8)
      */
-    done?: (animation: JQueryPromise<any>, jumpedToEnd: boolean) => any; 
+    done?: (animation: JQueryPromise<any>, jumpedToEnd: boolean) => any;
     /**
      * A function to be called when the animation fails to complete (its Promise object is rejected). (version added: 1.8)
      */
-    fail?: (animation: JQueryPromise<any>, jumpedToEnd: boolean) => any; 
+    fail?: (animation: JQueryPromise<any>, jumpedToEnd: boolean) => any;
     /**
      * A function to be called when the animation completes or stops without completing (its Promise object is either resolved or rejected). (version added: 1.8)
      */
-    always?: (animation: JQueryPromise<any>, jumpedToEnd: boolean) => any; 
+    always?: (animation: JQueryPromise<any>, jumpedToEnd: boolean) => any;
     /**
      * A Boolean indicating whether to place the animation in the effects queue. If false, the animation will begin immediately. As of jQuery 1.7, the queue option can also accept a string, in which case the animation is added to the queue represented by that string. When a custom queue name is used the animation does not automatically start; you must call .dequeue("queuename") to start it.
      */
-    queue?: any; 
+    queue?: any;
     /**
      * A map of one or more of the CSS properties defined by the properties argument and their corresponding easing functions. (version added: 1.4)
      */
@@ -865,7 +865,7 @@ interface JQueryStatic {
 
     /**
      * Check to see if a DOM element is a descendant of another DOM element.
-     * 
+     *
      * @param container The DOM element that may contain the other element.
      * @param contained The DOM element that may be contained by (a descendant of) the other element.
      */
@@ -873,7 +873,7 @@ interface JQueryStatic {
 
     /**
      * A generic iterator function, which can be used to seamlessly iterate over both objects and arrays. Arrays and array-like objects with a length property (such as a function's arguments object) are iterated by numeric index, from 0 to length-1. Other objects are iterated via their named properties.
-     * 
+     *
      * @param collection The object or array to iterate over.
      * @param callback The function that will be executed on every object.
      */
@@ -884,7 +884,7 @@ interface JQueryStatic {
 
     /**
      * A generic iterator function, which can be used to seamlessly iterate over both objects and arrays. Arrays and array-like objects with a length property (such as a function's arguments object) are iterated by numeric index, from 0 to length-1. Other objects are iterated via their named properties.
-     * 
+     *
      * @param collection The object or array to iterate over.
      * @param callback The function that will be executed on every object.
      */
@@ -981,29 +981,22 @@ interface JQueryStatic {
 
     /**
      * Convert an array-like object into a true JavaScript array.
-     * 
+     *
      * @param obj Any object to turn into a native Array.
      */
     makeArray(obj: any): any[];
 
     /**
      * Translate all items in an array or object to new array of items.
-     * 
+     *
      * @param array The Array to translate.
      * @param callback The function to process each item against. The first argument to the function is the array item, the second argument is the index in array The function can return any value. Within the function, this refers to the global (window) object.
      */
     map<T, U>(array: T[], callback: (elementOfArray: T, indexInArray: number) => U): U[];
-    /**
-     * Translate all items in an array or object to new array of items.
-     * 
-     * @param arrayOrObject The Array or Object to translate.
-     * @param callback The function to process each item against. The first argument to the function is the value; the second argument is the index or key of the array or object property. The function can return any value to add to the array. A returned array will be flattened into the resulting array. Within the function, this refers to the global (window) object.
-     */
-    map(arrayOrObject: any, callback: (value: any, indexOrKey: any) => any): any;
 
     /**
      * Merge the contents of two arrays together into the first array.
-     * 
+     *
      * @param first The first array to merge, the elements of second added.
      * @param second The second array to merge into the first, unaltered.
      */
@@ -1021,7 +1014,7 @@ interface JQueryStatic {
 
     /**
      * Takes a well-formed JSON string and returns the resulting JavaScript object.
-     * 
+     *
      * @param json The JSON string to parse.
      */
     parseJSON(json: string): Object;
@@ -1035,21 +1028,21 @@ interface JQueryStatic {
 
     /**
      * Remove the whitespace from the beginning and end of a string.
-     * 
+     *
      * @param str Remove the whitespace from the beginning and end of a string.
      */
     trim(str: string): string;
 
     /**
      * Determine the internal JavaScript [[Class]] of an object.
-     * 
+     *
      * @param obj Object to get the internal JavaScript [[Class]] of.
      */
     type(obj: any): string;
 
     /**
      * Sorts an array of DOM elements, in place, with the duplicates removed. Note that this only works on arrays of DOM elements, not strings or numbers.
-     * 
+     *
      * @param array The Array of DOM elements.
      */
     unique(array: Element[]): Element[];
@@ -1169,6 +1162,7 @@ interface JQuery {
      * @param value A value to set for the attribute.
      */
     attr(attributeName: string, value: number): JQuery;
+    attr(attributeName: string, value: boolean): JQuery;
     /**
      * Set one or more attributes for the set of matched elements.
      *
@@ -1182,7 +1176,7 @@ interface JQuery {
      * @param attributes An object of attribute-value pairs to set.
      */
     attr(attributes: Object): JQuery;
-    
+
     /**
      * Determine whether any of the matched elements are assigned the given class.
      *
@@ -2615,7 +2609,7 @@ interface JQuery {
 
     /**
      * Iterate over a jQuery object, executing a function for each matched element.
-     * 
+     *
      * @param func A function to execute for each matched element.
      */
     each(func: (index: number, elem: Element) => any): JQuery;

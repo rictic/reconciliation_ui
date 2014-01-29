@@ -63,7 +63,7 @@ module loader {
       /**
        * Returns the index or undefined
       */
-      function parseIndex(part) {
+      function parseIndex(part:string):number {
         var numsearch = part.match(/\[(\d+)\]/)
         if(numsearch == null || numsearch.length !== 2) return undefined
         else return parseInt(numsearch[1], 10)
@@ -72,7 +72,7 @@ module loader {
       /**
        * Returns the property without the index.
        */
-      function parseProp(part) {
+      function parseProp(part:string):string {
           var propsearch = part.match(/(.+)\[\d+\]/)
           if(propsearch == null || propsearch.length != 2) return part
           else return propsearch[1]

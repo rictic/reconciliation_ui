@@ -4,7 +4,7 @@ class EventEmitter {
     this.handlersByName[name] = this.handlersByName[name] || [];
     return this.handlersByName[name];
   }
-  addListener(name:string, handler) {
+  addListener(name:string, handler:Function) {
     this.listeners(name).push(handler);
   }
   emit(name:string, ...args:any[]) {

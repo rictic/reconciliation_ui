@@ -1,3 +1,15 @@
+/** Wrapper function for setTimeout.  Todo: add error handling
+  * @param {function()} f
+  * @param {number} millis
+  */
+function addTimeout(f:()=>void, millis:number) {
+    return setTimeout(f,millis,"JavaScript");
+}
+
+function addInterval(f:()=>void, millis:number) {
+    return setInterval(f,millis,"JavaScript");
+}
+
 function time() {
     return new Date().valueOf();
 }
@@ -6,8 +18,8 @@ function time() {
 class Yielder {
   private startTime = time();
   private isCancelled = false;
-  private nextAction = null;
-  shouldYield(continueFunction) {
+  private nextAction : number= null;
+  shouldYield(continueFunction:()=>void) {
     if (this.isCancelled)
       return true;
     if (time() <= this.startTime + 10)
@@ -52,7 +64,7 @@ function politeMap<T,V>(array: T[], f:(val:T)=>V,
                    onComplete:(mapped:V[])=>any,
                    yielder?:Yielder) {
   yielder = yielder || new Yielder();
-  var result = [];
+  var result : V[] = [];
   politeEach(array, function(index, value) {
     result[index] = f(value);
   }, function() {onComplete(result);}, yielder);

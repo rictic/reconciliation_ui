@@ -69,18 +69,15 @@
 //loader.tree;
 
 //Some globals that various components poke into
-/** @type {!Array.<!string>} */
-var originalHeaders;
-/** @type {!Array.<!tEntity>} */
+var originalHeaders : string[];
 var rows : tEntity[];
 var typesSeen = new PSet();
 var propertiesSeen = new PSet();
 /** @type {InternalReconciler} */
-var internalReconciler;
-/** @type {string} */
-var inputType;
-/** @type {!Array.<!loader.path>} */
-var headerPaths;
+var internalReconciler : InternalReconciler;
+
+var inputType : string;
+var headerPaths : loader.path[];
 
 function resetGlobals() {
     //this is more or less a list of variables which need to be eliminated

@@ -11,7 +11,7 @@ resetEntities();
 
 //For tEntity and RecGroups
 interface EntityLike {
-  setID(string);
+  setID(s:string):void;
 }
 
 /** @constructor
@@ -20,7 +20,7 @@ interface EntityLike {
 class tEntity {
   name:string;
   id:string;
-  reconResults;
+  reconResults:Candidate[];
   typelessRecon = false;
   constructor(initialVals?:Object) {
     this["/rec_ui/id"] = internalIDCounter++
@@ -48,7 +48,7 @@ class tEntity {
   get(path:string, preservePlace?:boolean):any[];
   get(path:loader.path, preservePlace?:boolean):any[];
 
-  get(path, preservePlace?:boolean):any[] {
+  get(path:any, preservePlace?:boolean):any[] {
     if (getType(path) === "string") {
       var spath:string = path;
       return this.get(new loader.path(spath), preservePlace);
@@ -56,7 +56,7 @@ class tEntity {
 
     var slots = [this];
     $.each(path.parts, function(_,part) {
-      var newSlots = [];
+      var newSlots : any[] = [];
       $.each(slots, function(_,slot) {
         if (!slot) {
           newSlots.push(undefined);
@@ -106,7 +106,7 @@ class tEntity {
     this['/rec_ui/was_automatically_reconciled'] = automatic;
     var recGroup = internalReconciler.getRecGroup(this);
     var self = this;
-    freebase.getCanonicalID(id, function(new_id) {
+    freebase.getCanonicalID(id, function(new_id:string) {
       if (recGroup.shouldMerge)
         recGroup.setID(new_id);
       else
@@ -115,7 +115,7 @@ class tEntity {
     tEntity.emit("reconciled", this, automatic);
   }
 
-  addProperty(prop:string, value) {
+  addProperty(prop:string, value:any) {
     if (getType(prop) !== "string"){
       console.warn("called tEntity.property.addProperty with prop of type `" + getType(prop) + "`, expected string.  The value was: " + JSON.stringify(JsObjDump.annotate(value)));
       return;
@@ -165,7 +165,7 @@ class tEntity {
     return this.id;
   }
 
-  setID(id) {
+  setID(id:string) {
     this.id = id;
   }
 

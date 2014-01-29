@@ -148,7 +148,7 @@ module SuperFreeq {
         var vars = batch.join(',').replace(/\$/g,'');
         doRequest(this.base_url + '/mids', 'vars=' + vars, (v) =>{
           $.extend(result, v);
-          addTimeout(5 * 1000, getSome());
+          addTimeout(getSome, 5 * 1000);
         } , 'GET')
       }
       getSome();

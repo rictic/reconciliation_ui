@@ -2,16 +2,17 @@
 //KeyedQueue only stores values (numbers, booleans, strings, etc)
 //override getKey to return a unique, identifying value to store non-values
 
+// TODO(rictic): generics
 class KeyedQueue extends EventEmitter {
   private _set = new PSet();
-  private _array = [];
+  private _array : any[] = [];
 
-  peek(n) {
+  peek(n:number):any {
     n = n || 1;
     return this._array[n-1];
   }
 
-  shift() {
+  shift():any {
     var val = this._array.shift();
     this._set.remove(this.getKey(val));
     this.emit("changed");
@@ -20,7 +21,7 @@ class KeyedQueue extends EventEmitter {
   }
 
   //adds to the end of the queue
-  push(val) {
+  push(val:any):boolean {
     var key = this.getKey(val);
     if (this._set.contains(key))
         return false;
@@ -32,7 +33,7 @@ class KeyedQueue extends EventEmitter {
   }
 
   //adds to the front of the queue
-  unshift(val) {
+  unshift(val:any):boolean {
     var key = this.getKey(val);
     if (this._set.contains(key))
         return false;
@@ -43,7 +44,7 @@ class KeyedQueue extends EventEmitter {
     return true;
   }
 
-  remove(val) {
+  remove(val:any):any {
     var key = this.getKey(val);
     if (!this._set.contains(key))
         return undefined;
@@ -61,15 +62,15 @@ class KeyedQueue extends EventEmitter {
     return val;
   }
 
-  getKey(val) {
+  getKey(val:any):any {
     return val;
   }
 
-  size() { return this._array.length; }
+  size():number { return this._array.length; }
 }
 
 class EntityQueue extends KeyedQueue {
-  getKey(entity) {
+  getKey(entity:tEntity):number {
     return entity['/rec_ui/id'];
   }
 }

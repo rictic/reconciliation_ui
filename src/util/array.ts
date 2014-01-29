@@ -3,7 +3,7 @@ module Arr {
 
   export function difference<T>(source:T[], toRemove:T[]):T[] {
       source = $.makeArray(source); toRemove = $.makeArray(toRemove);
-      var result = [];
+      var result : T[] = [];
       $.each(source, function(_,val){
           if (!Arr.contains(toRemove,val))
               result.push(val);
@@ -13,7 +13,7 @@ module Arr {
 
   export function union<T>(a:T[], b:T[]):T[] {
       a = $.makeArray(a); b = $.makeArray(b);
-      var result = [];
+      var result : T[] = [];
       $.each(a, function(_,val) {
           if (Arr.contains(b,val))
               result.push(val);
@@ -27,7 +27,7 @@ module Arr {
       return a.slice(0,i).concat(a.slice(i+1));
   }
 
-  export function removeOneMatching<T>(a:T[], p:(T)=>boolean):T[] {
+  export function removeOneMatching<T>(a:T[], p:(t:T)=>boolean):T[] {
       for (var i = 0; i < a.length; i++) {
           if (p(a[i]))
               return Arr.removeAt(a,i);
@@ -39,16 +39,16 @@ module Arr {
       return $.inArray(value, array) !== -1;
   }
 
-  export function filter<T>(array:T[], predicate:(T)=>boolean):T[] {
+  export function filter<T>(array:T[], predicate:(t:T)=>boolean):T[] {
       return $.grep(array, predicate);
   }
 
   /** Returns two new arrays, the first with those elements that satisfy the
     * predicate, the second with those that don't
     */
-  export function partition<T>(array:T[], predicate:(T)=>boolean):T[][] {
-      var good = [];
-      var bad = [];
+  export function partition<T>(array:T[], predicate:(t:T)=>boolean):T[][] {
+      var good : T[] = [];
+      var bad : T[] = [];
       $.each(array, function(i, val) {
           if (predicate(val))
               good.push(val);
@@ -63,8 +63,8 @@ module Arr {
     * @param {!function(*):boolean=} predicate
     * @return {!boolean}
     */
-  export function all(array, predicate) {
-      if (!predicate) predicate = identity;
+  export function all<T>(array:T[], predicate?:(t:T)=>boolean):boolean {
+      if (!predicate) predicate = function(x:T):boolean { return !!x; };
       for (var i = 0; i < array.length; i++)
           if (!predicate(array[i]))
               return false;
@@ -76,8 +76,8 @@ module Arr {
     * @param {function()=} predicate
     * @return {!boolean}
     */
-  export function any(array, predicate) {
-      if (!predicate) predicate = identity;
+  export function any<T>(array:T[], predicate?:(t:T)=>boolean):boolean {
+      if (!predicate) predicate = function(x:T):boolean { return !!x; };
       for (var i = 0; i < array.length; i++)
           if (predicate(array[i]))
               return true;
@@ -89,7 +89,7 @@ module Arr {
     * @param {!function(*):boolean=} predicate
     * @return {!boolean}
     */
-  export function none(array, predicate) {
+  export function none<T>(array:T[], predicate?:(t:T)=>boolean):boolean {
       return !Arr.any(array,predicate);
   }
 
@@ -97,14 +97,14 @@ module Arr {
     * @param {!Array} array
     * @return {!Array}
     */
-  export function unique(array) {
+  export function unique<T>(array:T[]):T[] {
       var lookup = {};
-      var result = [];
+      var result : T[] = [];
       for (var i = 0; i < array.length; i++) {
           var val = array[i];
-          if (lookup[val])
+          if (lookup[<any>(val)])
               continue;
-          lookup[val] = true;
+          lookup[<any>(val)] = true;
           result.push(val);
       }
       return result;
@@ -114,8 +114,8 @@ module Arr {
     * @param {!Array} arrays
     * @return {!Array}
     */
-  export function concat(arrays) {
-      var result = [];
+  export function concat<T>(arrays:T[][]):T[] {
+      var result : T[] = [];
       $.each(arrays, function(_,array) {
           result = result.concat(array);
       });
@@ -127,7 +127,7 @@ module Arr {
     * @param {!function(*):Array} f
     * @return {!Array}
     */
-  export function concatMap(array, f) {
+  export function concatMap<T,U>(array:T[], f:(t:T)=>U[]):U[] {
       return Arr.concat($.map(array,f));
   }
 }

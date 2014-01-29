@@ -33,8 +33,8 @@
 var api_key = "AIzaSyCECXPKV-s7vRKzVW_hy5ai4OCnWl86aq4"
 
 //perform a shallow copy of a JS object
-function clone(obj) {
-    var copy = {};
+function clone<T>(obj:T):T {
+    var copy = <T>({});
     for (var i in obj)
         copy[i] = obj[i];
     return copy;
@@ -44,7 +44,7 @@ function clone(obj) {
   * @param {!string} kind The tag of the created node
   * @param {...*} var_args
   */
-function node(kind, ...args:any[]) {
+function node(kind:string, ...args:any[]):JQuery {
     var node = $(document.createElement(arguments[0]));
     var options = arguments[arguments.length-1]
     var len = arguments.length - 1;
@@ -67,29 +67,28 @@ function node(kind, ...args:any[]) {
 /** Maps MQL ids to valid CSS class names
   * @param {!string} idName the MQL id
  */
-function idToClass(idName) {
+function idToClass(idName:string):string {
     return idName.replace(/\//g,"_").replace(":","___");
 }
 
-function startsWith(needle, haystack) {
+function startsWith(needle:string, haystack:string):boolean {
     if (haystack.substr(0,needle.length) === needle)
         return true;
     return false;
 }
 
-function endsWith(needle, haystack) {
+function endsWith(needle:string, haystack:string):boolean {
     if (haystack.substr(haystack.length-needle.length) === needle)
         return true;
     return false;
 }
 
 
-function charIn(string, chr) {
+function charIn(string:string, chr:string):boolean {
     return string.indexOf(chr) !== -1;
 }
 
-
-function toJSON(value) {
+function toJSON(value:any):any {
     if (typeof value === "object" && 'toJSON' in value)
         return value.toJSON();
     switch(getType(value)){
@@ -104,13 +103,13 @@ function toJSON(value) {
 
 //I can't believe I can't find a better way of doing these
 /* Functions for treating an object kinda like a list */
-function getFirstValue(obj) {
+function getFirstValue(obj:Object):any {
     for (var key in obj)
         return obj[key];
     return undefined;
 }
 
-function getSecondValue(obj) {
+function getSecondValue(obj:Object):any {
     var i = 1;
     for (var key in obj){
         if (i > 1)
@@ -120,13 +119,13 @@ function getSecondValue(obj) {
     return undefined;
 }
 
-function isObjectEmpty(obj) {
+function isObjectEmpty(obj:Object):boolean {
     for (var key in obj)
         return false;
     return true;
 }
 
-function numProperties(obj) {
+function numProperties(obj:Object):number {
     var i = 0;
     for (var key in obj)
         i++;
@@ -135,13 +134,13 @@ function numProperties(obj) {
 
 
 
-function identity(value) {return value;}
-function isUndefined(value) {return value === undefined;}
+function identity<T>(value:T):T {return value;}
+function isUndefined(value:any):boolean {return value === undefined;}
 
-function getChainedProperty(entity, prop) {
+function getChainedProperty(entity:tEntity, prop:string):any {
     var slots = [entity];
     $.each(prop.split(":"), function(_,part) {
-        var newSlots = [];
+        var newSlots : any[] = [];
         $.each(slots, function(_,slot) {
             newSlots = newSlots.concat($.grep($.makeArray(slot[part]),identity))
         })
@@ -158,7 +157,7 @@ var isMqlProp = (function(){
         /\/type\/object\/id/
     ];
     invalidList.push(/(^|:)id$/);
-    return function(prop) {
+    return function(prop:string):boolean {
         for (var i = 0; i<invalidList.length; i++){
             if (prop.match(invalidList[i]))
                 return false;
@@ -170,41 +169,41 @@ var isMqlProp = (function(){
 /** @param {!Array.<!loader.path>} headerPaths
   * @return !Array.<!string>
   */
-function getProperties(headerPaths) {
+function getProperties(headerPaths:loader.path[]):string[] {
     var candidates = Arr.unique(Arr.concat($.map(headerPaths, function(headerPath){return headerPath.getProps();})));
     return Arr.filter(candidates, function(header) {
         return header.charAt(0) == "/"
     })
 }
 
-function OrderedMap() {
-    var properties = [];
-    var map = {};
-    this.set = function(key, value) {
+function OrderedMap<V>() {
+    var properties : any[] = [];
+    var map : {[key:string]: V} = {};  // TODO(rictic): generics?
+    this.set = function(key:any, value:V) {
         if (key in map)
             map[key] = value;
         else
             this.add(key,value);
     }
-    this.setIfAbsent = function(key,value) {
+    this.setIfAbsent = function(key:any, value:V):V {
         if (!(key in map))
             this.set(key,value);
         return this.get(key);
     }
-    this.add = function(key, value) {
+    this.add = function(key:any, value:V) {
         properties.push(key);
         map[key] = value;
     }
-    this.get = function(key, defaultValue) {
+    this.get = function(key:any, defaultValue?:V):V {
         return map[key] || defaultValue;
     }
-    this.getProperties = function() {
+    this.getProperties = function():V[] {
         return properties;
     }
     //assumes OrderedMap<String,OrderedMap>
-    this.getComplexProperties = function() {
+    this.getComplexProperties = function():string[] {
         var self = this;
-        return Arr.concatMap(properties, function(prop) {
+        return Arr.concatMap(properties, function(prop:any) {
             var innerProps = self.get(prop).getComplexProperties();
             var combined = $.map(innerProps,function(innerProp){return prop + ":" + innerProp})
             return [prop].concat(combined);
@@ -215,22 +214,10 @@ function OrderedMap() {
     }
 }
 
-/** Wrapper function for setTimeout.  Todo: add error handling
-  * @param {function()} f
-  * @param {number} millis
-  */
-function addTimeout(f, millis) {
-    return setTimeout(f,millis,"JavaScript");
-}
-
-function addInterval(f, millis) {
-    return setInterval(f,millis,"JavaScript");
-}
-
 /**
   @return {string}
 */
-function getType(v) {
+function getType(v:any):string {
     if (typeof v !== "object") return typeof v;
     if ($.isArray(v)) return "array";
     if (v === null) return "null";
@@ -249,7 +236,11 @@ function getType(v) {
  * @param {function()} onTimeout
  * @param {number=} millis milliseconds until query times out
  */
-function getJSON(url, params, onSuccess, onTimeout?, millis?) {
+function getJSON(url:string,
+                 params:Object,
+                 onSuccess:(result:Object)=>void,
+                 onTimeout?:()=>void,
+                 millis?:number):void {
     millis = millis || 120000; //default of 2 minute timeout
     var timedOut = false;
     var responded = false;
@@ -260,7 +251,7 @@ function getJSON(url, params, onSuccess, onTimeout?, millis?) {
         if (onTimeout) onTimeout();
     }
     var timer = addTimeout(timeout, millis);
-    function responseHandler(response) {
+    function responseHandler(response:any) {
         if (timedOut) {
             console.warn("got response after timeout")
             return;
@@ -279,7 +270,7 @@ function getJSON(url, params, onSuccess, onTimeout?, millis?) {
   * @param {!string} id
   * @returns {!string}
   */
-function standardizeId(id) {
+function standardizeId(id:string):string {
     return id.replace(/\#([0-9a-f]{32})/, "/guid/$1");
 }
 
@@ -317,13 +308,13 @@ class RepeatingTimer {
 
 
 
-function copyInto(source, destination) {
+function copyInto(source:Object, destination:Object) {
     for (var key in source)
         destination[key] = source[key];
 }
 
 
-function insertInto(text, textarea) {
+function insertInto(text:string, textarea:JQuery) {
     var selection = new TSelection(textarea[0]).create();
     var val = textarea.val();
     val = val.substring(0,selection.start) + text + val.substring(selection.end);
@@ -331,18 +322,18 @@ function insertInto(text, textarea) {
     textarea.focus();
 }
 
-var debug = function(val) {
+var debug = function(val:any) {
     console.log(JSON.stringify(JsObjDump.annotate(val), null, 2))
 }
 
-var p = function(val) {
+var p = function(val:any) {
     if (getType(val) === "object" && 'toJSON' in val)
         debug(val.toJSON());
     else
         debug(val);
 }
 
-function combineCallbacks(expected, trueCallback) {
+function combineCallbacks(expected:number, trueCallback:()=>void):()=>void {
   if (expected === 0) {
     setTimeout(trueCallback, 0);
     return function(){};

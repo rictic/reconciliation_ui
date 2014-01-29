@@ -318,7 +318,7 @@ function getTriples(entities:tEntity[], assertNakedProperties:boolean,
         }
 
         /* Assert each of the top level mql properties */
-        var mqlProps = Arr.unique(Arr.filter($.map(subject['/rec_ui/headers'], function(val){return val.split(":")[0]}), isMqlProp));
+        var mqlProps = Arr.unique(Arr.filter($.map(subject['/rec_ui/headers'], function(val:string){return val.split(":")[0]}), isMqlProp));
         $.each(mqlProps, function(_, predicate) {
 
             $.each($.makeArray(subject[predicate]), function(_, object) {
