@@ -4,13 +4,13 @@ interface GapiClientRequestParams {
 }
 
 interface GapiClientRequest {
-  execute(callBack:(Object)=>void):void;
+  execute(callBack:(o:Object)=>void):void;
 }
 
 interface GapiClient {
-  setApiKey(key:string);
+  setApiKey(key:string):void;
   request(p:GapiClientRequestParams):GapiClientRequest;
-  load(api:string, version:string, onSetup:()=>void);
+  load(api:string, version:string, onSetup:()=>void):void;
 }
 
 declare module gapi {
@@ -25,6 +25,6 @@ declare module gapi {
       state: string;
       token_type: string;
     };
-    authorize(params:Object, handler:(Object)=>any);
+    authorize(params:Object, handler:(o:Object)=>any):void;
   };
 }
