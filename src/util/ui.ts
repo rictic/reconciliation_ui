@@ -30,17 +30,6 @@ function throttler(every:()=>void, rarely:()=>void, minimumTimeBetween?:number) 
     }
 }
 
-interface OrderedMap<V> {
-  new():OrderedMap<V>;
-  set(key: string, value: V):boolean;
-  setIfAbsent(key: string, value: V):V;
-  add(key: string, value: V):boolean;
-  get(key: string, defaultValue?: V):V;
-  getProperties(): string[];
-  getComplexProperties(): string[];
-  getPropsForRows(): string[];
-}
-
 /* Groups a list of complex properties into a hierarchy
    that is fit for display in a fancy table.
 

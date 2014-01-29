@@ -176,40 +176,41 @@ function getProperties(headerPaths:loader.path[]):string[] {
     })
 }
 
-function OrderedMap<V>() {
-    var properties : any[] = [];
-    var map : {[key:string]: V} = {};  // TODO(rictic): generics?
-    this.set = function(key:any, value:V) {
-        if (key in map)
-            map[key] = value;
+class OrderedMap<V> {
+    private properties : any[] = [];
+    private map : {[key:string]: V} = {};  // TODO(rictic): generics?
+    set(key:any, value:V) {
+        if (key in this.map)
+            this.map[key] = value;
         else
             this.add(key,value);
     }
-    this.setIfAbsent = function(key:any, value:V):V {
-        if (!(key in map))
+    setIfAbsent(key:any, value:V):V {
+        if (!(key in this.map))
             this.set(key,value);
         return this.get(key);
     }
-    this.add = function(key:any, value:V) {
-        properties.push(key);
-        map[key] = value;
+    add(key:any, value:V) {
+        this.properties.push(key);
+        this.map[key] = value;
     }
-    this.get = function(key:any, defaultValue?:V):V {
-        return map[key] || defaultValue;
+    get(key:any, defaultValue?:V):V {
+        return this.map[key] || defaultValue;
     }
-    this.getProperties = function():V[] {
-        return properties;
+    getProperties():V[] {
+        return this.properties;
     }
     //assumes OrderedMap<String,OrderedMap>
-    this.getComplexProperties = function():string[] {
+    getComplexProperties():string[] {
         var self = this;
-        return Arr.concatMap(properties, function(prop:any) {
-            var innerProps = self.get(prop).getComplexProperties();
+        return Arr.concatMap(this.properties, function(prop:any) {
+            var innerMap:any = self.get(prop);
+            var innerProps = innerMap.getComplexProperties();
             var combined = $.map(innerProps,function(innerProp){return prop + ":" + innerProp})
             return [prop].concat(combined);
         });
     }
-    this.getPropsForRows = (): string[] => {
+    getPropsForRows(): string[] {
       throw new Error('must be overridden');
     }
 }

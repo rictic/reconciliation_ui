@@ -1,14 +1,17 @@
-/** @constructor */
-function UndoStack() {
-    this.internal_stack = [];
+interface UndoFunction {
+  ():void;
 }
 
-UndoStack.prototype.push = function(undoFunction) {
+class UndoStack {
+  internal_stack : UndoFunction[] = [];
+
+  push(undoFunction:UndoFunction) {
     this.internal_stack.push(undoFunction);
-}
+  }
 
-UndoStack.prototype.pop = function() {
+  pop() {
     var undoFunction = this.internal_stack.pop();
     if (undoFunction)
-        undoFunction();
+      undoFunction();
+  }
 }

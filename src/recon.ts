@@ -1,12 +1,12 @@
 var totalRecords = 0;
-var reconUndoStack;
+var reconUndoStack : UndoStack;
 
 interface Candidate {
   id: string;
   name: string[];
   score: number;
   match: boolean;
-  type: string;
+  type?: string;
 }
 
 function isUnreconciled(entity:tEntity):boolean {
@@ -15,7 +15,7 @@ function isUnreconciled(entity:tEntity):boolean {
     return Arr.contains([undefined,null,""], entity.id);
 }
 
-function initializeReconciliation(onReady) {
+function initializeReconciliation(onReady:()=>void) {
     totalRecords = rows.length;
     var rec_partition = Arr.partition(rows,isUnreconciled);
     //initialize queues and their event handlers
@@ -25,7 +25,7 @@ function initializeReconciliation(onReady) {
         $("#progressbar").progressbar("value", pctProgress);
         $("#progressbar label").html(pctProgress.toFixed(1) + "%");
     })
-    automaticQueue.addListener("added", function(entity) {
+    automaticQueue.addListener("added", function(entity:tEntity) {
         entity['/rec_ui/rec_begun'] = true;
         //restarts autoreconciliation if something is added after it seems finished
         if (reconciliationBegun && !autoreconciling)
@@ -35,7 +35,7 @@ function initializeReconciliation(onReady) {
     manualQueue.addListener("changed", function() {
         $(".manual_count").html("("+manualQueue.size()+")");
     });
-    manualQueue.addListener("added", function(entity) {
+    manualQueue.addListener("added", function(entity:tEntity) {
         if (manualQueue.size() === 1)
             manualReconcile();
         if (manualQueue.size() === 2)
@@ -71,7 +71,7 @@ function handleReconChoice(entity:tEntity, freebaseId:string) {
     manualReconcile();
 }
 
-function getReconciliationUndo(entity) {
+function getReconciliationUndo(entity:tEntity) {
     //simple, stupid first pass: unreconcile the entity completely
     return function() {
         entity.unreconcile();
@@ -87,7 +87,7 @@ function undoReconciliation() {
 /** @param {!tEntity} entity
   *
   */
-function addColumnRecCases(entity) {
+function addColumnRecCases(entity:tEntity) {
     if (!automaticQueue) return;
     for (var key in entity) {
         var values = $.makeArray(entity[key]);
@@ -117,7 +117,7 @@ function addColumnRecCases(entity) {
 /** @param {!tEntity} entity
     @param {boolean=} typeless
 */
-function constructReconciliationQuery(entity, typeless) {
+function constructReconciliationQuery(entity:tEntity, typeless?:boolean) {
     var query = {}
     var headers = entity["/rec_ui/headers"];
     for (var i = 0; i < headers.length; i++) {
@@ -150,7 +150,7 @@ function constructReconciliationQuery(entity, typeless) {
     entity['/rec_ui/recon_query'] = query;
     return query;
 
-    function constructQueryPart(value) {
+    function constructQueryPart(value:any):any {
         if (value instanceof tEntity && !Arr.contains([undefined, "", "None", "None (merged"], value.getID()))
             return {"id":value.getID(), "name":value["/type/object/name"]}
         if (value['/rec_ui/id'] !== undefined)
@@ -161,7 +161,7 @@ function constructReconciliationQuery(entity, typeless) {
     /* Removes undefined values, nulls, empty lists, empty objects,
        and collapses singleton arrays down to their single values
        to better feed the reconciliation service.  */
-    function cleanup(value) {
+    function cleanup(value:any):any {
         switch(getType(value)){
         case "array":
             value = $.map(value, function(v) {
@@ -189,9 +189,9 @@ function constructReconciliationQuery(entity, typeless) {
     }
 }
 
-function getCandidates(entity:tEntity, callback:(tEntity)=>any,
-                       onError, typeless?:boolean) {
-  function handler(results) {
+function getCandidates(entity:tEntity, callback:(entity:tEntity)=>void,
+                       onError:(a:any)=>void, typeless?:boolean) {
+  function handler(results:any) {
     if (results[0]['error']) {
       // Probably over rate, wait for a minute and then retry.
       setTimeout(function retry() {
@@ -203,11 +203,11 @@ function getCandidates(entity:tEntity, callback:(tEntity)=>any,
     entity.reconResults = cleanResults(results[0]['result']);
     callback(entity);
   }
-  function cleanResults(results) {
-    function transformCandidate(candidate) {
+  function cleanResults(results:any):Candidate[] {
+    function transformCandidate(candidate:any):Candidate {
       return {
         id: candidate.mid,
-        name: [candidate.name],
+        name: [<string> candidate.name],
         score: candidate.confidence,
         match: false
       };
@@ -218,7 +218,7 @@ function getCandidates(entity:tEntity, callback:(tEntity)=>any,
       return [match];
     }
     var candidates = results.candidate || [];
-    var to_return = [];
+    var to_return : Candidate[] = [];
     for (var i = 0; i < candidates.length; i++) {
       to_return.push(transformCandidate(candidates[i]));
     }
@@ -246,7 +246,7 @@ function getCandidates(entity:tEntity, callback:(tEntity)=>any,
     });
     return params;
   }
-  function walkTree(tree:Object, onLeaf) {
+  function walkTree(tree:Object, onLeaf:(path:string[], value:any)=>void) {
     var path = [];
     function walk(node) {
       for (var key in node) {

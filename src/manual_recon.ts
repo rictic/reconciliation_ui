@@ -222,7 +222,7 @@ function fillInMQLProps(entity:tEntity, mqlProps:string[], mqlResult:any) {
 
     var article = result['/common/topic/article'];
     if (article && article.id) {
-        freebase.getBlurb(article.id, {maxlength: 200, break_paragraphs: true}, function(text) {
+        freebase.getBlurb(article.id, {maxlength: 200, break_paragraphs: true}, function(text:string) {
             $("td.blurb", row).html(text);
         });
     }
