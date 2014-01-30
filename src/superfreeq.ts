@@ -35,7 +35,7 @@ module SuperFreeq {
 
   // Returns the id of the new job.
   export function createJob(name:string, graph:string,
-                            info_source:string, callback) {
+                            info_source:string, callback:(j:Job)=>void) {
     var request : CreateJobRequest = {
       name:name,
       graph_instance: graph
@@ -89,7 +89,7 @@ module SuperFreeq {
                 $.param(request), onStarted);
     }
 
-    load(commands: TripleLoadCommand[], callback:(LoadTriplesResponse)=>any) {
+    load(commands: TripleLoadCommand[], callback:(ltr:LoadTriplesResponse)=>any) {
 
       var trackValue = (s:string) => {
         if (s && /^\$.*\d+$/.test(s)) {
@@ -97,7 +97,7 @@ module SuperFreeq {
         }
       }
 
-      politeEach(commands, (_, command:TripleLoadCommand) => {
+      politeEach(commands, (_:any, command:TripleLoadCommand) => {
         // Track the variables we're uploading to this job, so that we can
         // later ask for them back.
         trackValue(command.triple.sub);
@@ -118,7 +118,7 @@ module SuperFreeq {
             callback({});
             return;
           }
-          var batch = [];
+          var batch : TripleLoadCommand[] = [];
           for (var i = 0; commands.length > 0 && i < BATCH_SIZE; i++) {
             batch.push(commands.shift());
           }
@@ -131,7 +131,7 @@ module SuperFreeq {
       })
     }
 
-    getIdMapping(callback:(Object)=>void) {
+    getIdMapping(callback:(o:Object)=>void) {
       var var_ids = this.vars.getAll();
       var result = {};
       var BATCH_SIZE = 100;
@@ -141,12 +141,12 @@ module SuperFreeq {
           callback(result);
           return;
         }
-        var batch = [];
+        var batch : string[] = [];
         for (var i = 0; var_ids.length > 0 && i < BATCH_SIZE; i++) {
           batch.push(var_ids.shift());
         }
         var vars = batch.join(',').replace(/\$/g,'');
-        doRequest(this.base_url + '/mids', 'vars=' + vars, (v) =>{
+        doRequest(this.base_url + '/mids', 'vars=' + vars, (v:Object) =>{
           $.extend(result, v);
           addTimeout(getSome, 5 * 1000);
         } , 'GET')
@@ -189,8 +189,8 @@ module SuperFreeq {
   var client_id = "738879533750.apps.googleusercontent.com";
   var scopes = "https://www.googleapis.com/auth/freebase";
 
-  export function isAuthorized(onNo, onYes) {
-    function handleResult(authResult) {
+  export function isAuthorized(onNo:()=>void, onYes:()=>void) {
+    function handleResult(authResult:any) {
       if (authResult && !authResult.error) {
         onYes();
       } else {
@@ -205,7 +205,7 @@ module SuperFreeq {
     }, handleResult);
   }
 
-  export function authorize(callback) {
+  export function authorize(callback:()=>void) {
     gapi.auth.authorize({
       client_id: client_id,
       scope: scopes,
@@ -213,9 +213,9 @@ module SuperFreeq {
     }, callback);
   }
 
-  function doRequest(url:string, params:any, onResponse?, method='POST') {
+  function doRequest(url:string, params:any, onResponse?:(d:any)=>void, method='POST') {
     console.log("starting a request to " + url);
-    var contentType, data;
+    var contentType : string, data : string;
     if ($.type(params) === "object") {
       contentType = 'application/json';
       data = JSON.stringify(params, null, 2);

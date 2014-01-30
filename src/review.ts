@@ -103,7 +103,7 @@ function makeInternalLink(content:JQuery, entity:tEntity) {
 function addReviewRecGroup(recGroup:RecGroup, template:JQuery) {
     var repEntity = recGroup.members[0];
     $(".count", template).html(recGroup.members.length + "");
-    freebase.getName(recGroup.type, function(type_name) {
+    freebase.getName(recGroup.type, function(type_name:string) {
         $(".type", template).html(type_name);
     });
     var name = $(".name", template).html(recGroup.name);
@@ -116,8 +116,14 @@ function addReviewEntity(entity:tEntity, template:JQuery) {
 }
 
 $(function() {
-    tEntity.addListener("reconciled", function(entity, automatic) {
+    tEntity.addListener("reconciled", function(entity:tEntity, automatic:boolean) {
         var recGroup = internalReconciler.getRecGroup(entity);
-        addReviewItem(recGroup.shouldMerge ? recGroup : entity, automatic ? "automatic" : "manual");
+        var thingToReview : EntityLike;
+        if (recGroup.shouldMerge) {
+            thingToReview = recGroup;
+        } else {
+            thingToReview = entity;
+        }
+        addReviewItem(thingToReview, automatic ? "automatic" : "manual");
     });
 });

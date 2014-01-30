@@ -47,8 +47,8 @@ function onHideOutputScreen() {
 /** @param {!Array.<(string|undefined)>} arr
   * @returns {!string}
   */
-function encodeLine(arr) {
-    var values = [];
+function encodeLine(arr:string[]):string {
+    var values : string[] = [];
     for(var i = 0; i < headerPaths.length; i++){
         var val = arr[i];
         if (typeof val === "undefined")
@@ -67,9 +67,9 @@ function encodeLine(arr) {
   * @param {!tEntity} row
   * @return {!Array.<!string>}
   */
-function encodeRow(row) {
-    var lines = [[]];
-    $.each(headerPaths, function(i, headerPath) {
+function encodeRow(row:tEntity):string[] {
+    var lines : string[][] = [[]];
+    $.each(headerPaths, function(i:number, headerPath:loader.path) {
         var val = row.get(headerPath, true);
         if ($.isArray(val)) {
             for (var j = 0; j < val.length; j++) {
@@ -86,7 +86,7 @@ function encodeRow(row) {
 function displayOutput() {
     $("#outputData").val("One moment, rendering...");
 
-    function setOutput(val) {
+    function setOutput(val:string) {
         $("#outputData").val(val);
     }
 
@@ -96,13 +96,13 @@ function displayOutput() {
         renderJSON(setOutput);
 }
 
-function renderJSON(callback) {
+function renderJSON(callback:(val:string)=>void) {
     callback(JSON.stringify(rows, null, 2));
 }
 
-var spreadsheetRendererYielder;
-function renderSpreadsheet(onComplete) {
-    var lines = [];
+var spreadsheetRendererYielder : Yielder;
+function renderSpreadsheet(onComplete:(val:string)=>void) {
+    var lines : string[] = [];
     lines.push(encodeLine($.map(headerPaths, function(headerPath){return headerPath.toString()})));
     spreadsheetRendererYielder = new Yielder();
     politeEach(rows, function(idx, row) {
@@ -119,12 +119,12 @@ function prepareTriples(callback?:(triples:SuperFreeq.TripleLoadCommand[])=>any)
     $(".triplesRendered").hide();
     var assertNaked = !! $("#assert_naked_properties").attr('checked');
     getSFTriples(entities, assertNaked,
-      function(triples) {
+      function(triples:SuperFreeq.TripleLoadCommand[]) {
         if (callback) {
           callback(triples);
         }
 
-        politeMap(triples,function(val){return JSON.stringify(val)},
+        politeMap(triples,function(val:SuperFreeq.TripleLoadCommand){return JSON.stringify(val)},
             function(encodedTriples:string[]) {
                 var tripleString = encodedTriples.join("\n");
                 $(".triplesDisplay").html(tripleString);
@@ -139,7 +139,7 @@ function prepareTriples(callback?:(triples:SuperFreeq.TripleLoadCommand[])=>any)
 
 
 
-function getSFTriples(entities, assertNakedProperties,
+function getSFTriples(entities:tEntity[], assertNakedProperties: boolean,
                       callback:(triples:SuperFreeq.TripleLoadCommand[])=>any) {
   function tripToSfTrip(triple:OldFreeqTriple):SuperFreeq.TripleLoadCommand {
 
@@ -200,20 +200,20 @@ interface OldFreeqTriple {
   o: any;
 }
 
-var tripleGetterYielder;
+var tripleGetterYielder : Yielder;
 function getTriples(entities:tEntity[], assertNakedProperties:boolean,
                     callback:(triples:OldFreeqTriple[])=>any) {
     tripleGetterYielder = new Yielder();
-    function hasValidID(entity) {
+    function hasValidID(entity:tEntity):boolean {
         var id = getID(entity);
         if ($.isArray(id))
             id = id[0];
         return id !== undefined && $.trim(id) !== "";
     }
-    function getID(entity) {
+    function getID(entity:tEntity) {
         return entity.getIdentifier();
     }
-    function getValue(property, value) {
+    function getValue(property:string, value:any) {
         if (getType(value) === "array") {
             if (value.length === 1)
                 return getValue(property, value[0]);
@@ -237,7 +237,7 @@ function getTriples(entities:tEntity[], assertNakedProperties:boolean,
         }
         return stringValue;
     }
-    function cvtObject(cvt) {
+    function cvtObject(cvt:Object):Object {
         var result = {};
         var props = cvt['/rec_ui/headers'];
         var empty = true;
@@ -265,11 +265,12 @@ function getTriples(entities:tEntity[], assertNakedProperties:boolean,
                 value = Arr.filter(value, function(val){return !val['/rec_ui/toplevel_entity']});
                 var ids = $.map(value, getID);
                 ids = Arr.filter(ids, function(id){return id !== ""});
+                var value : any = ids;
                 if (ids.length === 0)
                     continue;
                 if (ids.length === 1)
-                    ids = ids[0];
-                result[outputPredicate] = ids;
+                    value = ids[0];
+                result[outputPredicate] = value;
                 empty = false;
             }
         }
@@ -278,14 +279,14 @@ function getTriples(entities:tEntity[], assertNakedProperties:boolean,
         return result;
     }
 
-    var triples = [];
+    var triples : OldFreeqTriple[] = [];
     politeEach(entities, function(_,subject) {
         if (!subject || !hasValidID(subject) || subject.isCVT())
             return;
 
 
         var types = new PSet();
-        function addType(type) {
+        function addType(type:string) {
             types.add(type);
             var metadata = freebase.getTypeMetadata(type);
             if (metadata)
@@ -365,7 +366,7 @@ function checkLogin() {
   });
 }
 
-function fillinIds(createdEntities) {
+function fillinIds(createdEntities:Object) {
     for (var key in createdEntities) {
         var id = standardizeId(createdEntities[key]);
 
@@ -383,10 +384,9 @@ function fillinIds(createdEntities) {
 }
 
 class FreeqMonitor {
-  repeatingTimer;
-  constructor(public job:SuperFreeq.Job, public onComplete) {
-    this.repeatingTimer = new RepeatingTimer(30 * 1000,
-                                             ()=>this.checkProgress());
+  repeatingTimer = new RepeatingTimer(30 * 1000,
+                                      ()=>this.checkProgress());
+  constructor(public job:SuperFreeq.Job, public onComplete:(j:SuperFreeq.Job)=>void) {
     this.checkProgress();
   }
 
@@ -449,7 +449,7 @@ function doLoad() {
             $(".freeqLoadInProgress").hide();
 
             if ($("input.graphport:checked").val() === "otg") {
-              job.getIdMapping((v) => {
+              job.getIdMapping((v:Object) => {
                 fillinIds(v);
                 $(".fetchingFreeqIds").hide();
                 $(".idsFetched").show();
@@ -484,7 +484,7 @@ $(document).ready(function () {
     $("#assert_naked_properties").change(function() { prepareTriples(); });
     $("#mdo_data_source").suggest({type:"/dataworld/information_source",
                                flyout:true,type_strict:"should", key:api_key})
-                         .bind("fb-select", function(e, data) {
+                         .bind("fb-select", function(e:any, data:any) {
                                $("#mdo_data_source_id").val(data.id);
                                updateMdoInfo();
                          });
