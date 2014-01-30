@@ -82,7 +82,7 @@ class InternalReconciler {
 }
 
 
-class RecGroup {
+class RecGroup implements EntityLike {
   static groups:RecGroup[] = [];
   static id_counter = 0;
 
@@ -112,14 +112,14 @@ class RecGroup {
     });
   }
 
-  getID() {
+  getID():string {
     var id = this.reconciledTo;
     if (id === "None" && this.shouldMerge)
       return "None (merged)";
     return id;
   }
 
-  getInternalID() {
+  getInternalID():number {
     return this.internal_id;
   }
 

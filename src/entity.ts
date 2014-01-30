@@ -11,13 +11,15 @@ resetEntities();
 
 //For tEntity and RecGroups
 interface EntityLike {
+  getID():string;
   setID(s:string):void;
+  getInternalID():number;
 }
 
 /** @constructor
   * @param {Object=} initialVals
   */
-class tEntity {
+class tEntity implements EntityLike {
   name:string;
   id:string;
   reconResults:Candidate[];
@@ -190,7 +192,7 @@ class tEntity {
   }
 
   /** @return {Object} */
-  toJSON() {
+  toJSON():Object {
     var js = {};
     for (var key in this) {
       if (startsWith("/rec_ui/",key) || key === "reconResults")
