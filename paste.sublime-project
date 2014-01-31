@@ -1,17 +1,43 @@
 {
-	"folders":
-	[
-		{
-			"path": "/Users/rictic/open/paste",
-      "file_exclude_patterns":[
-        "src/*.js",
-        "src/*.js.map",
-        "*.sublime-workspace"
-      ]
-		}
-	],
-  "settings":
-  {
-
-  }
+   "folders":
+   [
+           {
+                   "path": "/Users/rictic/open/paste",
+  "file_exclude_patterns":[
+    "src/*.js",
+    "src/*.js.map",
+    "*.sublime-workspace"
+  ]
+           }
+   ],
+    "settings": {
+        "typescript": {
+            "roots": [
+                "src"
+            ],
+            "settings": {
+                "build_on_save": false,
+                "build_parameters": {
+                    "allow_bool_synonym": false,
+                    "allow_import_module_synonym": false,
+                    "concatenate_and_emit_output_file_path": "none",
+                    "ecmascript_target": "ES3",
+                    "generate_declaration": false,
+                    "generate_source_map": false,
+                    "map_files_root_path": "none",
+                    "module_kind": "none",
+                    "no_implicit_any_warning": true,
+                    "output_dir_path": "none",
+                    "post_processing_commands": [],
+                    "pre_processing_commands": [],
+                    "remove_comments_from_output": false,
+                    "skip_resolution_and_preprocessing": false,
+                    "source_files_root_path": "none"
+                },
+                "error_on_save_only": false,
+                "node_path": "none",
+                "show_build_file": false
+            }
+        }
+    }
 }
