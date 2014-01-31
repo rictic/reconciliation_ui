@@ -15,13 +15,9 @@ function initialInputUpdated() {
         $("#inputWindow button").removeAttr("disabled");
         $("#inputWindow .screen").hide();
     }
-    handleInput(function() {
-        $(".inputLoading").hide()
-        $("#inputWindow").removeClass("disabled");
-        $("#inputWindow button").removeAttr("disabled");
-    });
+    handleInput();
 }
-function inputError(text) {
+function inputError(text:string) {
     addInputWarning(text);
     $(".inputLoading").hide();
     $("#inputWindow").removeClass("disabled");
@@ -33,7 +29,7 @@ function cancelInputProcessing() {
     inputProcessingYielder.cancel();
 }
 
-function handleInput(callback) {
+function handleInput() {
     inputProcessingYielder = new Yielder();
     var input = $('#initialInput').val();
     function onProgressMade() {
@@ -42,7 +38,8 @@ function handleInput(callback) {
         $("#inputWindow").removeClass("disabled");
         $("#inputWindow button").removeAttr("disabled");
     }
-    function onAmbiguity(ambiguousRecord, onAmbiguityResolved) {
+    function onAmbiguity(ambiguousRecord:string[][],
+                         onAmbiguityResolved:(useMultiRow:boolean)=>void) {
         onProgressMade();
         showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved);
     }
@@ -53,7 +50,7 @@ function handleInput(callback) {
 }
 
 
-function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
+function showAmbiguousRowPrompt(ambiguousRecord:string[][], onAmbiguityResolved:(useMultiRow:boolean)=>void) {
     //an ugly hack, should rework groupProperties and friends to understand headerPaths
     var headers = $.map(headerPaths, function(headerPath) {return headerPath.toComplexProp()});
     var groupedHeaders = groupProperties(headers);
@@ -61,7 +58,7 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
     $("table thead",context).replaceWith(buildTableHeaders(groupedHeaders));
 
     var headerProps = groupedHeaders.getPropsForRows();
-    var rowHTML = function(row){
+    var rowHTML = function(row:string[]){
         var html = "<tr>";
         for (var i = 0; i < headerProps.length; i++) {
             html += "<td>"
@@ -91,9 +88,9 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
             thingTypeEl.html(name);
         });
     }
-    $(".numThings", context).html(numThings);
+    $(".numThings", context).html(numThings + '');
 
-    function ambiguityWrapper(shouldCombine) {
+    function ambiguityWrapper(shouldCombine:boolean) {
         $("button", context).attr("disabled","disabled");
         onAmbiguityResolved(shouldCombine);
     }
@@ -104,7 +101,7 @@ function showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved) {
     $('table tbody tr:even', context).addClass('even');
     context.show();
 }
-function showConfirmationSpreadsheet(beforeDisplay) {
+function showConfirmationSpreadsheet(beforeDisplay:()=>void) {
     var spreadSheetData : JQueryDataTableFormat = {
         "aoColumns":[], "aaData":[]};
     var columnNames = $.map(headerPaths, function(header) {return header.getDisplayName();});
@@ -115,7 +112,7 @@ function showConfirmationSpreadsheet(beforeDisplay) {
         var row : string[] = [];
         for (var j = 0; j < headerPaths.length; j++){
             var val = entity.get(headerPaths[j]);
-            var cell;
+            var cell : string;
             if (val == undefined)
                 cell = "";
             else if ($.isArray(val)){
@@ -145,7 +142,7 @@ var previousSelectedTab = 0;
 function initializeTabs() {
     var tabs = $("#tabs > ul");
     tabs.tabs();
-    tabs.bind("tabsselect", function(event, ui) {
+    tabs.bind("tabsselect", function(event:any, ui:{index: number}) {
         switch(previousSelectedTab){
           case 1: onHideRenderScreen(); break;
           case 2: onHideOutputScreen(); break;
@@ -195,11 +192,11 @@ function initialSetup() {
         freebase.beacon("ready");
     }
 
-    var capture_tab = function(event) {
+    var capture_tab = function(event:KeyboardEvent) {
         if (event.keyCode == 9) {
             if (event.type === "keydown")
                 insertInto("\t", $("#initialInput"));
-            event.returnValue = false;
+            event.preventDefault();
             return false;
         }
         return true;
@@ -209,8 +206,8 @@ function initialSetup() {
     var inputThrottler = throttler(initialInputChanged, initialInputUpdated);
     var harmlessKeys = new PSet('37','38','39','40','91','93','20','35','36',
                                '33','34','27','18','17','16','224');
-    var inputFilterer = function(event) {
-        if (harmlessKeys.contains(event.keyCode))
+    var inputFilterer = function(event:KeyboardEvent) {
+        if (harmlessKeys.contains(event.keyCode + ''))
             return;
         //ctrl-a or cmd-a
         if ((event.metaKey || event.ctrlKey) && event.keyCode === 65)
@@ -263,19 +260,19 @@ var fbapi_url = "https://www.googleapis.com/freebase/v1/";
 var reconciliation_url = "https://www.googleapis.com/freebase/v1/reconcile?"
 
 /* Takes a string and populates the initialInput textarea. */
-function handlePOSTdata(data) {
+function handlePOSTdata(data:string) {
     $('#initialInput').val(data);
     initialInputUpdated();
 }
 
 var inputWarnings = {};
-function addInputWarning(text) {
+function addInputWarning(text:string) {
     if (numProperties(inputWarnings) >= 4)
         displayInputWarning("Additional warnings hidden");
     else
         displayInputWarning(text);
 
-    function displayInputWarning(text) {
+    function displayInputWarning(text:string) {
         if (text in inputWarnings)
             return;
         else

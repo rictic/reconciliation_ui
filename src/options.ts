@@ -2,7 +2,7 @@ var require_exact_name_match = false;
 var assert_naked_properties = false;
 
 $(document).ready(function() {
-  $("#optionsPanel input").each(function(idx, inputEl:Element):void {
+  $("#optionsPanel input").each(function(idx:number, inputEl:Element):void {
     var valueKey = "value";
     var input = $(inputEl);
     if (input.attr('type') === 'checkbox'){

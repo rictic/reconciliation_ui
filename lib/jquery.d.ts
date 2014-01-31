@@ -1199,7 +1199,7 @@ interface JQuery {
      *
      * @param content A JQuery to set as the content of each matched element.
      */
-    html(htmlJQuery: JQuery): JQuery;
+    html(content: JQuery): JQuery;
     /**
      * Set the HTML contents of each element in the set of matched elements.
      *

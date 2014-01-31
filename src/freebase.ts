@@ -1,13 +1,13 @@
 module freebase {
   var miniTopicFloaterEl = $("#miniTopicFloater");
-  /** @param {!string} name
-    * @param {!string} id
-    */
-  export function link(name, id) {
+
+  export function link(nameEl:JQuery, id:string):JQuery;
+  export function link(name:string, id:string):JQuery;
+  export function link(name:any, id:string):JQuery {
       var linkVal = node("a", name, {target:'_blank',href:freebase_url + '/view' + id})
       return miniTopicFloater(linkVal, id);
 
-      function miniTopicFloater(element, id) {
+      function miniTopicFloater(element:JQuery, id:string) {
           var mouseIsOver = false;
           element.bind("mouseover",function() {
               mouseIsOver = true;
@@ -35,7 +35,7 @@ module freebase {
     * @param {freebase.mqlTree} envelope
     * @param {function(freebase.mqlTree)} handler
     */
-  export function mqlRead(envelope, handler) {
+  export function mqlRead(envelope:Object, handler:(result:any)=>void) {
       $.getJSON(getMqlReadURL(envelope), null, handler);
   };
 
@@ -44,8 +44,8 @@ module freebase {
     * @param {freebase.mqlTree} envelope
     * @returns {!string}
     */
-  function getMqlReadURL(envelope) {
-    var param;
+  function getMqlReadURL(envelope:any):string {
+    var param : any;
     if ('query' in envelope) {
       param = envelope;
       param.query = JSON.stringify(envelope.query);
@@ -77,9 +77,12 @@ module freebase {
       @param {!function()} onComplete
       @param {function(!string, !freebase.mqlTree)=} errorHandler
   */
-  export function mqlReads(q_pairs, handler, onComplete, errorHandler?) {
+  export function mqlReads(q_pairs:string[][],
+                           handler:(key:string, result:Object)=>void,
+                           onComplete:()=>void,
+                           errorHandler?:(key:string, result:Object)=>void) {
     var combiner = combineCallbacks(q_pairs.length, onComplete)
-    $.each(q_pairs, function(_,q_pair) {
+    $.each(q_pairs, function(_:any, q_pair:string[]) {
       freebase.mqlRead(q_pair[1], function(res) {
         handler(q_pair[0], res['result']);
         combiner();
@@ -97,7 +100,7 @@ module freebase {
       onComplete(response);
     });
     for (var key in queries) {
-      (function(key){
+      (function(key:string){
         freebase.mqlRead(queries[key], function(result) {
           response[key] = result;
           combiner();
@@ -116,21 +119,21 @@ module freebase {
       @param {!string} id
       @param {!function(string)} callback
   */
-  export function getName(id, callback) {
+  export function getName(id:string, callback:(name:string)=>void) {
       if (id in nameCache){
           callback(nameCache[id]);
           return;
       }
       callback(id);
-      freebase.mqlRead({query:{id:id,name:null}}, function(results) {
+      freebase.mqlRead({query:{id:id,name:null}}, function(results:any) {
           nameCache[id] = (results && results.result && results.result.name) || id;
           callback(nameCache[id]);
       });
   }
 
-  export function makeLink(id:string) {
+  export function makeLink(id:string):JQuery {
       var simpleEl = node("span",id);
-      var link = freebase.link(simpleEl, id);
+      var link : JQuery = freebase.link(simpleEl, id);
       freebase.getName(id, function(name) {
           simpleEl.html(name);
       });
@@ -140,7 +143,7 @@ module freebase {
   /** @param {string=} type
     * @return {freebase.mqlTree}
     */
-  function getTypeQuery(type?) {
+  function getTypeQuery(type?:string):any {
       return {
           id:type || null,
           type:'/type/type',
@@ -152,11 +155,10 @@ module freebase {
 
   /** @type {Object.<string, freebase.mqlTree>} */
   var typeMetadata = {};
-  /** @param {!Array.<!string>} types
-    * @param {!function(!string, !freebase.mqlTree)} onComplete
-    * @param {function(!string, !freebase.mqlTree)=} onError
-    */
-  export function fetchTypeInfo(types, onComplete, onError?) {
+
+  export function fetchTypeInfo(types:string[],
+                                onComplete:()=>void,
+                                onError?:(badTypes:string[])=>void) {
       var q_pairs : any[] = [];
       $.each(types, function(_,type) {
           if (freebase.getTypeMetadata(type))
@@ -166,16 +168,16 @@ module freebase {
           q_pairs.push(val);
       })
 
-      var errorTypes = [];
+      var errorTypes : string[] = [];
       freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
 
 
 
-      function handler(type, result) {
+      function handler(type:string, result:any) {
           typeMetadata[type] = result;
       }
 
-      function onErrorHandler(type, response) {
+      function onErrorHandler(type:string, response:any) {
           errorTypes.push(type);
       }
 
@@ -191,13 +193,11 @@ module freebase {
 
   /** @type {Object.<string, (freebase.mqlTree|undefined)>} */
   var propMetadata = {};
-  /** @param {!Array.<!string>} properties
-    * @param {!function(string, freebase.mqlTree)} onComplete
-    * @param {function(string, freebase.mqlTree)=} onError
-    */
-  export function fetchPropertyInfo(properties, onComplete, onError?) {
-      var simpleProps = [];
-      var errorProps = [];
+  export function fetchPropertyInfo(properties:string[],
+                                    onComplete:()=>void,
+                                    onError?:(badProperties:string[])=>void) {
+      var simpleProps : string[] = [];
+      var errorProps : string[] = [];
 
       $.each(properties, function(_, mqlProp) {
           $.each(mqlProp.split(":"), function(i, simpleProp) {
@@ -210,7 +210,7 @@ module freebase {
       });
       simpleProps = Arr.unique(simpleProps);
 
-      var q_pairs = [];
+      var q_pairs : string[][] = [];
       $.each(simpleProps, function(_,simpleProp) {
           var val : any = [simpleProp, {query: getQuery(simpleProp)}];
           q_pairs.push(val);
@@ -218,7 +218,7 @@ module freebase {
 
       freebase.mqlReads(q_pairs, handler, onCompleteHandler, onErrorHandler);
 
-      function getQuery(prop) {
+      function getQuery(prop:string):any {
           var query =  {
               "reverse_property" : null,
               "master_property"  : null,
@@ -231,7 +231,7 @@ module freebase {
           return query;
       }
 
-      function handler(mqlProp, result){
+      function handler(mqlProp:string, result:any){
           if (result.expected_type.id)
               typeMetadata[result.expected_type.id] = result.expected_type;
           if (result.schema.id)
@@ -242,7 +242,7 @@ module freebase {
           propMetadata[mqlProp] = result;
       }
 
-      function onErrorHandler(mqlProp, response) {
+      function onErrorHandler(mqlProp:string, response:any) {
           propMetadata[mqlProp] = undefined;
           errorProps.push(mqlProp);
       }
@@ -258,7 +258,7 @@ module freebase {
 
   }
 
-  export function getPropMetadata(prop) {
+  export function getPropMetadata(prop:string) {
       var meta = propMetadata[prop];
       if (meta instanceof Function)
           return undefined;
@@ -268,20 +268,20 @@ module freebase {
 
   /** @param {freebase.mqlTree} mqlResult
       @return {boolean} */
-  export function isBadOrEmptyResult(mqlResult) {
+  export function isBadOrEmptyResult(mqlResult:any):boolean {
       return mqlResult.result === null;
   }
 
   /** @param {string=} info */
-  export function beacon(info?) {
+  export function beacon(info?:string) {
       var url = "http://www.freebase.com/private/beacon?c=spreadsheetloader" + (info || "");
       $("<img src='" + url + "'>").appendTo("body");
   }
 
-  export function getCanonicalID(id:string, callback) {
+  export function getCanonicalID(id:string, callback:(id:string)=>void) {
       callback(id);
       var envelope = {query:{"myId:id":id, "id":null}}
-      freebase.mqlRead(envelope, function(results){
+      freebase.mqlRead(envelope, function(results:any){
           if (results && results.result && results.result.id)
               callback(results.result.id);
       });
@@ -293,7 +293,7 @@ module freebase {
     maxlength? : number;
     key?: string; // apikey
   }
-  export function getBlurb(id:string, options:BlurbOptions, onSuccess) {
+  export function getBlurb(id:string, options:BlurbOptions, onSuccess:(result:any)=>void) {
     options.key = api_key;
     $.getJSON(fbapi_url + "text/" + id + "?callback=?", options, onSuccess);
   }
@@ -314,13 +314,13 @@ module freebase {
   /** @param {string} s
       @return {boolean}
    */
-  export function isMqlDatetime(s) {
+  export function isMqlDatetime(s:string):boolean {
     return isISO8601(s);
   }
 
 }
 
-function isValueProperty(propName) {
+function isValueProperty(propName:string):boolean {
     if (Arr.contains(["/type/object/type", "/type/object/name", "id"], propName))
         return true;
     if (freebase.getPropMetadata(propName))
@@ -328,11 +328,11 @@ function isValueProperty(propName) {
     return undefined;
 }
 
-function isValueType(type) {
+function isValueType(type:string):boolean {
     return Arr.contains(type['extends'], "/type/value");
 }
 
-function isCVTProperty(propName) {
+function isCVTProperty(propName:string):boolean {
     var prop = freebase.getPropMetadata(propName);
     if (prop)
         return isCVTType(prop.expected_type);
@@ -342,7 +342,7 @@ function isCVTProperty(propName) {
 /** @param {!(string|Object)} type
   * @return {(boolean|undefined)}
   */
-function isCVTType(type) {
+function isCVTType(type:string):boolean {
     if (getType(type) === "string")
         type = freebase.getTypeMetadata(type);
     if (type === undefined) {
