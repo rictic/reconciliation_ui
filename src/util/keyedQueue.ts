@@ -67,6 +67,7 @@ class KeyedQueue extends EventEmitter {
   }
 
   size():number { return this._array.length; }
+
 }
 
 class EntityQueue extends KeyedQueue {

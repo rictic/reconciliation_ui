@@ -223,7 +223,11 @@ class tEntity implements EntityLike {
   }
 
   //TODO(rictic): this is really hacky:
+  static addListener(name:"reconciled", handler:(entityReconciled:tEntity, wasAutomatic:boolean)=>void):void;
+  static addListener(name:string, handler:Function):void;
   static addListener(name:string, handler:Function) { }
+  static emit(name:"reconciled", entityReconciled:tEntity, wasAutomatic:boolean):void;
+  static emit(name:string, arg:any, blarg:any):void;
   static emit(name:string, ...args:any[]) { }
 }
 
