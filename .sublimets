@@ -1,14 +1,14 @@
 {
     "root": "src/main.ts",
     "settings": {
-        "build_on_save": false,
+        "build_on_save": true,
         "build_parameters": {
             "allow_bool_synonym": false,
             "allow_import_module_synonym": false,
-            "concatenate_and_emit_output_file_path": "none",
-            "ecmascript_target": "ES3",
+            "concatenate_and_emit_output_file_path": "/usr/local/google/home/rictic/work/reconciliation_ui/src/main.js",
+            "ecmascript_target": "ES5",
             "generate_declaration": false,
-            "generate_source_map": false,
+            "generate_source_map": true,
             "map_files_root_path": "none",
             "module_kind": "none",
             "no_implicit_any_warning": true,
