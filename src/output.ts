@@ -372,16 +372,19 @@ function fillinIds(createdEntities:Object) {
 
         var entity_match = key.match(/entity(\d+)/);
         if (entity_match) {
-            entities[entity_match[1]].setID(id);
+            entities[entity_match[1]].reconcileWith(id, false);
             continue;
         }
         var recGroup_match = key.match(/recGroup(\d+)/);
         if (recGroup_match) {
-            RecGroup.groups[recGroup_match[1]].setID(id);
+            freebase.getCanonicalID(id, function(mid:string) {
+              RecGroup.groups[recGroup_match[1]].setID(mid);
+            });
             continue;
         }
     }
 }
+
 
 class FreeqMonitor {
   repeatingTimer = new RepeatingTimer(30 * 1000,

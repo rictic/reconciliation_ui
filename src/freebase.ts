@@ -278,12 +278,12 @@ module freebase {
       $("<img src='" + url + "'>").appendTo("body");
   }
 
-  export function getCanonicalID(id:string, callback:(id:string)=>void) {
+  export function getCanonicalID(id:string, callback:(mid:string)=>void) {
       callback(id);
-      var envelope = {query:{"myId:id":id, "id":null}}
+      var envelope = {query:{"myId:id":id, "mid":null}}
       freebase.mqlRead(envelope, function(results:any){
           if (results && results.result && results.result.id)
-              callback(results.result.id);
+              callback(results.result.mid);
       });
   }
 
