@@ -35,16 +35,16 @@ function throttler(every:()=>void, rarely:()=>void, minimumTimeBetween?:number) 
 
    See also: buildTableHeaders below
 */
-function groupProperties(complexProps:string[]):OrderedMap<any> {
-    var groupedProps = new OrderedMap();
-    function groupProp(complexProp:string, map:OrderedMap<any>) {
+function groupProperties(complexProps:string[]):OrderedTree {
+    var groupedProps = new OrderedTree();
+    function groupProp(complexProp:string, map:OrderedTree) {
         var props = complexProp.split(":");
         if (props.length === 1){
-            map.setIfAbsent(complexProp, new OrderedMap());
+            map.setIfAbsent(complexProp, new OrderedTree());
             return;
         }
 
-        var innerMap = map.setIfAbsent(props.shift(), new OrderedMap());
+        var innerMap = map.setIfAbsent(props.shift(), new OrderedTree());
         groupProp(props.join(":"), innerMap);
     }
     $.each(complexProps, function(_,complexProp){groupProp(complexProp,groupedProps)});

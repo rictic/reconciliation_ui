@@ -177,30 +177,36 @@ function getProperties(headerPaths:loader.path[]):string[] {
 }
 
 class OrderedMap<V> {
-    private properties : any[] = [];
-    private map : {[key:string]: V} = {};  // TODO(rictic): generics?
-    set(key:any, value:V) {
+    properties : any[] = [];
+    map : {[key:string]: V} = {};
+    set(key:string, value:V) {
         if (key in this.map)
             this.map[key] = value;
         else
             this.add(key,value);
     }
-    setIfAbsent(key:any, value:V):V {
+    setIfAbsent(key:string, value:V):V {
         if (!(key in this.map))
             this.set(key,value);
         return this.get(key);
     }
-    add(key:any, value:V) {
+    add(key:string, value:V) {
         this.properties.push(key);
         this.map[key] = value;
     }
-    get(key:any, defaultValue?:V):V {
+    get(key:string, defaultValue?:V):V {
         return this.map[key] || defaultValue;
     }
     getProperties():V[] {
         return this.properties;
     }
     //assumes OrderedMap<String,OrderedMap>
+    getPropsForRows(): string[] {
+      throw new Error('must be overridden');
+    }
+}
+
+class OrderedTree extends OrderedMap<OrderedTree> {
     getComplexProperties():string[] {
         var self = this;
         return Arr.concatMap(this.properties, function(prop:any) {
@@ -209,9 +215,6 @@ class OrderedMap<V> {
             var combined = $.map(innerProps,function(innerProp){return prop + ":" + innerProp})
             return [prop].concat(combined);
         });
-    }
-    getPropsForRows(): string[] {
-      throw new Error('must be overridden');
     }
 }
 
