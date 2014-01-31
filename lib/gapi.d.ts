@@ -20,7 +20,7 @@ interface GapiClient {
   newHttpBatch():GapiHttpBatch;
 }
 
-module gapi {
+declare module gapi {
   export var client : GapiClient;
     //export request();
     //declare request(p:GapiClientRequest):GapiClientQuery;

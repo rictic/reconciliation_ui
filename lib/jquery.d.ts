@@ -717,5 +717,5 @@ interface JQuery {
     queue(newQueueOrCallback: any): JQuery;
 }
 
-var jQuery: JQueryStatic;
-var $: JQueryStatic;
+declare var jQuery: JQueryStatic;
+declare var $: JQueryStatic;

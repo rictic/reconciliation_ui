@@ -1,4 +1,4 @@
-class TSelection {
+declare class TSelection {
   constructor(node:Node);
   create();
 }

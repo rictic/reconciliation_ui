@@ -4,4 +4,4 @@ interface Array {
   slice():any[]; // called with zero arguments, shallow copy of array.
 }
 
-var escape : (string)=>string;
+declare var escape : (string)=>string;

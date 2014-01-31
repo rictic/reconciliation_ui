@@ -2,4 +2,4 @@ interface JsObjDump {
   annotate(val:any):any;
 }
 
-var JsObjDump : JsObjDump;
+declare var JsObjDump : JsObjDump;
