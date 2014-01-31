@@ -148,10 +148,7 @@ function getSFTriples(entities:tEntity[], assertNakedProperties: boolean,
     if ($.type(obj) === "object") {
       var cvt_triples : SuperFreeq.CVTTriple[] = [];
       for (var prop in triple.o) {
-        cvt_triples.push({
-          pred: prop,
-          obj: obj[prop]
-        });
+        cvt_triples.push(populateTriple({pred: prop}, obj[prop]));
       }
       return {
         triple: {
@@ -170,13 +167,32 @@ function getSFTriples(entities:tEntity[], assertNakedProperties: boolean,
     }
 
     return {
-      triple: {
-        sub: triple.s,
-        pred: triple.p,
-        obj: obj
-      },
+      triple: populateTriple({sub: triple.s, pred: triple.p}, obj),
       assert_ids: true
     };
+  }
+
+  function populateTriple(triple:{sub?: string; pred:string}, obj:any):SuperFreeq.Triple {
+    return {
+      sub: triple.sub,
+      pred: triple.pred,
+      obj_type: getObjType(triple.pred),
+      obj: obj
+    };
+  }
+
+  function getObjType(pred:string) {
+    var objType = {
+      '/type/text': 'TEXT',
+      '/type/datetime': 'DATETIME',
+      '/type/boolean': 'BOOLEAN',
+      '/type/int': 'INT',
+      '/type/rawstring': 'RAWSTRING',
+      '/type/uri': 'URL',
+      '/type/key': 'KEY',
+      '/type/float': 'FLOAT'
+    }[freebase.getPropMetadata(pred).expected_type.id]
+    return objType || 'ID'
   }
 
   getTriples(entities, assertNakedProperties,
@@ -377,7 +393,7 @@ function fillinIds(createdEntities:Object) {
         }
         var recGroup_match = key.match(/recGroup(\d+)/);
         if (recGroup_match) {
-            freebase.getCanonicalID(id, function(mid:string) {
+            freebase.getMid(id, function(mid:string) {
               RecGroup.groups[recGroup_match[1]].setID(mid);
             });
             continue;

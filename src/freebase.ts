@@ -278,7 +278,7 @@ module freebase {
       $("<img src='" + url + "'>").appendTo("body");
   }
 
-  export function getCanonicalID(id:string, callback:(mid:string)=>void) {
+  export function getMid(id:string, callback:(mid:string)=>void) {
       callback(id);
       var envelope = {query:{"myId:id":id, "mid":null}}
       freebase.mqlRead(envelope, function(results:any){

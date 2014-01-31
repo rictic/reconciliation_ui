@@ -203,6 +203,11 @@ function getCandidates(entity:tEntity, callback:(entity:tEntity)=>void,
     entity.reconResults = cleanResults(results[0]['result']);
     callback(entity);
   }
+
+  function errorHandler(xhr:any, errorText:string, something:any) {
+    console.log("getCandidates: error invoking RPC: " + errorText);
+  }
+
   function cleanResults(results:any):Candidate[] {
     function transformCandidate(candidate:any):Candidate {
       return {
@@ -279,20 +284,15 @@ function getCandidates(entity:tEntity, callback:(entity:tEntity)=>void,
   params.limit = limit;
   params.key = api_key;
 
-  $.ajax('https://www.googleapis.com/rpc', {
-    dataType:'json',
-    contentType:'application/json-rpc',
-    type:'POST',
-    beforeSend: () => {},
-    data:JSON.stringify([{
-      "jsonrpc" : "2.0",
-      "id" : "1",
-
-      "method" : "freebase.reconcile",
-      "apiVersion" : "v1",
-
-      "params" : params
-    }]),
-    success:handler
-  });
+  var httpBatch = gapi.client.newHttpBatch();
+  httpBatch.add(gapi.client.request({
+    path: 'freebase/v1/reconcile',
+    params: params,
+  }), {
+      callback: function(jsonResp:any, rawResp:any) {
+        // TODO(cbz): errors
+        entity.reconResults = cleanResults(jsonResp.result);
+        callback(entity);
+  }});
+  httpBatch.execute();
 }

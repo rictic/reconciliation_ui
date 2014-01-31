@@ -108,7 +108,7 @@ class tEntity implements EntityLike {
     this['/rec_ui/was_automatically_reconciled'] = automatic;
     var recGroup = internalReconciler.getRecGroup(this);
     var self = this;
-    freebase.getCanonicalID(id, function(new_id:string) {
+    freebase.getMid(id, function(new_id:string) {
       if (recGroup.shouldMerge)
         recGroup.setID(new_id);
       else
