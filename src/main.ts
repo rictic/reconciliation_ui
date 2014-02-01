@@ -9,6 +9,7 @@
 /// <reference path="../lib/isISO8601.d.ts"/>
 /// <reference path="../lib/jquery.freebase.suggest.d.ts"/>
 /// <reference path="../lib/js.d.ts"/>
+/// <reference path="../lib/bootstrap/js/bootstrap.d.ts"/>
 
 /// <reference path="events/eventEmitter.ts"/>
 /// <reference path="util/set.ts"/>
@@ -31,3 +32,17 @@
 /// <reference path="options.ts"/>
 /// <reference path="internalReconciler.ts"/>
 /// <reference path="ui.ts"/>
+
+var debugMode : boolean = false;
+
+if (window.location.hostname.match(/plunder/)) {
+  node('script', {'src': 'lib/live.js'}).appendTo(document.body);
+  debugMode = true;
+
+  setTimeout(function() {
+    $('button')[0].click()
+    setTimeout(function() {
+      $('button.continue').click();
+    }, 2000);
+  }, 1000);
+}

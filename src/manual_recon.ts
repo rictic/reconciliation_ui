@@ -136,9 +136,9 @@ function renderInternalReconciliationDialog(entity:tEntity, template:JQuery) {
         internalReconciler.setMerged(entity, this.checked);
     });
     checkbox[0].id = input_id;
-    $(".internalReconMoved", template).removeClass("invisible");
+    $(".internalReconMoved", template).removeClass("gone");
 
-    context.removeClass("invisible");
+    context.removeClass("gone");
 }
 
 function renderCandidate(result:Candidate, mqlProps:string[], entity:tEntity) {

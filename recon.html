@@ -6,6 +6,7 @@
 
     <title>Freebase Loader</title>
 
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" type="text/css" media="screen">
     <link rel="stylesheet" href="lib/dataTables/media/css/demos.css" type="text/css" media="screen">
     <link rel="stylesheet" href="lib/jquery.ui/themes/cupertino/ui.all.css" type="text/css" media="screen" title="Cupertino">
     <link rel="stylesheet" href="lib/suggest/freebase-controls.css" type="text/css" media="screen">
@@ -24,7 +25,7 @@
             <h3>Paste your spreadsheet here:</h3>
             <textarea name="initialInput" id="initialInput" class='spreadsheet' ></textarea><br>
             <div class="spinnerHolder">
-              <img src='resources/spinner.gif' class='inputLoading invisible'>
+              <img src='resources/spinner.gif' class='inputLoading gone'>
             </div>
 
             <div class='examples'>
@@ -37,13 +38,13 @@
 
 
         <div id='inputWindow'>
-            <div class="inputWarnings invisible">
+            <div class="inputWarnings gone">
                 <ul>
                 </ul>
             </div>
 
             <!--    If the spreadsheet is ambiguous, ask for clarification     -->
-            <div id="formatDisambiguation" class="container invisible screen">
+            <div id="formatDisambiguation" class="container gone screen">
                 <h3>Are these <span class='numThings'>several</span> rows about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'></span>"?</h3>
 
                 <button class='dontCombine'>
@@ -64,7 +65,7 @@
             </div>
 
             <!--    Confirm that the parse was correct      -->
-            <div id="spreadsheetPreview" class="container invisible screen">
+            <div id="spreadsheetPreview" class="container gone screen">
                 <h3>Does this look right?</h3>
                 <div id="spreadsheetDiv" class="container">
                 </div>
@@ -75,179 +76,180 @@
       </div>
 
 <!--    The main app area    -->
-      <div id="tabs" class="invisible">
-          <ul>
+      <div id="tabs" class="gone">
+          <ul class="nav nav-tabs">
               <li><a href="#spreadsheetReconcile"><span>Reconcile Record <span class="manual_count">(0)</span></span></a></li>
               <li><a href="#reviewScreen"><span>Review</span></a></li>
               <li><a href="#spreadsheetRender"><span>Retrieve Your Data</span></a></li>
           </ul>
 
+      <div class='tab-content'>
         <!-- The reconciliation area -->
-          <div id="spreadsheetReconcile" class="">
-              <div class="manualQueueEmpty">
-                <div class="initialLoadingMessage">
-                    <h3>Loading, just a moment...</h3>
-                </div>
-                <div class="nowReconciling invisible">
-                  <h3>Everything's working fine automatically</h3>
-                  As the auto-reconciler finds topics that it's unable to reconcile, they will appear here to give you a chance at resolving them
-                </div>
-                <div class="notReconciling invisible">
-                  <h3>All done.</h3>
-                  All of your records are now reconciled.  Retrieve your spreadsheet by clicking the tab up above.
-                </div>
-              </div>
+        <div id="spreadsheetReconcile" class="tab-pane container">
+          <div class="manualQueueEmpty">
+            <div class="initialLoadingMessage">
+              <h3>Loading, just a moment...</h3>
+            </div>
+            <div class="nowReconciling gone">
+              <h3>Everything's working fine automatically</h3>
+              As the auto-reconciler finds topics that it's unable to reconcile, they will appear here to give you a chance at resolving them
+            </div>
+            <div class="notReconciling gone">
+              <h3>All done.</h3>
+              All of your records are now reconciled.  Retrieve your spreadsheet by clicking the tab up above.
+            </div>
+          </div>
 
 <!--          Templates are moved here to be displayed       -->
-              <div class='displayArea'>
+          <div class='displayArea'></div>
 
+          <div class='holdingArea gone'>
+            <!--  Template for a manual reconciliation case. This is copied and the holes are filled in
+                in code, so this is safe to edit so long as it has the same general structure.
+                -->
+            <div id="manualReconcileTemplate" class="manualReconChoices">
+              <div class='internalReconMoved gone'>
+                 There are several topics with this name.  The checkbox for merging them has moved to the bottom of the page, beneath search.
               </div>
 
-              <div class='holdingArea invisible'>
-                  <!--  Template for a manual reconciliation case. This is copied and the holes are filled in
-                      in code, so this is safe to edit so long as it has the same general structure.
-                      -->
-                  <div id="manualReconcileTemplate" class="manualReconChoices">
-                    <div class='internalReconMoved invisible'>
-                       There are several topics with this name.  The checkbox for merging them has moved to the bottom of the page, beneath search.
-                    </div>
+              <div class='manualReconMeat'>
+                  <table>
+                      <thead>
+                          <tr><th class='title' colspan='2'>Match your data:</th></tr>
+                      </thead>
+                      <tbody class='currentRecord'>
+                          <tr class="recordVals"><td></td><td></td></tr>
+                      </tbody>
 
-                    <div class='manualReconMeat'>
-                        <table>
-                            <thead>
-                                <tr><th class='title' colspan='2'>Match your data:</th></tr>
-                            </thead>
-                            <tbody class='currentRecord'>
-                                <tr class="recordVals"><td></td><td></td></tr>
-                            </tbody>
+                      <tr><th class='title' colspan='4'>to one of these Freebase topics:</th></tr>
 
-                            <tr><th class='title' colspan='4'>to one of these Freebase topics:</th></tr>
+                      <tbody class="manualReconciliationChoices">
 
-                            <tbody class="manualReconciliationChoices">
+                      </tbody>
+                </table>
 
-                            </tbody>
-                      </table>
-
-                      <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="invisible loadingMoreCandidates">
-                      <h4>Or:</h4>
-                      <button class="skipButton otherSelection" name="">Skip This Item</button>
-                      <button class="newButton otherSelection" name="None">Not in Freebase</button>
-                      <label>Search For Another Topic:</label>
-                      <input type="text" class="find_topic">
-                      <div><button class="undo">Undo</button></div>
-                      <div class="internalReconciliationPrompt invisible">
-                          <p>There are <span class="count">several</span> <span class='type'>topic</span>s with the name "<span class="name">{name goes here}</span>"</p>
-                          <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
-                      </div>
-                  </div>
+                <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="gone loadingMoreCandidates">
+                <h4>Or:</h4>
+                <button class="skipButton otherSelection" name="">Skip This Item</button>
+                <button class="newButton otherSelection" name="None">Not in Freebase</button>
+                <label>Search For Another Topic:</label>
+                <input type="text" class="find_topic">
+                <div><button class="undo">Undo</button></div>
+                <div class="internalReconciliationPrompt gone">
+                    <p>There are <span class="count">several</span> <span class='type'>topic</span>s with the name "<span class="name">{name goes here}</span>"</p>
+                    <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
+                </div>
               </div>
+            </div>
           </div>
-          </div>
+        </div>
 
 <!--      Review what's been reconciled so far      -->
-          <div id='reviewScreen'>
-              <h3>Items reconciled so far:</h3>
-              <h5 class='subheading'>(items which have the exact same name are faded out)</h5>
-              <table>
-                  <thead>
-                      <tr><th>Your Input</th><th>Freebase Topic</th></tr>
-                  </thead>
-                  <tbody class="manualReconciliationsToReview invisible">
-                    <tr><th class='mid-table-subheading' colspan='2'>Manual Reconciliations</th></tr>
-                  </tbody>
-                  <tbody><tr><th></th><th></th></tr></tbody>
-                  <tbody class="automaticReconciliationsToReview invisible">
-                    <tr><th class='mid-table-subheading' colspan='2'>Automatic Reconciliations</th></tr>
-                  </tbody>
-                  <tbody><tr><th></th><th></th></tr></tbody>
-                  <tbody class="oldReconciliationsToReview invisible">
-                    <tr><th class='mid-table-subheading' colspan='2'>Items Reconciled Previously</th></tr>
-                  </tbody>
-              </table>
+        <div id='reviewScreen' class='tab-pane container'>
+          <h3>Items reconciled so far:</h3>
+          <h5 class='subheading'>(items which have the exact same name are faded out)</h5>
+          <table>
+              <thead>
+                  <tr><th>Your Input</th><th>Freebase Topic</th></tr>
+              </thead>
+              <tbody class="manualReconciliationsToReview gone">
+                <tr><th class='mid-table-subheading' colspan='2'>Manual Reconciliations</th></tr>
+              </tbody>
+              <tbody><tr><th></th><th></th></tr></tbody>
+              <tbody class="automaticReconciliationsToReview gone">
+                <tr><th class='mid-table-subheading' colspan='2'>Automatic Reconciliations</th></tr>
+              </tbody>
+              <tbody><tr><th></th><th></th></tr></tbody>
+              <tbody class="oldReconciliationsToReview gone">
+                <tr><th class='mid-table-subheading' colspan='2'>Items Reconciled Previously</th></tr>
+              </tbody>
+          </table>
 
-              <table class='invisible templates'>
-              <tr class='reviewReconciledTemplate'><td><span class='candidateName'>Stevie wonder</span></td><td class='freebaseName'>Stevie Wonder</td></tr>
-              <tr class='reviewNewTemplate'><td><span class='candidateName'>Stevie wonder</span></td><td>None - create a new one</td></tr>
-              <tr class='reviewSkippedTemplate'><td><span class='candidateName'>Stevie wonder</span></td><td>Manually Skipped - not reconciled</td></tr>
-              <tr class='reviewRecGroupTemplate'><td class="candidate"><span class="count">Several</span> <span class="type">topic</span>s named <span class="name">Stevie wonder</span></td><td class='freebaseName'>Stevie Wonder</td></tr>
-              </table>
-          </div>
+          <table class='gone templates'>
+          <tr class='reviewReconciledTemplate'><td><span class='candidateName'>Stevie wonder</span></td><td class='freebaseName'>Stevie Wonder</td></tr>
+          <tr class='reviewNewTemplate'><td><span class='candidateName'>Stevie wonder</span></td><td>None - create a new one</td></tr>
+          <tr class='reviewSkippedTemplate'><td><span class='candidateName'>Stevie wonder</span></td><td>Manually Skipped - not reconciled</td></tr>
+          <tr class='reviewRecGroupTemplate'><td class="candidate"><span class="count">Several</span> <span class="type">topic</span>s named <span class="name">Stevie wonder</span></td><td class='freebaseName'>Stevie Wonder</td></tr>
+          </table>
+        </div>
 
 <!--      Give the user their data back      -->
-          <div id="spreadsheetRender" class="container">
+        <div id="spreadsheetRender" class="tab-pane container">
 
-              <h3>Copy your updated <span class='outputFormatText'>spreadsheet</span> from here:</h3>
-              <textarea id="outputData" class='spreadsheet'></textarea><br>
-              Format: <label for="spreadsheet_out">Spreadsheet</label><input type="radio" name='outputFormat' class='outputFormat' value="spreadsheet" id="spreadsheet_out" checked> | <label for="json_out">JSON</label><input type="radio" name='outputFormat' class='outputFormat' value="json" id="json_out">
-
-
+          <h3>Copy your updated <span class='outputFormatText'>spreadsheet</span> from here:</h3>
+          <textarea id="outputData" class='spreadsheet'></textarea><br>
+            Format: <label for="spreadsheet_out">Spreadsheet</label><input type="radio" name='outputFormat' class='outputFormat' value="spreadsheet" id="spreadsheet_out" checked> | <label for="json_out">JSON</label><input type="radio" name='outputFormat' class='outputFormat' value="json" id="json_out">
 
 
 
-              <h3>Upload your data to Freebase:</h3>
-              <div class="uploadToFreeQ">
-                  <div class='uploadLogin invisible'>
-                      <button class="loginButton">Click Here To Login!</button>
-                  </div>
-                  <div class='uploadForm invisible'>
-                      <div class="renderingTriples invisible">
-                          One moment, preparing your data for upload... <img src="resources/spinner.gif">
-                      </div>
-
-                      <div class="triplesRendered invisible">
-                          We've found <span class='triple_count'></span> assertions that you can upload.
-                          <button class="displayTriples">Detailed view &darr;</button>
-                          <div>
-                              <pre class='triplesDisplay invisible'></pre>
-                          </div>
-
-                          <br>
-                          <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
-                          <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
 
 
-                          Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
-                          <div id='otg_upload_warning' class='invisible warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
-                          <button id='upload_button'>Upload</button>
-                          </form>
-                      </div>
-                      <br>
-                  </div>
-              </div>
-              <div class="freeqLoad invisible">
-                  <div class="freeqLoadInProgress invisible">
-                      <div>
-                          Your data is loading now:
-                      </div>
-                      <div id="upload_progressbar"></div>
-                  </div>
-
-                  <div class="uploadToSandboxComplete invisible">
-                      Your data is finished loading into sandbox!  Check the data on sandbox to ensure its quality, then click here: <button class="loadAgainButton">Upload with different settings</button>
-                  </div>
-
-                  <div class="uploadToOTGComplete invisible">
-                      Your data has been uploaded to Freebase.
-
-                      <div class="fetchingFreeqIds">
-                          Fetching the ids of newly created topics... <img src="resources/spinner.gif">
-                      </div>
-
-                      <div class="idsFetched invisible">
-                          The ids of any new topics that were created have been added into to your spreadsheet.
-                      </div>
-                  </div>
-
-                  <a class="peacock_link" target="_blank">View the status of your load.</a><br/>
+          <h3>Upload your data to Freebase:</h3>
+          <div class="uploadToFreeQ">
+            <div class='uploadLogin gone'>
+              <button class="loginButton">Click Here To Login!</button>
+            </div>
+            <div class='uploadForm gone'>
+              <div class="renderingTriples gone">
+                One moment, preparing your data for upload... <img src="resources/spinner.gif">
               </div>
 
-              <div class='uploadSpinner invisible'>
-                  <img src="resources/spinner.gif">
+              <div class="triplesRendered gone">
+                We've found <span class='triple_count'></span> assertions that you can upload.
+                <button class="displayTriples">Detailed view &darr;</button>
+                <div>
+                  <pre class='triplesDisplay gone'></pre>
+                </div>
+
+                <br>
+                <label for="mdo_name">Name for this Data: </label><input type="text" name="mdo_name" value="" id="mdo_name" size='50'><br>
+                <label for="mdo_data_source">Source of the Data:</label><input type="text" name="mdo_data_source" value="" id="mdo_data_source"><br>
+
+
+                Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
+                <div id='otg_upload_warning' class='gone warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
+                <button id='upload_button'>Upload</button>
               </div>
+              <br>
+            </div>
           </div>
+          <div class="freeqLoad gone">
+            <div class="freeqLoadInProgress gone">
+              <div>
+                Your data is loading now:
+              </div>
+              <div id="upload_progressbar"></div>
+            </div>
+
+            <div class="uploadToSandboxComplete gone">
+              Your data is finished loading into sandbox!  Check the data on sandbox to ensure its quality, then click here:
+              <button class="loadAgainButton">
+                  Upload with different settings
+              </button>
+            </div>
+
+            <div class="uploadToOTGComplete gone">
+              Your data has been uploaded to Freebase.
+
+              <div class="fetchingFreeqIds">
+                Fetching the ids of newly created topics... <img src="resources/spinner.gif">
+              </div>
+
+              <div class="idsFetched gone">
+                The ids of any new topics that were created have been added into to your spreadsheet.
+              </div>
+            </div>
+
+            <a class="peacock_link" target="_blank">View the status of your load.</a><br/>
+          </div>
+
+          <div class='uploadSpinner gone'>
+            <img src="resources/spinner.gif">
+          </div>
+        </div>
       </div>
 
-      <div id="progresscontainer" class="nowReconciling invisible">
+      <div id="progresscontainer" class="nowReconciling gone">
         <label class='kind'>Finding automatic topic matches...</label>
         <div id='progressbar'>
           <label>50%</label>
@@ -264,7 +266,7 @@
       <a href="#optionsPanel" class='optionsButton' onclick='$("#main_app").hide();$("#optionsPanel").show(); return false;'>Options</a>
     </div>
 
-    <div id="optionsPanel" class='invisible container'>
+    <div id="optionsPanel" class='gone container'>
       <label for="require_exact_name_match">Require Exact Name Match to Autoreconcile</label><input type="checkbox" name="require_exact_name_match" id="require_exact_name_match"><br>
       <label for="reconciliation_url">Reconciliation URL: </label><input type="text" name="reconciliation_url" value="" id="reconciliation_url" size='60'><br>
       <label for="freebase_url">Freebase URL: </label><input type="text" name="freebase_url" value="" id="freebase_url" size='60'><br>
@@ -276,9 +278,9 @@
     </div>
 
 
-    <div id="miniTopicFloater" class="invisible" style="position:absolute;"></div>
+    <div id="miniTopicFloater" class="gone" style="position:absolute;"></div>
 
-    <div id="freeqErrorDialog" class="invisible">
+    <div id="freeqErrorDialog" class="gone">
     </div>
 
     <noscript>
@@ -290,7 +292,7 @@
       </div>
     </noscript>
 
-    <div class='invisible'>
+    <div class='gone'>
 
 <!--  Begin scripts to compile -->
         <script charset="utf-8" src="lib/json2.js"></script>
@@ -310,6 +312,8 @@
 
         <script charset="utf-8" src="lib/suggest/jquery.freebase.minitopic.js"></script>
         <script charset="utf-8" src="lib/suggest/freebase.suggest.js"></script>
+        <script charset="utf-8" src="lib/bootstrap/js/bootstrap.min.js"></script>
+
 
         <script charset="utf-8" src="src/main.js"></script>
 <!--  End scripts to compile -->

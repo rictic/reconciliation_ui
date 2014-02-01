@@ -92,7 +92,7 @@ function makeInternalLink(content:JQuery, entity:tEntity) {
            ,"class": "internalLink"
     })
     .click(function(val) {
-        $("#tabs > ul").tabs("select",0);
+        $("#tabs ul a:first").click();
         displayReconChoices(entity["/rec_ui/id"]);
         return false;
     })

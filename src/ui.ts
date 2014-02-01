@@ -136,26 +136,28 @@ function showConfirmationSpreadsheet(beforeDisplay:()=>void) {
         $('#spreadsheetTable').dataTable(spreadSheetData);
         $('#spreadsheetPreview').show();
     });
-
 }
-var previousSelectedTab = 0;
+
+var previousSelectedTab = 'spreadsheetReconcile';
 function initializeTabs() {
-    var tabs = $("#tabs > ul");
-    tabs.tabs();
-    tabs.bind("tabsselect", function(event:any, ui:{index: number}) {
+    $("#tabs ul a").click(function(e) {
+        e.preventDefault();
+        $(this).tab('show');
+        var hash : string = this.href.match(/#(.*)/)[1]
+        console.log(hash, previousSelectedTab);
         switch(previousSelectedTab){
-          case 1: onHideRenderScreen(); break;
-          case 2: onHideOutputScreen(); break;
+          case 'reviewScreen': onHideRenderScreen(); break;
+          case 'spreadsheetRender': onHideOutputScreen(); break;
         }
-        switch(ui.index){
-          case 0: manualReconcile(); break;
-          case 1: onDisplayRenderScreen(); break;
-          case 2: onDisplayOutputScreen(); break;
+        switch(hash){
+          case 'spreadsheetReconcile': manualReconcile(); break;
+          case 'reviewScreen': onDisplayRenderScreen(); break;
+          case 'spreadsheetRender': onDisplayOutputScreen(); break;
         }
-        previousSelectedTab = ui.index;
+        previousSelectedTab = hash;
     });
+    $('#tabs ul a:first').tab('show');
     $("#tabs").show();
-    tabs.tabs("select", 0);
 }
 function continueToReconciliation() {
     $("#gettingInput").remove();
@@ -180,7 +182,7 @@ function initialSetup() {
 
     $("#progressbar").progressbar({value:0});
     window.onbeforeunload = function() {
-        if (reconciliationBegun)
+        if (reconciliationBegun && !debugMode)
             return "You may have unsaved changes.  Make sure to copy your updated spreadsheet or upload your data to Freebase on the Retrieve Your Data tab.";
     };
 
