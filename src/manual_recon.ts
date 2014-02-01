@@ -146,7 +146,7 @@ function renderCandidate(result:Candidate, mqlProps:string[], entity:tEntity) {
     var tableRow = node("tr", {"class":idToClass(result["id"])});
 
     var button = node("button", "Choose",
-       {"class":'manualSelection',
+       {"class":'manualSelection btn',
         "name":result.id})
     var score = node("span", Math.round(result["score"] * 100) + "%", {"class": 'score'});
     tableRow.append(node("td",node("div").append(button).append("<br>").append(score), {"class":"buttonColumn"}));

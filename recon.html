@@ -30,8 +30,8 @@
 
             <div class='examples'>
               Try Freebase Loader with these example spreadsheets:
-              <button onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Load Simple Movie Example</button>
-              <button onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Load Complex Movie Example</button>
+              <button class='btn' onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Load Simple Movie Example</button>
+              <button class='btn' onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Load Complex Movie Example</button>
 
             </div>
         </div>
@@ -47,10 +47,10 @@
             <div id="formatDisambiguation" class="container gone screen">
                 <h3>Are these <span class='numThings'>several</span> rows about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s, or just the one named "<span class='thingName'></span>"?</h3>
 
-                <button class='dontCombine'>
+                <button class='dontCombine btn'>
                     This is about <span class='numThings'>several</span> separate <span class='thingType'>topic</span>s.
                 </button>
-                <button class='doCombine'>
+                <button class='doCombine btn'>
                     These rows are all about "<span class='thingName'>one thing</span>"
                 </button>
 
@@ -70,7 +70,7 @@
                 <div id="spreadsheetDiv" class="container">
                 </div>
                 <br>
-                <button style='float:right;' class='continue'>Yep, Let's Continue &gt;</button>
+                <button style='float:right;' class='continue btn'>Yep, Let's Continue &gt;</button>
             </div>
         </div>
       </div>
@@ -128,13 +128,13 @@
                       </tbody>
                 </table>
 
-                <button class="moreButton">More candidates &darr;</button><img src="resources/spinner.gif" class="gone loadingMoreCandidates">
+                <button class="moreButton btn">More candidates &darr;</button><img src="resources/spinner.gif" class="gone loadingMoreCandidates">
                 <h4>Or:</h4>
-                <button class="skipButton otherSelection" name="">Skip This Item</button>
-                <button class="newButton otherSelection" name="None">Not in Freebase</button>
+                <button class="btn skipButton otherSelection" name="">Skip This Item</button>
+                <button class="btn newButton otherSelection" name="None">Not in Freebase</button>
                 <label>Search For Another Topic:</label>
                 <input type="text" class="find_topic">
-                <div><button class="undo">Undo</button></div>
+                <div><button class="btn undo">Undo</button></div>
                 <div class="internalReconciliationPrompt gone">
                     <p>There are <span class="count">several</span> <span class='type'>topic</span>s with the name "<span class="name">{name goes here}</span>"</p>
                     <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
@@ -187,7 +187,7 @@
           <h3>Upload your data to Freebase:</h3>
           <div class="uploadToFreeQ">
             <div class='uploadLogin gone'>
-              <button class="loginButton">Click Here To Login!</button>
+              <button class="btn loginButton">Click Here To Login!</button>
             </div>
             <div class='uploadForm gone'>
               <div class="renderingTriples gone">
@@ -196,7 +196,7 @@
 
               <div class="triplesRendered gone">
                 We've found <span class='triple_count'></span> assertions that you can upload.
-                <button class="displayTriples">Detailed view &darr;</button>
+                <button class="btn displayTriples">Detailed view &darr;</button>
                 <div>
                   <pre class='triplesDisplay gone'></pre>
                 </div>
@@ -208,7 +208,7 @@
 
                 Upload to: <label for='sandbox'>Sandbox</label><input type="radio" class='graphport' name="graphport" value="sandbox" id='sandbox' checked> | <label for='otg'>Freebase.com</label><input type="radio" class='graphport' name="graphport" id='otg' value="otg"><br>
                 <div id='otg_upload_warning' class='gone warning'>Please upload to Sandbox first and ensure that the upload is as you expect before uploading to Freebase.com</div>
-                <button id='upload_button'>Upload</button>
+                <button class='btn' id='upload_button'>Upload</button>
               </div>
               <br>
             </div>
@@ -223,7 +223,7 @@
 
             <div class="uploadToSandboxComplete gone">
               Your data is finished loading into sandbox!  Check the data on sandbox to ensure its quality, then click here:
-              <button class="loadAgainButton">
+              <button class="btn loadAgainButton">
                   Upload with different settings
               </button>
             </div>
@@ -274,7 +274,7 @@
       <label for="assert_naked_properties" alt="If this isn't checked then Loader will assert any types which are implied by the properties hanging off of a topic">Assert 'naked' properties</label><input type="checkbox" name="assert_naked_properties" id="assert_naked_properties">
 
 
-      <button onclick='$("#optionsPanel").hide();$("#main_app").show();'>Ok</button>
+      <button class='btn' onclick='$("#optionsPanel").hide();$("#main_app").show();'>Ok</button>
     </div>
 
 

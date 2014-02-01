@@ -2,6 +2,10 @@
     display: none;
 }
 
+.btn {
+    margin-bottom: 5px;
+}
+
 .container {
 	padding: 30px;
 }
@@ -272,7 +276,6 @@ td {
 
 .title {
     font-size: 130%;
-    color: #f60;
 }
 
 .buttonColumn {
