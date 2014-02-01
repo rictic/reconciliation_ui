@@ -286,7 +286,7 @@ td {
 
 .currentRecord {
     border: 1px solid #999;
-/*    background-color: #A79FD6;*/
+    background-color: white !important;
 }
 
 .manualReconciliationChoices {
