@@ -333,3 +333,7 @@ td {
     -moz-transition-duration: 500ms;
     transition-duration: 500ms;
 }
+
+.upload_form {
+    max-width: 600px;
+}
