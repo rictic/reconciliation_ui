@@ -88,16 +88,13 @@ table.manualReconciliationChoices tbody tr a {
     width: 50%;
     top:1px;
     right:1px;
+    margin-top: 5px;
+    margin-right: 5px;
+    height: 28px;
 }
-#progresscontainer label.kind {
-    float: left;
-    margin-top:5px;
-    margin-left:3px;
-}
-#progressbar label {
-    position: absolute;
-    left: 50%;
-    top: 5px;
+
+#progresscontainer .progress-bar {
+    background-color: rgba(66, 139, 202, 0.51);
 }
 
 a.optionsButton {

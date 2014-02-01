@@ -421,7 +421,8 @@ class FreeqMonitor {
       for (var key in result.stats) {
         totalActions += result.stats[key];
       }
-      $('#upload_progressbar').progressbar('option', 'value', (totalActions-actionsRemaining)*100/totalActions);
+      $('#upload_progressbar .progress-bar').width(
+        ((totalActions-actionsRemaining)*100/totalActions) + '%');
 
       if (actionsRemaining === 0) {
         this.repeatingTimer.stop();
@@ -462,7 +463,6 @@ function doLoad() {
           $(".freeqLoad").show();
           $(".freeqLoadInProgress").show();
           $(".uploadSpinner").hide();
-          $("#upload_progressbar").progressbar({value:0});
           $(".peacock_link").attr("href",job.base_url);
           new FreeqMonitor(job, function() {
             $(".freeqLoadInProgress").hide();

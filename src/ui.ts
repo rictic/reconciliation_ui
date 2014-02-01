@@ -180,7 +180,6 @@ $(document).ready(onReady)
 function initialSetup() {
     jQuery.ajaxSettings.cache = true; //keeps jquery from inserting cache-busting timecodes into json requests
 
-    $("#progressbar").progressbar({value:0});
     window.onbeforeunload = function() {
         if (reconciliationBegun && !debugMode)
             return "You may have unsaved changes.  Make sure to copy your updated spreadsheet or upload your data to Freebase on the Retrieve Your Data tab.";

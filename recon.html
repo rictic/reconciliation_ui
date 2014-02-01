@@ -218,7 +218,10 @@
               <div>
                 Your data is loading now:
               </div>
-              <div id="upload_progressbar"></div>
+              <div id="upload_progressbar" class="progress">
+                <div class="progress-bar" style="width: 0%">
+                </div>
+              </div>
             </div>
 
             <div class="uploadToSandboxComplete gone">
@@ -249,21 +252,13 @@
         </div>
       </div>
 
-      <div id="progresscontainer" class="nowReconciling gone">
-        <label class='kind'>Finding automatic topic matches...</label>
-        <div id='progressbar'>
-          <label>50%</label>
+      <div id="progresscontainer" class="progress nowReconciling gone">
+        <div class="progress-bar" style="width: 0%">
         </div>
       </div>
 
-      <span class='app_info'>
-      <a href="http://wiki.freebase.com/wiki/Freebase_Loader" target='_blank' class="documentation">Documentation</a>
-      | <a href="http://github.com/freebase/reconciliation_ui/" target='_blank' class='view_source'>Source Code</a>
-      | <a href="http://github.com/rictic/reconciliation_ui/tree/development" class='versionLink' target='_blank'>Version</a>
-      | <a href="https://bugs.freebase.com/secure/CreateIssueDetails!init.jspa?pid=10148&amp;issuetype=1&amp;priority=3&amp;components=10402&amp;assignee=peter" class='bugReportLink' target="_blank">Found a Bug?</a>
-      </span>
-
-      <a href="#optionsPanel" class='optionsButton' onclick='$("#main_app").hide();$("#optionsPanel").show(); return false;'>Options</a>
+    </div>
+    <a href="#optionsPanel" class='optionsButton' onclick='$("#main_app").hide();$("#optionsPanel").show(); return false;'>Options</a>
     </div>
 
     <div id="optionsPanel" class='gone container'>
@@ -293,9 +288,6 @@
     </noscript>
 
     <div class='gone'>
-
-<!--  Begin scripts to compile -->
-        <script charset="utf-8" src="lib/json2.js"></script>
         <script charset="utf-8" src="lib/jquery.js"></script>
         <script charset="utf-8" src="lib/jquery.ui/ui/ui.core.js"></script>
         <script charset="utf-8" src="lib/jquery.ui/ui/ui.tabs.js"></script>
@@ -316,13 +308,11 @@
 
 
         <script charset="utf-8" src="src/main.js"></script>
-<!--  End scripts to compile -->
 
         <script src="https://apis.google.com/js/client.js?onload=OnGoogleClientLoaded"></script>
         <script charset="utf-8" src="examples/sampledata.js" defer async></script>
         <script charset="utf-8" src="examples/complexdata.js" defer async></script>
 
-<!--    POSTed data goes here      -->
     </div>
 </body>
 </html>

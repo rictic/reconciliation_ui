@@ -22,8 +22,7 @@ function initializeReconciliation(onReady:()=>void) {
     automaticQueue = new EntityQueue();
     automaticQueue.addListener("changed", function() {
         var pctProgress = (((totalRecords - automaticQueue.size()) / totalRecords) * 100);
-        $("#progressbar").progressbar("value", pctProgress);
-        $("#progressbar label").html(pctProgress.toFixed(1) + "%");
+        $("#progresscontainer .progress-bar").width(pctProgress + '%');
     })
     automaticQueue.addListener("added", function(entity:tEntity) {
         entity['/rec_ui/rec_begun'] = true;
