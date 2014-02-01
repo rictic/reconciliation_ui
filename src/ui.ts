@@ -132,7 +132,7 @@ function showConfirmationSpreadsheet(beforeDisplay:()=>void) {
         if (beforeDisplay) beforeDisplay();
         spreadSheetData["bAutoWidth"] = false;
         spreadSheetData["bSort"] = false;
-        $("#spreadsheetDiv").html('<table class="display" id="spreadsheetTable"><\/table>');
+        $("#spreadsheetDiv").html('<table class="display table table-striped" id="spreadsheetTable"><\/table>');
         $('#spreadsheetTable').dataTable(spreadSheetData);
         $('#spreadsheetPreview').show();
     });

@@ -42,7 +42,7 @@ if (window.location.hostname.match(/plunder/)) {
   setTimeout(function() {
     $('button')[0].click()
     setTimeout(function() {
-      $('button.continue').click();
+      // $('button.continue').click();
       setTimeout(function() {
         // $('#tabs ul li a[href="#spreadsheetRender"]').click()
       }, 100)
