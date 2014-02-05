@@ -31,7 +31,29 @@ module SuperFreeq {
     cvt_triples?: CVTTriple[];
   }
 
+  interface GetTasksResponse {
+    items: TaskResponseItem[];
+    nextPageToken: PageToken;
+  }
 
+  interface TaskRequestParams {
+    taskStatus: string;
+    pageToken?: PageToken;
+  }
+
+  export interface TaskResponseItem {
+    id: string;
+    kind: string;
+    status: string;
+    error: string;
+    creation_date: string;
+    finish_date: string;
+    load_triple: TripleLoadCommand;
+  }
+
+  interface PageToken {
+    pretendThisIsANominalType: PageToken;
+  }
 
   // Returns the id of the new job.
   export function createJob(name:string, graph:string,
@@ -150,6 +172,27 @@ module SuperFreeq {
           $.extend(result, v);
           addTimeout(getSome, 5 * 1000);
         } , 'GET')
+      }
+      getSome();
+    }
+
+    getTasks(taskStatus:string,
+             callback:(tri:TaskResponseItem)=>void,
+             onComplete:()=>void) {
+      var params : TaskRequestParams = {
+        taskStatus: taskStatus
+      }
+
+      var getSome = () => {
+        doRequest(this.base_url + '/tasks', params, (v:GetTasksResponse) => {
+          if (v.items.length == 0) {
+            onComplete();
+            return;
+          }
+          v.items.map(callback);
+          params.pageToken = v.nextPageToken;
+          getSome();
+        });
       }
       getSome();
     }
