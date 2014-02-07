@@ -30,12 +30,29 @@ module freebase {
       }
   };
 
+  export interface MqlReadEnvelope {
+    query: MqlReadQuery;
+  }
+
+  export interface MqlReadQuery {
+
+  }
+
+  export interface QueryPair {
+    0:string;
+    1:MqlReadEnvelope
+  }
+
+  export interface MultiMqlRead {
+    [uniqueKey:string]:MqlReadEnvelope;
+  }
+
   /** Simple mql read
     *
     * @param {freebase.mqlTree} envelope
     * @param {function(freebase.mqlTree)} handler
     */
-  export function mqlRead(envelope:Object, handler:(result:any)=>void) {
+  export function mqlRead(envelope:MqlReadEnvelope, handler:(result:any)=>void) {
       $.getJSON(getMqlReadURL(envelope), null, handler);
   };
 
@@ -44,7 +61,7 @@ module freebase {
     * @param {freebase.mqlTree} envelope
     * @returns {!string}
     */
-  function getMqlReadURL(envelope:any):string {
+  function getMqlReadURL(envelope:MqlReadEnvelope):string {
     var param : any;
     if ('query' in envelope) {
       param = envelope;
@@ -77,12 +94,12 @@ module freebase {
       @param {!function()} onComplete
       @param {function(!string, !freebase.mqlTree)=} errorHandler
   */
-  export function mqlReads(q_pairs:string[][],
+  export function mqlReads(q_pairs:QueryPair[],
                            handler:(key:string, result:Object)=>void,
                            onComplete:()=>void,
                            errorHandler?:(key:string, result:Object)=>void) {
     var combiner = combineCallbacks(q_pairs.length, onComplete)
-    $.each(q_pairs, function(_:any, q_pair:string[]) {
+    $.each(q_pairs, function(_:number, q_pair:QueryPair) {
       freebase.mqlRead(q_pair[1], function(res) {
         handler(q_pair[0], res['result']);
         combiner();
@@ -90,7 +107,7 @@ module freebase {
     });
   }
 
-  export function mqlReadQueries(queries:Object,
+  export function mqlReadQueries(queries:MultiMqlRead,
                                  onComplete:(res:Object)=>any) {
     var response = {
       code: '/api/status/ok',
@@ -210,9 +227,9 @@ module freebase {
       });
       simpleProps = Arr.unique(simpleProps);
 
-      var q_pairs : string[][] = [];
+      var q_pairs : QueryPair[] = [];
       $.each(simpleProps, function(_,simpleProp) {
-          var val : any = [simpleProp, {query: getQuery(simpleProp)}];
+          var val = {0:simpleProp, 1:{query: getQuery(simpleProp)}};
           q_pairs.push(val);
       });
 

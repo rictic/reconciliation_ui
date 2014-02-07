@@ -31,9 +31,11 @@ module SuperFreeq {
     cvt_triples?: CVTTriple[];
   }
 
+  // Response from FreeQ when you ask for tasks.
+  // Yes, both of them can be missing, leading to an empty response.
   interface GetTasksResponse {
-    items: TaskResponseItem[];
-    nextPageToken: PageToken;
+    items?: TaskResponseItem[];
+    nextPageToken?: PageToken;
   }
 
   interface TaskRequestParams {
@@ -53,6 +55,10 @@ module SuperFreeq {
 
   interface PageToken {
     pretendThisIsANominalType: PageToken;
+  }
+
+  export interface IdMap {
+    [newEntityId:string]: string;
   }
 
   // Returns the id of the new job.
@@ -153,9 +159,9 @@ module SuperFreeq {
       })
     }
 
-    getIdMapping(callback:(o:Object)=>void) {
+    getIdMapping(callback:(o:SuperFreeq.IdMap)=>void) {
       var var_ids = this.vars.getAll();
-      var result = {};
+      var result : SuperFreeq.IdMap = {};
       var BATCH_SIZE = 100;
 
       var getSome = () => {
@@ -184,15 +190,15 @@ module SuperFreeq {
       }
 
       var getSome = () => {
-        doRequest(this.base_url + '/tasks', params, (v:GetTasksResponse) => {
-          if (v.items.length == 0) {
+        doRequest(this.base_url + '/tasks', $.param(params), (v:GetTasksResponse) => {
+          if (!v.items || v.items.length == 0) {
             onComplete();
             return;
           }
           v.items.map(callback);
           params.pageToken = v.nextPageToken;
           getSome();
-        });
+        }, "GET");
       }
       getSome();
     }

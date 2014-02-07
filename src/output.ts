@@ -48,8 +48,15 @@ function onHideOutputScreen() {
   * @returns {!string}
   */
 function encodeLine(arr:string[]):string {
+    return encodeLineRaw(arr, headerPaths.length);
+}
+
+/** This method exists because encodeLine foolishly presumes a fieldCount of
+  * headerPaths.length
+  */
+function encodeLineRaw(arr:string[], fieldCount:number):string {
     var values : string[] = [];
-    for(var i = 0; i < headerPaths.length; i++){
+    for(var i = 0; i < fieldCount; i++){
         var val = arr[i];
         if (typeof val === "undefined")
             values.push("");
@@ -382,19 +389,19 @@ function checkLogin() {
   });
 }
 
-function fillinIds(createdEntities:Object) {
+function fillinIds(createdEntities:SuperFreeq.IdMap) {
     for (var key in createdEntities) {
         var id = standardizeId(createdEntities[key]);
 
         var entity_match = key.match(/entity(\d+)/);
         if (entity_match) {
-            entities[entity_match[1]].reconcileWith(id, false);
+            entities[parseInt(entity_match[1], 10)].reconcileWith(id, false);
             continue;
         }
         var recGroup_match = key.match(/recGroup(\d+)/);
         if (recGroup_match) {
             freebase.getMid(id, function(mid:string) {
-              RecGroup.groups[recGroup_match[1]].setID(mid);
+              RecGroup.groups[parseInt(recGroup_match[1], 10)].setID(mid);
             });
             continue;
         }
@@ -440,10 +447,77 @@ class FreeqMonitor {
   }
 }
 
+interface FailedKeyItem {
+  our_mid: string;
+  their_mid?: string;
+  failed_key: string;
+}
+
+
+function dealWithFailedKeyWrites(job:SuperFreeq.Job) {
+  var items : {[our_mid:string]:FailedKeyItem} = {};
+  job.getTasks("error", (tri: SuperFreeq.TaskResponseItem) => {
+    var triple = tri.load_triple.triple;
+    if (triple.pred != "/type/object/key" ||
+        (!triple.obj.match(/\/authority\/imdb\//))) {
+      return;
+    }
+    var our_mid = triple.sub;
+    if (triple.sub.charAt(0) === '$') {
+      var key = triple.sub;
+      var entity_match = key.match(/entity(\d+)/);
+      if (entity_match) {
+        our_mid = entities[parseInt(entity_match[1], 10)].getID();
+      } else {
+        var recGroup_match = key.match(/recGroup(\d+)/);
+        our_mid = RecGroup.groups[parseInt(entity_match[1], 10)].getID();
+      }
+    }
+
+    items[our_mid] = {
+      our_mid: our_mid,
+      failed_key: triple.obj
+    };
+  }, () => {
+    var queries : freebase.QueryPair[] = [];
+    for (var our_mid in items) {
+      queries.push({0:our_mid, 1:{
+        query: {
+          mid: null, id: items[our_mid].failed_key
+        }
+      }})
+    }
+    freebase.mqlReads(queries, (key: string, result?:{mid:string}) => {
+      if (!result) return;
+      items[key].their_mid = result.mid;
+    }, () => {
+      var lines : string[] = [];
+      var badLines : string[] = [];
+      var keys = Object.keys(items);
+      politeEach(keys, (i: number, key: string) => {
+        var item = items[key];
+        if (!item.their_mid) {
+          badLines.push(encodeLineRaw([item.our_mid, '', item.failed_key], 3))
+        } else {
+          lines.push(encodeLineRaw([item.our_mid, item.their_mid, item.failed_key], 3));
+        }
+
+      }, () => {
+        if (badLines.length > 0) {
+          lines = lines.concat(["", "Bad records follow:"]).concat(badLines);
+        }
+        if (lines.length == 0) {
+          return;
+        }
+        $('.failedKeyAssertions').show().find('textarea').val(lines.join('\n'));
+      });
+    });
+  });
+}
 
 function setupOutput() {
-    if (inputType === "JSON")
-        $("input.outputFormat[value='json']").attr("checked","checked").change()
+  if (inputType === "JSON")
+    $("input.outputFormat[value='json']").attr("checked","checked").change()
 }
 
 function doLoad() {
@@ -468,11 +542,12 @@ function doLoad() {
             $(".freeqLoadInProgress").hide();
 
             if ($("input.graphport:checked").val() === "otg") {
-              job.getIdMapping((v:Object) => {
+              job.getIdMapping((v:SuperFreeq.IdMap) => {
                 fillinIds(v);
                 $(".fetchingFreeqIds").hide();
                 $(".idsFetched").show();
                 displayOutput();
+                dealWithFailedKeyWrites(job);
               });
               $(".uploadToOTGComplete").show();
             }

@@ -36,16 +36,16 @@
 var debugMode : boolean = false;
 
 if (window.location.hostname.match(/plunder/)) {
-  node('script', {'src': 'lib/live.js'}).appendTo(document.body);
-  debugMode = true;
+  // node('script', {'src': 'lib/live.js'}).appendTo(document.body);
+  // debugMode = true;
 
-  setTimeout(function() {
-    $('button')[0].click()
-    setTimeout(function() {
-      // $('button.continue').click();
-      setTimeout(function() {
-        // $('#tabs ul li a[href="#spreadsheetRender"]').click()
-      }, 100)
-    }, 2000);
-  }, 400);
+  // setTimeout(function() {
+  //   $('button')[0].click()
+  //   setTimeout(function() {
+  //     // $('button.continue').click();
+  //     setTimeout(function() {
+  //       // $('#tabs ul li a[href="#spreadsheetRender"]').click()
+  //     }, 100)
+  //   }, 2000);
+  // }, 400);
 }
