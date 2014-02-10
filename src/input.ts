@@ -415,8 +415,12 @@ function pathPut(path:loader.path, topindex:number, record:any, value:string) {
         // if we're at the last path:
         if(atLastPath) {
             // special case for ids:
-            if(currentPart.prop == "id")
+            if(currentPart.prop == "id") {
+                freebase.getMid(value, (mid) => {
+                    currentRecord["id"] = mid;
+                })
                 currentRecord["id"] = value
+            }
             else {
                 // place the value:
                 if(!(currentPart.prop in currentRecord))

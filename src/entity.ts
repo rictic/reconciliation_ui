@@ -168,7 +168,9 @@ class tEntity implements EntityLike {
   }
 
   setID(id:string) {
-    this.id = id;
+    freebase.getMid(id, (mid) => {
+      this.id = mid;
+    });
   }
 
   getIdentifier():string {

@@ -297,9 +297,12 @@ module freebase {
 
   export function getMid(id:string, callback:(mid:string)=>void) {
       callback(id);
+      if (id.match(/\/m\//)) {
+        return;
+      }
       var envelope = {query:{"myId:id":id, "mid":null}}
       freebase.mqlRead(envelope, function(results:any){
-          if (results && results.result && results.result.id)
+          if (results && results.result && results.result.mid)
               callback(results.result.mid);
       });
   }

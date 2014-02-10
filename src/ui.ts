@@ -144,7 +144,6 @@ function initializeTabs() {
         e.preventDefault();
         $(this).tab('show');
         var hash : string = this.href.match(/#(.*)/)[1]
-        console.log(hash, previousSelectedTab);
         switch(previousSelectedTab){
           case 'reviewScreen': onHideRenderScreen(); break;
           case 'spreadsheetRender': onHideOutputScreen(); break;
