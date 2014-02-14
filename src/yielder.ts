@@ -19,7 +19,7 @@ class Yielder {
   private startTime = time();
   private isCancelled = false;
   private nextAction : number= null;
-  shouldYield(continueFunction:()=>void) {
+  shouldYield(continueFunction:()=>void):boolean {
     if (this.isCancelled)
       return true;
     if (time() <= this.startTime + 10)
@@ -47,11 +47,12 @@ function politeEach<T>(array: T[], f:(i:number, val:T)=>any,
     while(index < array.length) {
       f(index, array[index]);
       index++;
-      if (yielder.shouldYield(iterate))
+      if (yielder.shouldYield(iterate)) {
         return;
       }
-      if (onComplete) onComplete();
     }
+    if (onComplete) onComplete();
+  }
   iterate();
 }
 

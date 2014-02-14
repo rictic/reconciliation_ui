@@ -4,6 +4,14 @@ module SuperFreeq {
     pred: string;
     obj_type?: string;
     obj?: string;
+
+    // provenance?: Provenance;
+    // interface Provenance {
+    //   restrictions: Restriction[];
+    // }
+    // enum Restriction {
+    //   ProvenanceREQUIRES_CITATION
+    // }
   };
 
   interface CreateJobRequest {
@@ -18,6 +26,12 @@ module SuperFreeq {
     name: string;
   }
 
+  interface CreateTasksRequest {
+    load_triples?: TripleLoadCommand[];
+    delete_triples?: TripleDeleteCommand[];
+    update_triples?: TripleUpdateCommand[];
+  }
+
   export interface CVTTriple {
     obj: string;
     pred: string;
@@ -25,11 +39,18 @@ module SuperFreeq {
     obj_type?: string;
   }
 
-  export interface TripleLoadCommand {
+  export interface Action {
     triple: Triple;
     assert_ids: boolean;
     cvt_triples?: CVTTriple[];
+
+    // If we're creating or updating, don't assert something that's been
+    // deleted before. Not sure what this means for deletes.
+    no_reassert?: boolean
   }
+  export interface TripleLoadCommand extends Action { }
+  export interface TripleDeleteCommand extends Action { }
+  export interface TripleUpdateCommand extends Action { }
 
   // Response from FreeQ when you ask for tasks.
   // Yes, both of them can be missing, leading to an empty response.
@@ -59,6 +80,12 @@ module SuperFreeq {
 
   export interface IdMap {
     [newEntityId:string]: string;
+  }
+
+  export enum UploadTripleAction {
+    CREATE = 0,
+    UPDATE = 1,
+    DELETE = 2,
   }
 
   // Returns the id of the new job.
@@ -117,7 +144,11 @@ module SuperFreeq {
                 $.param(request), onStarted);
     }
 
-    load(commands: TripleLoadCommand[], callback:(ltr:LoadTriplesResponse)=>any) {
+    load(commands: Action[], tripleKind:UploadTripleAction, callback:(ltr:LoadTriplesResponse)=>any) {
+      if (this.graph != 'sandbox') {
+        // Temporary, while this feature is in test.
+        tripleKind = UploadTripleAction.CREATE;
+      }
 
       var trackValue = (s:string) => {
         if (s && /^\$.*\d+$/.test(s)) {
@@ -125,7 +156,7 @@ module SuperFreeq {
         }
       }
 
-      politeEach(commands, (_:any, command:TripleLoadCommand) => {
+      politeEach(commands, (_:any, command:Action) => {
         // Track the variables we're uploading to this job, so that we can
         // later ask for them back.
         trackValue(command.triple.sub);
@@ -146,12 +177,24 @@ module SuperFreeq {
             callback({});
             return;
           }
-          var batch : TripleLoadCommand[] = [];
+          var batch : Action[] = [];
           for (var i = 0; commands.length > 0 && i < BATCH_SIZE; i++) {
             batch.push(commands.shift());
           }
-          var request = {
-            'load_triples': batch
+          var request : CreateTasksRequest  = {}
+          switch(tripleKind) {
+          case(UploadTripleAction.CREATE):
+            batch.forEach((t) => {t.no_reassert = true});
+            request.load_triples = batch;
+            break;
+          case(UploadTripleAction.UPDATE):
+            batch.forEach((t) => {t.no_reassert = true});
+            request.update_triples = batch;
+            break;
+          case(UploadTripleAction.DELETE):
+            request.delete_triples = batch;
+            break;
+          default: throw new Error("unknown tripleKind:" + tripleKind);
           }
           doRequest(this.base_url + '/tasks', request, loadSome);
         }

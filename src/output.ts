@@ -260,7 +260,7 @@ function getTriples(entities:tEntity[], assertNakedProperties:boolean,
         }
         return stringValue;
     }
-    function cvtObject(cvt:Object):Object {
+    function cvtObject(cvt:tEntity):Object {
         var result = {};
         var props = cvt['/rec_ui/headers'];
         var empty = true;
@@ -524,20 +524,29 @@ function doLoad() {
   var name = $("#mdo_name").val()
   var info_source = $("#mdo_data_source_id").val();
   var graph = $(".graphport:checked").val();
-
+  var uploadActionStr = $('#upload_kind_options input:checked').val();
+  var uploadAction = {
+    create: SuperFreeq.UploadTripleAction.CREATE,
+    update: SuperFreeq.UploadTripleAction.UPDATE,
+    delete: SuperFreeq.UploadTripleAction.DELETE
+  }[uploadActionStr];
+  if (uploadAction === undefined) {
+    throw new Error('could not figure out upload action for ' + uploadActionStr);
+  }
 
   $(".uploadToFreeQ").hide();
   $(".uploadForm .error").hide();
   $(".uploadSpinner").show();
   SuperFreeq.createJob(name, graph, info_source, function(job:SuperFreeq.Job) {
     prepareTriples(function(triples) {
-      job.load(triples, function() {
+      job.load(triples, uploadAction, function() {
         job.start(() => {
           console.log("job started!")
           $(".freeqLoad").show();
           $(".freeqLoadInProgress").show();
           $(".uploadSpinner").hide();
           $(".peacock_link").attr("href",job.base_url);
+          $(".alternate_link").attr("href", "http://go/freeq-job?id=" + job.id);
           new FreeqMonitor(job, function() {
             $(".freeqLoadInProgress").hide();
 
@@ -586,10 +595,16 @@ $(document).ready(function () {
     $("#mdo_name").change(updateMdoInfo);
     $("input.graphport").change(function(){
         var warning = $("#otg_upload_warning");
-        if (this.value === "otg")
-            warning.show();
-        else
-            warning.hide();
+        // Temporarily hide these options for everyone with OTG until we're
+        // ready.
+        var upload_kind_options = $('#upload_kind_options');
+        if (this.value === "otg") {
+          warning.show();
+          upload_kind_options.hide();
+        } else {
+          warning.hide();
+          upload_kind_options.show();
+        }
     });
     $("#upload_button").click(doLoad);
 });

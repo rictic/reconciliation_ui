@@ -252,7 +252,7 @@ td {
 
 .triplesDisplay {
     max-height: 200px;
-    overflow: auto;
+    overflow-y: scroll;
 }
 
 .loginUnknown {
@@ -336,4 +336,8 @@ td {
 
 .upload_form {
     max-width: 600px;
+}
+
+.radio-group {
+    cursor: default;
 }

@@ -221,7 +221,7 @@
                 <input class='form-control' type="text" name="mdo_data_source" id="mdo_data_source">
               </div>
 
-              <div class='form-group'>
+              <div class='form-group radio-group'>
                 Upload to:
                 <label for='sandbox'>Sandbox</label>
                 <input type="radio" class='graphport' name="graphport"
@@ -235,6 +235,17 @@
                   you expect before uploading to Freebase.com
                 </div>
               </div>
+              <div class='form-group radio-group' id='upload_kind_options'>
+                Action to take:
+                <label for='create_kind'>Create</label>
+                <input type='radio' name='upload_kind' value='create' id='create_kind' checked>
+                |
+                <label for='update_kind'>Update</label>
+                <input type='radio' name='upload_kind' value='update' id='update_kind' disabled>
+                |
+                <label for='delete_kind'>Delete</label>
+                <input type='radio' name='upload_kind' value='delete' id='delete_kind'>
+              </div>
 
               <button class='btn' id='upload_button'>
                 <i class="fa fa-upload"></i> Upload
@@ -247,7 +258,7 @@
       <div class="freeqLoad gone">
         <div class="freeqLoadInProgress gone">
           <div>
-            Your data is loading now:
+            Your data is being loaded by FreeQ.
           </div>
           <div id="upload_progressbar" class="progress">
             <div class="progress-bar" style="width: 0%">
@@ -256,10 +267,13 @@
         </div>
 
         <div class="uploadToSandboxComplete gone">
-          Your data is finished loading into sandbox!  Check the data on sandbox to ensure its quality, then click here:
-          <button class="btn loadAgainButton">
-              <i class="fa fa-undo"></i> Upload with different settings
-          </button>
+          Your data is finished loading into sandbox!  Check the data on sandbox to ensure its quality.
+
+          <div>
+            <button class="btn loadAgainButton">
+                <i class="fa fa-undo"></i> Upload with different settings
+            </button>
+          </div>
         </div>
 
         <div class="uploadToOTGComplete gone">
@@ -280,10 +294,15 @@
           </div>
         </div>
 
-        <a class="peacock_link" target="_blank">View the status of your load.</a><br/>
+        <div>
+          <a class="peacock_link" target="_blank">Freeq Job Status</a>
+          |
+          <a class="alternate_link" target="_blank">Alternate Job Status</a>
+        </div>
       </div>
 
       <div class='uploadSpinner gone'>
+        Uploading your triples to FreeQ.
         <img src="resources/spinner.gif">
       </div>
     </div>

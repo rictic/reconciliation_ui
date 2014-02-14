@@ -30,6 +30,12 @@ class tEntity implements EntityLike {
     this["/rec_ui/mql_paths"] = []
     this["/rec_ui/headers"] = [];
     this["/rec_ui/headerPaths"] = [];
+
+    // headers are all of them
+    // mql_props are the subset of headers that are freebase predicates
+    // headerPaths are just converting headers to loader.path objects
+    // mql_paths are the same conversion applied to mql_props
+
     entities[this["/rec_ui/id"]] = this;
     for (var key in initialVals) {
       this[key] = initialVals[key];
