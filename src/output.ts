@@ -380,12 +380,12 @@ function getTriples(entities:tEntity[], assertNakedProperties:boolean,
 
 var standardFreeq = "http://data.labs.freebase.com/freeq/spreadsheet/";
 function checkLogin() {
-  SuperFreeq.isAuthorized(function() {
-    $(".uploadLogin").show();
-    $(".uploadForm").hide();
-  }, function() {
+  SuperFreeq.isAuthorized().then(() => {
     $(".uploadLogin").hide();
     $(".uploadForm").show();
+  }, ()=> {
+    $(".uploadLogin").show();
+    $(".uploadForm").hide();
   });
 }
 

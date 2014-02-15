@@ -289,7 +289,7 @@ module SuperFreeq {
   var client_id = "738879533750.apps.googleusercontent.com";
   var scopes = "https://www.googleapis.com/auth/freebase";
 
-  export function isAuthorized(onNo:()=>void, onYes:()=>void) {
+  export function isAuthorized() {
     return Q.promise((resolve, reject) => {
       gapi.auth.authorize({
         client_id: client_id,
@@ -362,6 +362,6 @@ module SuperFreeq {
     }
 
     // Refreshes our bearer token or forces a login otherwise.
-    return isAuthorized(null, authorize).then(_doRequest);
+    return isAuthorized().then(null, authorize).then(_doRequest);
   }
 }
