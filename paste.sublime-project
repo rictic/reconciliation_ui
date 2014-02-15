@@ -2,7 +2,7 @@
    "folders":
    [
            {
-                   "path": "/Users/rictic/open/paste",
+                   "path": "./",
   "file_exclude_patterns":[
     "src/*.js",
     "src/*.js.map",
