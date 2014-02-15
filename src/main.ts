@@ -12,6 +12,7 @@
 /// <reference path="../lib/bootstrap/js/bootstrap.d.ts"/>
 
 /// <reference path="events/eventEmitter.ts"/>
+/// <reference path="progress.ts"/>
 /// <reference path="util/set.ts"/>
 /// <reference path="yielder.ts"/>
 /// <reference path="utility.ts"/>
@@ -33,19 +34,20 @@
 /// <reference path="internalReconciler.ts"/>
 /// <reference path="ui.ts"/>
 
+
 var debugMode : boolean = false;
 
 if (window.location.hostname.match(/plunder/)) {
-  // node('script', {'src': 'lib/live.js'}).appendTo(document.body);
-  // debugMode = true;
+  node('script', {'src': 'lib/live.js'}).appendTo(document.body);
+  debugMode = true;
 
-  // setTimeout(function() {
-  //   $('button')[0].click()
-  //   setTimeout(function() {
-  //     // $('button.continue').click();
-  //     setTimeout(function() {
-  //       // $('#tabs ul li a[href="#spreadsheetRender"]').click()
-  //     }, 100)
-  //   }, 2000);
-  // }, 400);
+  setTimeout(function() {
+    $('button')[0].click()
+    setTimeout(function() {
+      // $('button.continue').click();
+      setTimeout(function() {
+        // $('#tabs ul li a[href="#spreadsheetRender"]').click()
+      }, 100)
+    }, 2000);
+  }, 400);
 }

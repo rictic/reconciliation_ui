@@ -41,12 +41,18 @@ function handleInput() {
     function onAmbiguity(ambiguousRecord:string[][],
                          onAmbiguityResolved:(useMultiRow:boolean)=>void) {
         onProgressMade();
-        showAmbiguousRowPrompt(ambiguousRecord, onAmbiguityResolved);
+        showAmbiguousRowPrompt(ambiguousRecord, (useMultiRow) => {
+            $('.inputLoading').show();
+            onAmbiguityResolved(useMultiRow);
+        });
     }
     function onComplete() {
         showConfirmationSpreadsheet(onProgressMade);
     }
-    parseInput(input, onAmbiguity, onComplete, inputProcessingYielder);
+    var p = parseInput(input, onAmbiguity, onComplete, inputProcessingYielder);
+    p.progress.addListener("progress", (pct) => {
+        $(".inputLoading .progress-bar").width((pct * 100) + '%');
+    });
 }
 
 

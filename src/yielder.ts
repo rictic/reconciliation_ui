@@ -40,20 +40,24 @@ class Yielder {
 
 
 function politeEach<T>(array: T[], f:(i:number, val:T)=>any,
-                       onComplete?:()=>any, yielder?:Yielder) {
+                       onComplete?:()=>any, yielder?:Yielder):HasProgress {
   yielder = yielder || new Yielder();
+  var progress = new QuickProgress("politeEach", array.length);
   var index = 0;
   function iterate() {
     while(index < array.length) {
       f(index, array[index]);
       index++;
+      progress.increment();
       if (yielder.shouldYield(iterate)) {
-        return;
+        return {progress: progress};
       }
     }
     if (onComplete) onComplete();
+    progress.done();
+    return {progress: progress};
   }
-  iterate();
+  return iterate();
 }
 
 /** @param {!Array} array
@@ -63,10 +67,10 @@ function politeEach<T>(array: T[], f:(i:number, val:T)=>any,
 */
 function politeMap<T,V>(array: T[], f:(val:T)=>V,
                    onComplete:(mapped:V[])=>any,
-                   yielder?:Yielder) {
+                   yielder?:Yielder):HasProgress {
   yielder = yielder || new Yielder();
   var result : V[] = [];
-  politeEach(array, function(index, value) {
+  return politeEach(array, function(index, value) {
     result[index] = f(value);
   }, function() {onComplete(result);}, yielder);
 }

@@ -25,18 +25,27 @@
     <div id="spreadsheetInput" class="container">
       <h3>Paste your spreadsheet here:</h3>
       <textarea name="initialInput" id="initialInput" class='spreadsheet' ></textarea><br>
-      <div class="spinnerHolder">
-        <img src='resources/spinner.gif' class='inputLoading gone'>
+
+      <div class='examples bs-callout'>
+        Try Paste with these examples:
+        <button class='btn' onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Simple</button>
+        <button class='btn' onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Complex</button>
       </div>
 
-      <div class='examples'>
-        Try Paste with these example spreadsheets:
-        <button class='btn' onclick="$('#initialInput')[0].value = sampleData;$('#initialInput').keyup();">Load Simple Movie Example</button>
-        <button class='btn' onclick="$('#initialInput')[0].value = complexData;$('#initialInput').keyup();">Load Complex Movie Example</button>
+      <div class='inputLoadingContainer'>
+      <div class="inputLoading gone">
+        <div class="progress progress-thin">
+          <div class="progress-bar no-animate" style="width: 0%">
+          </div>
+        </div>
+      </div>
       </div>
     </div>
 
+
     <div id='inputWindow'>
+
+
       <div class="inputWarnings gone">
         <ul></ul>
       </div>
@@ -65,7 +74,7 @@
       <!--    Confirm that the parse was correct      -->
       <div id="spreadsheetPreview" class="container gone screen">
         <h3>Does this look right?</h3>
-        <div id="spreadsheetDiv" class="container">
+        <div id="spreadsheetDiv">
         </div>
         <br>
         <button style='float:right;' class='continue btn'>Yep, Let's Continue &gt;</button>
@@ -108,8 +117,8 @@
             in code, so this is safe to edit so long as it has the same general structure.
             -->
         <div id="manualReconcileTemplate" class="manualReconChoices">
-          <div class='internalReconMoved gone'>
-             There are several topics with this name.  The checkbox for merging them has moved to the bottom of the page, beneath search.
+          <div class='internalReconMoved well gone'>
+             Alert! There are several topics with this name.
           </div>
 
           <div class='manualReconMeat'>
@@ -135,9 +144,17 @@
             <label>Search For Another Topic:</label>
             <input type="text" class="find_topic">
             <div><button class="btn undo">Undo</button></div>
-            <div class="internalReconciliationPrompt gone">
-                <p>There are <span class="count">several</span> <span class='type'>topic</span>s with the name "<span class="name">{name goes here}</span>"</p>
-                <label class='treat_the_same' for="treat_the_same">I'm sure they're all the same topic.</label><input type="checkbox" name="treat_the_same" class="treat_the_same">
+            <div class="internalReconciliationPrompt well gone">
+                <p>
+                  There are <span class="count">several</span>
+                  <span class='type'>topic</span>s with the name
+                  "<span class="name">{name goes here}</span>"
+                </p>
+                <label class='treat_the_same' for="treat_the_same">
+                  I'm sure they're all the same topic:
+                </label>
+                <input type="checkbox" name="treat_the_same"
+                       class="treat_the_same">
             </div>
           </div>
         </div>

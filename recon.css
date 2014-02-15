@@ -247,7 +247,9 @@ td {
 }
 
 .examples {
-    font-size: 90%;
+    /*padding-left: 30px;*/
+
+    /*font-size: 90%;*/
 }
 
 .triplesDisplay {
@@ -293,27 +295,15 @@ td {
     border: 1px solid #999;
 }
 
-.manualReconciliationChoices .odd {
-/*    background-color: #FCC497;*/
-}
-
-.manualReconciliationChoices .odd {
-/*    background-color: #FCD3B2;*/
-}
-
 .internalReconMoved {
     float: right;
-    max-width: 20%;
-    border: 2px solid #999;
-    background-color: #ddf;
+    max-width: 15%;
     padding: 10px;
+    margin-top: 10px;
 }
 
 .internalReconciliationPrompt {
-    max-width: 40%;
-    border: 2px solid #999;
-    background-color: #ddf;
-    padding: 10px;
+    width: auto;
 }
 
 .manualReconciliationChoices tr {
@@ -328,11 +318,6 @@ td {
 .manualReconMeat .blurb {
     max-width: 350px;
 }
-.ui-progressbar-value {
-    -webkit-transition-duration: 500ms;
-    -moz-transition-duration: 500ms;
-    transition-duration: 500ms;
-}
 
 .upload_form {
     max-width: 600px;
@@ -340,4 +325,33 @@ td {
 
 .radio-group {
     cursor: default;
+}
+
+.progress-bar.no-animate {
+    -webkit-transition: width 0s ease;
+            transition: width 0s ease;
+}
+
+.inputLoadingContainer {
+    height: 35px;
+}
+
+.inputLoading {
+    padding-top: 30px;
+}
+
+.progress.progress-thin {
+    height: 5px;
+    border-radius: 0px;
+}
+
+.bs-callout {
+    margin:20px 0;
+    padding:20px;
+    border-left:3px solid #eee;
+}
+
+#spreadsheetDiv {
+    padding-top: 20px;
+    padding-bottom: 20px;
 }

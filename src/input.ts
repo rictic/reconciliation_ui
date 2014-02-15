@@ -107,7 +107,7 @@ interface AmbiguityResolver {
   */
 function parseInput(input:string,
                     ambiguityResolver:AmbiguityResolver,
-                    onComplete:()=>void, yielder:Yielder) {
+                    onComplete:()=>void, yielder:Yielder):HasProgress {
     yielder = yielder || new Yielder();
 
     //reset global values
@@ -122,11 +122,16 @@ function parseInput(input:string,
 
     inputType = "TSV";
 
-    parseTSV(input, function(spreadsheetRowsWithBlanks:string[][]) {
-        removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows:string[][]) {
-            buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder);
-        }, yielder)
+    var progress = new WeightedMultiProgress("parse input", 9);
+    var p = parseTSV(input, function(spreadsheetRowsWithBlanks:string[][]) {
+        var subp = removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows:string[][]) {
+            var subsubp = buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder);
+            progress.addSubProgress(subsubp.progress, 7);
+        }, yielder);
+        progress.addSubProgress(subp.progress);
     }, yielder);
+    progress.addSubProgress(p.progress);
+    return {progress: progress};
 }
 
 
@@ -140,7 +145,8 @@ function parseInput(input:string,
  * @param {Yielder=} yielder
  */
 function parseTSV(spreadsheet:string, onComplete:(result:string[][])=>void,
-                  yielder:Yielder) {
+                  yielder:Yielder):HasProgress {
+    var progress = new QuickProgress("parseTSV", spreadsheet.length);
     yielder = yielder || new Yielder();
     var position = 0;
     function parseLine() {
@@ -231,12 +237,15 @@ function parseTSV(spreadsheet:string, onComplete:(result:string[][])=>void,
     function parseSpreadsheet() {
         while(spreadsheet.charAt(position) != "") {
             rows.push(parseLine());
+            progress.setProgress(position);
             if (yielder.shouldYield(parseSpreadsheet))
-                return;
+                return {progress:progress};
         }
+        progress.done();
         onComplete(rows);
+        return {progress:progress}
     }
-    parseSpreadsheet();
+    return parseSpreadsheet();
 }
 
 /** @param {!Array.<loader.row>} rows
@@ -246,12 +255,16 @@ function parseTSV(spreadsheet:string, onComplete:(result:string[][])=>void,
 function removeBlankLines(rows:string[][], onComplete:(rows:string[][])=>void,
                           yielder:Yielder) {
     var newRows : string[][] = [];
-    politeEach(rows, function(_,row) {
-        if (row.length === 1 && row[0] === "")
-            return;
-        newRows.push(row);
-    },
-    function(){onComplete(newRows);}, yielder);
+    return politeEach(
+        rows,
+        (_,row) => {
+            if (row.length === 1 && row[0] === "")
+                return;
+            newRows.push(row);
+        },
+        () => {onComplete(newRows);},
+        yielder
+    );
 }
 
 /** @param {!Array.<!loader.row>} spreadsheetRows
@@ -272,9 +285,10 @@ function buildRowInfo(spreadsheetRows:string[][], ambiguityResolver:AmbiguityRes
         headerPaths.push(new loader.path($.trim(rawHeader)));
     })
 
+    var progress = new WeightedMultiProgress("buildRowInfo", 8);
     //fetching property metadata early helps in the UI
     freebase.fetchPropertyInfo(getProperties(headerPaths), function() {
-        rowsToRecords(spreadsheetRows, function(singleRecords:string[][][], multiRecords?:string[][][], exampleRecord?:string[][]) {
+        var p = rowsToRecords(spreadsheetRows, function(singleRecords:string[][][], multiRecords?:string[][][], exampleRecord?:string[][]) {
             if (exampleRecord === undefined)
                 handleRecords(singleRecords);
             else
@@ -282,13 +296,18 @@ function buildRowInfo(spreadsheetRows:string[][], ambiguityResolver:AmbiguityRes
                     handleRecords(useMultiRecords ? multiRecords : singleRecords);
                 });
         }, yielder);
+        progress.addSubProgress(p.progress);
     });
 
-    function handleRecords(records:string[][][]) {recordsToEntities(records, onComplete, yielder)}
+    function handleRecords(records:string[][][]) {
+        var p = recordsToEntities(records, onComplete, yielder)
+        progress.addSubProgress(p.progress, 7);
+    };
+    return {progress:progress};
 }
 
 function recordsToTrees(records:string[][][], onComplete:(trees:any[])=>void, yielder:Yielder) {
-    politeMap(records, recordToTree, onComplete, yielder);
+    return politeMap(records, recordToTree, onComplete, yielder);
 }
 
 function recordToTree(record:string[][]):any {
@@ -309,16 +328,20 @@ function recordToTree(record:string[][]):any {
 }
 
 function recordsToEntities(records:string[][][], onComplete:()=>void, yielder:Yielder) {
-    recordsToTrees(records, function(trees) {
+    var progress = new WeightedMultiProgress("recordsToEntities", 2);
+    var subp = recordsToTrees(records, function(trees) {
         resetEntities();
         typesSeen = new PSet();
 
 
-        treesToEntities(trees, function(entities) {
+        var subsubp = treesToEntities(trees, function(entities) {
             rows = entities;
             onComplete();
         }, yielder);
+        progress.addSubProgress(subsubp.progress);
     }, yielder);
+    progress.addSubProgress(subp.progress);
+    return {progress: progress};
 }
 
 /** @param {!Array.<!loader.tree>} trees
@@ -327,6 +350,7 @@ function recordsToEntities(records:string[][][], onComplete:()=>void, yielder:Yi
   */
 function treesToEntities(trees:any[], onComplete:(entities:tEntity[])=>void, yielder:Yielder) {
     yielder = yielder || new Yielder();
+    var progress = new WeightedMultiProgress("treesToEntities", 1);
     findAllProperties(trees, function(props: string[]) {
         freebase.fetchPropertyInfo(props, afterPropertiesFetched,
             function onError(errorProps:string[]) {
@@ -336,9 +360,11 @@ function treesToEntities(trees:any[], onComplete:(entities:tEntity[])=>void, yie
         );
 
         function afterPropertiesFetched() {
-            mapTreesToEntities(trees, onComplete, yielder);
+            var subp = mapTreesToEntities(trees, onComplete, yielder);
+            progress.addSubProgress(subp.progress);
         }
     }, yielder);
+    return {progress:progress};
 }
 
 /**
@@ -374,7 +400,7 @@ function rowsToRecords(rows:string[][], onComplete:(records:string[][][], multir
         currentMultiRecord = []
     }
 
-    politeEach(rows, function(_, currentRow) {
+    return politeEach(rows, function(_, currentRow) {
         singleRecords.push([currentRow]);
 
         // start new record if the first column is non-empty and the current record is non-empty:
@@ -522,7 +548,7 @@ function findAllProperties(trees:any, onComplete:(props:string[])=>void, yielder
   */
 function mapTreesToEntities(trees:any[], onComplete:(entity:tEntity[])=>void, yielder:Yielder) {
     internalReconciler = new InternalReconciler();
-    politeMap(trees,
+    return politeMap(trees,
               function(record){return mapTreeToEntity(record)},
               onComplete,
               yielder);
