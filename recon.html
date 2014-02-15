@@ -113,9 +113,10 @@
       <div class='displayArea'></div>
 
       <div class='holdingArea gone'>
-        <!--  Template for a manual reconciliation case. This is copied and the holes are filled in
-            in code, so this is safe to edit so long as it has the same general structure.
-            -->
+        <!--  Template for a manual reconciliation case. This is copied and the
+              holes are filled in in code, so this is safe to edit so long as
+              it has the same general structure.
+        -->
         <div id="manualReconcileTemplate" class="manualReconChoices">
           <div class='internalReconMoved well gone'>
              Alert! There are several topics with this name.
@@ -130,20 +131,41 @@
                       <tr class="recordVals"><td></td><td></td></tr>
                   </tbody>
 
-                  <tr><th class='title' colspan='4'>to one of these Freebase topics:</th></tr>
+                  <tbody class='search-row'>
+                    <tr>
+                      <th class='title' colspan='1'>
+                        <label>Search:</label>
+                      </th>
+                      <td colspan='3'>
+                        <input type="text" class="find_topic form-control">
+                      </td>
+                    </tr>
+                  </tbody>
 
-                  <tbody class="manualReconciliationChoices">
+                  <tbody class='middle-header'>
+                    <tr><th class='title onlyWhenCandidates' colspan='4'>
+                      Or choose one of these:
+                    </th></tr>
+                  </tbody>
+
+                  <tbody class="manualReconciliationChoices onlyWhenCandidates">
 
                   </tbody>
             </table>
 
-            <button class="moreButton btn">More candidates &darr;</button><img src="resources/spinner.gif" class="gone loadingMoreCandidates">
-            <h4>Or:</h4>
-            <button class="btn skipButton otherSelection" name="">Skip This Item</button>
-            <button class="btn newButton otherSelection" name="None">Not in Freebase</button>
-            <label>Search For Another Topic:</label>
-            <input type="text" class="find_topic">
-            <div><button class="btn undo">Undo</button></div>
+            <button class="moreButton btn onlyWhenCandidates">More candidates &darr;</button><img src="resources/spinner.gif" class="gone loadingMoreCandidates">
+            <div class='otherControls'>
+              <button class="btn undo">
+                <i class="fa fa-undo"></i> Undo
+              </button>
+              <button class="btn skipButton otherSelection" name="">
+                <i class="fa fa-arrow-circle-o-right"></i> Skip
+              </button>
+              <button class="btn newButton otherSelection" name="None">
+                <i class="fa fa-upload"></i> Not in Freebase
+              </button>
+            </div>
+
             <div class="internalReconciliationPrompt well gone">
                 <p>
                   There are <span class="count">several</span>

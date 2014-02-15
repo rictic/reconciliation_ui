@@ -108,12 +108,8 @@ a.optionsButton {
 }
 
 button.skipButton {
-    margin-right: 10px;
 }
 
-label.findItem {
-    margin-left: 10px;
-}
 
 #reviewScreen .identicalMatch {
     opacity:0.5;
@@ -354,4 +350,20 @@ td {
 #spreadsheetDiv {
     padding-top: 20px;
     padding-bottom: 20px;
+}
+
+.search-row tr td {
+    background-color: inherit !important;
+}
+
+.search-row tr th {
+    background-color: inherit !important;
+}
+
+tbody.middle-header {
+    border-top: none !important;
+}
+
+tbody.middle-header tr th {
+    border-top: none !important;
 }
