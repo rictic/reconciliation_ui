@@ -90,7 +90,7 @@ module SuperFreeq {
 
   // Returns the id of the new job.
   export function createJob(name:string, graph:string,
-                            info_source:string, callback:(j:Job)=>void) {
+                            info_source:string):Q.Promise<Job> {
     var request : CreateJobRequest = {
       name:name,
       graph_instance: graph
@@ -101,11 +101,10 @@ module SuperFreeq {
       };
     }
 
-    doRequest(getUrlForGraph(graph) + "/jobs", request,
-      function(response:CreateJobResponse) {
-        callback(new Job(response.id, graph));
-      }
-    );
+    return doRequest<CreateJobResponse>(getUrlForGraph(graph) + "/jobs", request)
+      .then((response) => {
+        return new Job(response.id, graph);
+      });
   }
 
   function getUrlForGraph(graph:string) {
@@ -131,20 +130,19 @@ module SuperFreeq {
       this.base_url = getUrlForGraph(graph) + "/jobs/" + id;
     }
 
-    get(callback:(resp:SuperFreeq.JobStatus)=>any) {
-      doRequest(this.base_url, {}, callback, 'GET');
+    get():Q.Promise<JobStatus> {
+      return doRequest<JobStatus>(this.base_url, {}, 'GET');
     }
 
-    start(onStarted=()=>null) {
+    start():Q.Promise<any> {
       var request : ChangeStatusRequest = {
         "jobStatus": "running"
       };
 
-      doRequest(this.base_url  + "/status",
-                $.param(request), onStarted);
+      return doRequest(this.base_url  + "/status", $.param(request));
     }
 
-    load(commands: Action[], tripleKind:UploadTripleAction, callback:(ltr:LoadTriplesResponse)=>any) {
+    load(commands: Action[], tripleKind:UploadTripleAction):Q.Promise<LoadTriplesResponse> {
       if (this.graph != 'sandbox') {
         // Temporary, while this feature is in test.
         tripleKind = UploadTripleAction.CREATE;
@@ -156,6 +154,7 @@ module SuperFreeq {
         }
       }
 
+      var defer = Q.defer<LoadTriplesResponse>();
       politeEach(commands, (_:any, command:Action) => {
         // Track the variables we're uploading to this job, so that we can
         // later ask for them back.
@@ -174,7 +173,7 @@ module SuperFreeq {
         var BATCH_SIZE = 300;
         var loadSome = () => {
           if (commands.length === 0) {
-            callback({});
+            defer.resolve({});
             return;
           }
           var batch : Action[] = [];
@@ -196,54 +195,63 @@ module SuperFreeq {
             break;
           default: throw new Error("unknown tripleKind:" + tripleKind);
           }
-          doRequest(this.base_url + '/tasks', request, loadSome);
+          doRequest(this.base_url + '/tasks', request).then(loadSome);
         }
         loadSome();
       })
+
+      return defer.promise;
     }
 
-    getIdMapping(callback:(o:SuperFreeq.IdMap)=>void) {
+    getIdMapping():Q.Promise<IdMap> {
       var var_ids = this.vars.getAll();
       var result : SuperFreeq.IdMap = {};
       var BATCH_SIZE = 100;
 
-      var getSome = () => {
+      var getSome = function():Q.Promise<IdMap> {
         if (var_ids.length === 0) {
-          callback(result);
-          return;
+          return Q(result);
         }
         var batch : string[] = [];
         for (var i = 0; var_ids.length > 0 && i < BATCH_SIZE; i++) {
           batch.push(var_ids.shift());
         }
         var vars = batch.join(',').replace(/\$/g,'');
-        doRequest(this.base_url + '/mids', 'vars=' + vars, (v:Object) =>{
-          $.extend(result, v);
-          addTimeout(getSome, 5 * 1000);
-        } , 'GET')
+        return doRequest<IdMap>(this.base_url + '/mids', 'vars=' + vars, 'GET').then(
+          (v:any):Q.Promise<IdMap> => {
+            $.extend(result, v);
+           // TODO(rictic): the <any> here should be unnecessary, need to figure
+           //      out what's up.
+            var d : Q.Promise<any> = Q.delay(5 * 1000).then(getSome);
+            return d;
+        });
       }
-      getSome();
+      return getSome();
     }
 
     getTasks(taskStatus:string,
-             callback:(tri:TaskResponseItem)=>void,
-             onComplete:()=>void) {
+             callback?:(tri:TaskResponseItem)=>void):Q.Promise<TaskResponseItem[]> {
       var params : TaskRequestParams = {
         taskStatus: taskStatus
       }
 
+      var results : TaskResponseItem[] = [];
+
+      var d = Q.defer<TaskResponseItem[]>();
       var getSome = () => {
-        doRequest(this.base_url + '/tasks', $.param(params), (v:GetTasksResponse) => {
+        doRequest(this.base_url + '/tasks', $.param(params), "GET").then((v:GetTasksResponse) => {
           if (!v.items || v.items.length == 0) {
-            onComplete();
+            d.resolve(results);
             return;
           }
           v.items.map(callback);
+          results = results.concat(v.items);
           params.pageToken = v.nextPageToken;
           getSome();
-        }, "GET");
+        });
       }
       getSome();
+      return d.promise;
     }
   }
 
@@ -282,30 +290,32 @@ module SuperFreeq {
   var scopes = "https://www.googleapis.com/auth/freebase";
 
   export function isAuthorized(onNo:()=>void, onYes:()=>void) {
-    function handleResult(authResult:any) {
-      if (authResult && !authResult.error) {
-        onYes();
-      } else {
-        onNo();
-      }
-    }
-
-    gapi.auth.authorize({
-      client_id: client_id,
-      scope: scopes,
-      immediate: true
-    }, handleResult);
+    return Q.promise((resolve, reject) => {
+      gapi.auth.authorize({
+        client_id: client_id,
+        scope: scopes,
+        immediate: true
+      }, (authResult:any) => {
+        if (authResult && !authResult.error) {
+          resolve(null);
+        } else {
+          reject(null);
+        }
+      });
+    });
   }
 
-  export function authorize(callback:()=>void) {
-    gapi.auth.authorize({
-      client_id: client_id,
-      scope: scopes,
-      immediate: false
-    }, callback);
+  export function authorize():Q.Promise<any> {
+    return Q.promise((resolve) => {
+      gapi.auth.authorize({
+        client_id: client_id,
+        scope: scopes,
+        immediate: false
+      }, resolve);
+    });
   }
 
-  function doRequest(url:string, params:any, onResponse?:(d:any)=>void, method='POST') {
+  function doRequest<V>(url:string, params:any, method='POST'):Q.Promise<V> {
     console.log("starting a request to " + url);
     var contentType : string, data : string;
     if ($.type(params) === "object") {
@@ -316,39 +326,42 @@ module SuperFreeq {
       data = params;
     }
 
-
-    function _doRequest() {
+    function _doRequest():Q.Promise<V> {
       console.log("doing a request to " + url);
-      $.ajax({
+      return Q($.ajax({
         url: url,
         dataType:'json',
         contentType: contentType,
         type: method,
         data: data,
-        success: onResponse,
         retryLimit: 20,
         tryCount: 0,
         timeouts: [10, 10, 20, 30, 50, 80], // back-off by tryCount, in seconds
         headers: {
           'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
         },
-        error: function(xhr, textStatus) {
-          if ($.inArray(textStatus, ['timeout', 'abort', 'error']) > -1) {
-            this.tryCount++;
-            if (this.tryCount <= this.retryLimit) {
-              var retryIndex = Math.min(this.tryCount - 1, this.timeouts.length - 1);
-              var retryIn = this.timeouts[retryIndex] * 1000;
-              console.log('RPC failed, retrying in', retryIn / 1000, 'seconds');
-              setTimeout(() => { $.ajax(this); }, retryIn);
-            } else {
-              $('#freeqErrorDialog').modal();
-            }
-          }
-        }
+      })).then(null, errorHandler).then((result:any) => {
+        return <V>(result);
       });
     }
 
+    function errorHandler(xhr:JQueryXHR) {
+      this.tryCount++;
+      if (this.tryCount <= this.retryLimit) {
+        var retryIndex = Math.min(this.tryCount - 1, this.timeouts.length - 1);
+        var retryIn = this.timeouts[retryIndex] * 1000;
+        console.log('RPC failed, retrying in', retryIn / 1000, 'seconds');
+        return Q.delay(retryIn).then(()=>{
+          return Q($.ajax(this))
+            .then(null, errorHandler);
+        });
+      }
+
+      $('#freeqErrorDialog').modal();
+      throw new Error('got persistant errors from FreeQ')
+    }
+
     // Refreshes our bearer token or forces a login otherwise.
-    isAuthorized(()=> authorize(_doRequest), _doRequest);
+    return isAuthorized(null, authorize).then(_doRequest);
   }
 }

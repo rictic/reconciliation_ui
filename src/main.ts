@@ -45,7 +45,7 @@ if (window.location.hostname.match(/plunder/)) {
     setTimeout(function() {
       $('button.continue').click();
       setTimeout(function() {
-        // $('#tabs ul li a[href="#spreadsheetRender"]').click()
+        $('#tabs ul li a[href="#spreadsheetRender"]').click()
       }, 100)
     }, 3000);
   }, 400);

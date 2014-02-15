@@ -412,12 +412,14 @@ function fillinIds(createdEntities:SuperFreeq.IdMap) {
 class FreeqMonitor {
   repeatingTimer = new RepeatingTimer(30 * 1000,
                                       ()=>this.checkProgress());
-  constructor(public job:SuperFreeq.Job, public onComplete:(j:SuperFreeq.Job)=>void) {
+  private deferred = Q.defer<SuperFreeq.Job>();
+  promise = this.deferred.promise;
+  constructor(public job:SuperFreeq.Job) {
     this.checkProgress();
   }
 
   checkProgress() {
-    this.job.get((result:SuperFreeq.JobStatus) => {
+    this.job.get().then((result:SuperFreeq.JobStatus) => {
       this.repeatingTimer.reset();
       if (!result.stats) {
         addTimeout(() => this.checkProgress(), 5000);
@@ -433,12 +435,7 @@ class FreeqMonitor {
 
       if (actionsRemaining === 0) {
         this.repeatingTimer.stop();
-        if (this.onComplete) {
-            //ensures that onComplete is called at most once
-            var onComplete = this.onComplete;
-            this.onComplete = undefined;
-            onComplete(this.job);
-        }
+        this.deferred.resolve(this.job)
       }
       else {
         addTimeout(() => this.checkProgress(), 5000);
@@ -456,7 +453,7 @@ interface FailedKeyItem {
 
 function dealWithFailedKeyWrites(job:SuperFreeq.Job) {
   var items : {[our_mid:string]:FailedKeyItem} = {};
-  job.getTasks("error", (tri: SuperFreeq.TaskResponseItem) => {
+  return job.getTasks("error", (tri: SuperFreeq.TaskResponseItem) => {
     var triple = tri.load_triple.triple;
     if (triple.pred != "/type/object/key" ||
         (!triple.obj.match(/\/authority\/imdb\//))) {
@@ -478,7 +475,7 @@ function dealWithFailedKeyWrites(job:SuperFreeq.Job) {
       our_mid: our_mid,
       failed_key: triple.obj
     };
-  }, () => {
+  }).then(() => {
     var queries : freebase.QueryPair[] = [];
     for (var our_mid in items) {
       queries.push({0:our_mid, 1:{
@@ -488,7 +485,9 @@ function dealWithFailedKeyWrites(job:SuperFreeq.Job) {
       }})
     }
     freebase.mqlReads(queries, (key: string, result?:{mid:string}) => {
-      if (!result) return;
+      if (!result) {
+        return;
+      }
       items[key].their_mid = result.mid;
     }, () => {
       var lines : string[] = [];
@@ -537,34 +536,34 @@ function doLoad() {
   $(".uploadToFreeQ").hide();
   $(".uploadForm .error").hide();
   $(".uploadSpinner").show();
-  SuperFreeq.createJob(name, graph, info_source, function(job:SuperFreeq.Job) {
+  SuperFreeq.createJob(name, graph, info_source).then(function(job:SuperFreeq.Job) {
     prepareTriples(function(triples) {
-      job.load(triples, uploadAction, function() {
-        job.start(() => {
-          console.log("job started!")
-          $(".freeqLoad").show();
-          $(".freeqLoadInProgress").show();
-          $(".uploadSpinner").hide();
-          $(".peacock_link").attr("href",job.base_url);
-          $(".alternate_link").attr("href", "http://go/freeq-job?id=" + job.id);
-          new FreeqMonitor(job, function() {
-            $(".freeqLoadInProgress").hide();
+      return job.load(triples, uploadAction).then(function() {
+        return job.start();
+      }).then(function() {
+        console.log("job started!")
+        $(".freeqLoad").show();
+        $(".freeqLoadInProgress").show();
+        $(".uploadSpinner").hide();
+        $(".peacock_link").attr("href",job.base_url);
+        $(".alternate_link").attr("href", "http://go/freeq-job?id=" + job.id);
+        return new FreeqMonitor(job).promise;
+      }).then(function() {
+        $(".freeqLoadInProgress").hide();
 
-            if ($("input.graphport:checked").val() === "otg") {
-              job.getIdMapping((v:SuperFreeq.IdMap) => {
-                fillinIds(v);
-                $(".fetchingFreeqIds").hide();
-                $(".idsFetched").show();
-                displayOutput();
-                dealWithFailedKeyWrites(job);
-              });
-              $(".uploadToOTGComplete").show();
-            }
-            else {
-              $(".uploadToSandboxComplete").show();
-            }
+        if ($("input.graphport:checked").val() === "otg") {
+          job.getIdMapping().then((v:SuperFreeq.IdMap) => {
+            fillinIds(v);
+            $(".fetchingFreeqIds").hide();
+            $(".idsFetched").show();
+            displayOutput();
+            dealWithFailedKeyWrites(job);
           });
-        });
+          $(".uploadToOTGComplete").show();
+        }
+        else {
+          $(".uploadToSandboxComplete").show();
+        }
       });
     });
   });
@@ -572,7 +571,9 @@ function doLoad() {
 
 $(document).ready(function () {
     $(".displayTriples").click(function(){$(".triplesDisplay").slideToggle(); return false;});
-    $(".uploadLogin .loginButton").click(function() {SuperFreeq.authorize(checkLogin)});
+    $(".uploadLogin .loginButton").click(() => {
+      SuperFreeq.authorize().then(checkLogin)
+    });
     $(".loadAgainButton").click(function() {
         $(".freeqLoad").hide();
         $(".uploadToSandboxComplete").hide();

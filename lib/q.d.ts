@@ -127,6 +127,7 @@ declare module Q {
 
     export function delay<T>(promise: Promise<T>, ms: number): Promise<T>;
     export function delay<T>(value: T, ms: number): Promise<T>;
+    export function delay(ms: number): Promise<any>;
 
     export function isFulfilled(promise: Promise<any>): boolean;
     export function isRejected(promise: Promise<any>): boolean;
