@@ -87,9 +87,6 @@ function renderReconChoices(entity:tEntity) {
   renderInternalReconciliationDialog(entity, template);
 
   var search = entity['/type/object/name'];
-  $.each($.makeArray(entity['/type/object/type']), function(_,type) {
-    search = "type:" + type + " " + search;
-  })
   $(".find_topic", template).val(search);
   $(".find_topic", template)
       .suggest({flyout:true,
