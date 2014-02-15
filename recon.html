@@ -369,7 +369,21 @@
 
 <div id="miniTopicFloater" class="gone" style="position:absolute;"></div>
 
-<div id="freeqErrorDialog" class="gone">
+<div class="modal fade" id="freeqErrorDialog" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">FreeQ Error</h4>
+      </div>
+      <div class="modal-body">
+        Unable to communicate with FreeQ, all we're getting back are errors.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Ok :(</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <noscript>
@@ -383,9 +397,6 @@
 
 <div class='gone'>
   <script charset="utf-8" src="lib/jquery.js"></script>
-  <script charset="utf-8" src="lib/jquery.ui/ui/jquery.ui.core.js"></script>
-  <script charset="utf-8" src="lib/jquery.ui/ui/jquery.ui.widget.js"></script>
-  <script charset="utf-8" src="lib/jquery.ui/ui/jquery.ui.dialog.js"></script>
   <script charset="utf-8" src="lib/jquery.event.hover.js"></script>
   <script charset="utf-8" src="lib/jquery.form.js"></script>
   <script charset="utf-8" src="lib/jsobjdump.js"></script>

@@ -341,12 +341,7 @@ module SuperFreeq {
               console.log('RPC failed, retrying in', retryIn / 1000, 'seconds');
               setTimeout(() => { $.ajax(this); }, retryIn);
             } else {
-              $('#freeqErrorDialog')
-                .text('RPC failed after ' + this.tryCount + ' requests');
-              $('#freeqErrorDialog').dialog({
-                modal: true,
-                resizable: false
-              });
+              $('#freeqErrorDialog').modal();
             }
           }
         }

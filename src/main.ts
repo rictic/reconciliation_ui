@@ -1,6 +1,5 @@
 /// <reference path="../lib/dataTables.d.ts"/>
 /// <reference path="../lib/jquery.d.ts"/>
-/// <reference path="../lib/jqueryui.d.ts"/>
 /// <reference path="../lib/jsobjdump.d.ts"/>
 /// <reference path="../lib/gapi.d.ts"/>
 /// <reference path="../lib/jquery.freebase.minitopic.d.ts"/>
