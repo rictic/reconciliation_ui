@@ -9,6 +9,7 @@
 /// <reference path="../lib/jquery.freebase.suggest.d.ts"/>
 /// <reference path="../lib/js.d.ts"/>
 /// <reference path="../lib/bootstrap/js/bootstrap.d.ts"/>
+/// <reference path="../lib/q.d.ts"/>
 
 /// <reference path="events/eventEmitter.ts"/>
 /// <reference path="progress.ts"/>
