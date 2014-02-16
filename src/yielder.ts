@@ -40,9 +40,12 @@ class Yielder {
 
 
 function politeEach<T>(array: T[], f:(i:number, val:T)=>any,
-                       onComplete?:()=>any, yielder?:Yielder):HasProgress {
+                       onComplete?:()=>any, yielder?:Yielder):Tracker<{}> {
   yielder = yielder || new Yielder();
   var progress = new QuickProgress("politeEach", array.length);
+  var deferred = Q.defer<{}>();
+  if (onComplete) deferred.promise.then(onComplete);
+  var tracker = {progress:progress, promise:deferred.promise};
   var index = 0;
   function iterate() {
     while(index < array.length) {
@@ -50,12 +53,12 @@ function politeEach<T>(array: T[], f:(i:number, val:T)=>any,
       index++;
       progress.increment();
       if (yielder.shouldYield(iterate)) {
-        return {progress: progress};
+        return tracker;
       }
     }
-    if (onComplete) onComplete();
+    deferred.resolve(null);
     progress.done();
-    return {progress: progress};
+    return tracker;
   }
   return iterate();
 }
@@ -66,11 +69,17 @@ function politeEach<T>(array: T[], f:(i:number, val:T)=>any,
     @param {Yielder=} yielder
 */
 function politeMap<T,V>(array: T[], f:(val:T)=>V,
-                   onComplete:(mapped:V[])=>any,
-                   yielder?:Yielder):HasProgress {
+                   onComplete?:(mapped:V[])=>any,
+                   yielder?:Yielder):Tracker<V[]> {
   yielder = yielder || new Yielder();
   var result : V[] = [];
-  return politeEach(array, function(index, value) {
+  var deferred = Q.defer<V[]>();
+  deferred.promise.then(onComplete);
+  var tracker = politeEach(array, function(index, value) {
     result[index] = f(value);
-  }, function() {onComplete(result);}, yielder);
+  }, null, yielder);
+  tracker.promise.then(() => {
+    deferred.resolve(result);
+  });
+  return {progress:tracker.progress, promise:deferred.promise};
 }

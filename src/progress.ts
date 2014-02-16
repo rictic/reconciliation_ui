@@ -10,6 +10,10 @@ interface HasProgress {
   progress : Progress;
 }
 
+interface Tracker<T> extends HasProgress {
+  promise : Q.Promise<T>;
+}
+
 class QuickProgress extends EventEmitter implements Progress {
   private units_done = 0;
   private is_done = false;
