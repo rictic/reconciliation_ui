@@ -1,25 +1,7 @@
-interface Progress {
-  name : string;
-  getPercent():number;
-  addListener(eventName:"progress", handler:(percent:number)=>void):void;
-  addListener(eventName:string, handler:(...args:any[])=>void):void;
-}
-
-// A placeholder for an eventual PromiseWithProgress
-interface HasProgress {
-  progress : Progress;
-}
-
-interface Tracker<T> extends HasProgress {
-  promise : Q.Promise<T>;
-}
-
-class QuickProgress extends EventEmitter implements Progress {
+class QuickProgress {
   private units_done = 0;
   private is_done = false;
-  constructor(public name:string, public max:number) {
-    super();
-  }
+  constructor(private writeTo:Q.Deferred<any>, private max:number) {}
 
   setProgress(progress:number) {
     this.units_done = progress;
@@ -42,33 +24,38 @@ class QuickProgress extends EventEmitter implements Progress {
   }
 
   private progressChanged() {
-    this.emit('progress', this.getPercent());
+    this.writeTo.notify(this.getPercent());
   }
 }
 
-class WeightedMultiProgress extends EventEmitter implements Progress {
-  private progresses : {p:Progress; weight:number}[] = [];
+class WeightedMultiProgress {
+  private progresses : {lastValue:number; weight:number}[] = [];
   private totalWeight = 0;
-  constructor(public name:string, private expectedTotalWeight=1) {
-    super();
-  }
+  constructor(private writeTo:Q.Deferred<any>, private expectedTotalWeight=1) {}
 
   getPercent():number {
     var percentSums = 0;
     this.progresses.forEach((p) => {
-      percentSums += p.p.getPercent() * p.weight;
+      percentSums += p.lastValue * p.weight;
     });
     return percentSums / Math.max(this.totalWeight, this.expectedTotalWeight);
   }
 
-  addSubProgress(progress:Progress, weight=1) {
+  addSubProgress(promise:Q.Promise<any>, weight=1) {
     this.totalWeight += weight;
-    this.progresses.push({p:progress, weight:weight});
-    progress.addListener("progress", () => {this.progressChanged()});
+    var subProgress = {lastValue:0, weight:weight};
+    this.progresses.push(subProgress);
+    promise.progress((pct:number) => {
+      subProgress.lastValue = pct;
+      this.progressChanged()
+    });
     this.progressChanged();
   }
 
   private progressChanged() {
-    this.emit('progress', this.getPercent());
+    this.writeTo.notify(this.getPercent());
   }
 }
+
+var d1 = Q.defer();
+var p1 = new WeightedMultiProgress(d1);

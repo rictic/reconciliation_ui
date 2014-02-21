@@ -107,7 +107,7 @@ interface AmbiguityResolver {
   */
 function parseInput(input:string,
                     ambiguityResolver:AmbiguityResolver,
-                    onComplete:()=>void, yielder:Yielder):HasProgress {
+                    onComplete:()=>void, yielder:Yielder):Q.Promise<{}> {
     yielder = yielder || new Yielder();
 
     //reset global values
@@ -115,23 +115,28 @@ function parseInput(input:string,
     resetGlobals();
 
     if (input.charAt(0) === "[") {
-        inputType = "JSON";
-        parseJSON(input, onComplete, yielder);
-        return;
+      inputType = "JSON";
+      parseJSON(input, onComplete, yielder);
+      return;
     }
 
     inputType = "TSV";
 
-    var progress = new WeightedMultiProgress("parse input", 9);
-    var p = parseTSV(input, function(spreadsheetRowsWithBlanks:string[][]) {
-        var subp = removeBlankLines(spreadsheetRowsWithBlanks, function(spreadsheetRows:string[][]) {
-            var subsubp = buildRowInfo(spreadsheetRows, ambiguityResolver, onComplete, yielder);
-            progress.addSubProgress(subsubp.progress, 7);
-        }, yielder);
-        progress.addSubProgress(subp.progress);
-    }, yielder);
-    progress.addSubProgress(p.progress);
-    return {progress: progress};
+    var deferred = Q.defer<{}>();
+    var progress = new WeightedMultiProgress(deferred, 9);
+    var p1 = parseTSV(input, yielder)
+    progress.addSubProgress(p1);
+    var p2 = p1.then(function(spreadsheetRowsWithBlanks:string[][]) {
+      return removeBlankLines(spreadsheetRowsWithBlanks, yielder);
+    });
+    progress.addSubProgress(p2);
+    var p3 = p2.then(function(spreadsheetRows:string[][]) {
+      return buildRowInfo(spreadsheetRows, ambiguityResolver, yielder);
+    });
+    progress.addSubProgress(p3, 7);
+
+    p3.then(() => {return deferred.resolve(null)}, deferred.reject.bind(deferred));
+    return deferred.promise;
 }
 
 
@@ -144,9 +149,9 @@ function parseInput(input:string,
  * @param {function(Array.<loader.row>)} onComplete
  * @param {Yielder=} yielder
  */
-function parseTSV(spreadsheet:string, onComplete:(result:string[][])=>void,
-                  yielder:Yielder):HasProgress {
-    var progress = new QuickProgress("parseTSV", spreadsheet.length);
+function parseTSV(spreadsheet:string, yielder:Yielder):Q.Promise<string[][]> {
+    var deferred = Q.defer<string[][]>();
+    var progress = new QuickProgress(deferred, spreadsheet.length);
     yielder = yielder || new Yielder();
     var position = 0;
     function parseLine() {
@@ -239,44 +244,48 @@ function parseTSV(spreadsheet:string, onComplete:(result:string[][])=>void,
             rows.push(parseLine());
             progress.setProgress(position);
             if (yielder.shouldYield(parseSpreadsheet))
-                return {progress:progress};
+                return;
         }
         progress.done();
-        onComplete(rows);
-        return {progress:progress}
+        deferred.resolve(rows);
     }
-    return parseSpreadsheet();
+    parseSpreadsheet();
+    return deferred.promise;
 }
 
 /** @param {!Array.<loader.row>} rows
     @param {!function(Array.<loader.row>)} onComplete
     @param {Yielder=} yielder
 */
-function removeBlankLines(rows:string[][], onComplete:(rows:string[][])=>void,
-                          yielder:Yielder) {
-    var newRows : string[][] = [];
-    return politeEach(
-        rows,
-        (_,row) => {
-            if (row.length === 1 && row[0] === "")
-                return;
-            newRows.push(row);
-        },
-        () => {onComplete(newRows);},
-        yielder
-    );
+function removeBlankLines(rows:string[][], yielder:Yielder) {
+  var newRows : string[][] = [];
+  return politeEach(
+      rows,
+      (_,row) => {
+          if (row.length === 1 && row[0] === "")
+              return;
+          newRows.push(row);
+      },
+      null,
+      yielder
+  ).then(() => newRows);
+}
+
+declare interface ExampleParses {
+  singleRecords: string[][][];
+  multiRecords?: string[][][];
+  exampleRecord?: string[][];
 }
 
 /** @param {!Array.<!loader.row>} spreadsheetRows
   * @param {!function()} onComplete
   * @param {Yielder=} yielder
   */
-function buildRowInfo(spreadsheetRows:string[][], ambiguityResolver:AmbiguityResolver,
-                      onComplete:()=>void, yielder:Yielder) {
+function buildRowInfo(spreadsheetRows:string[][],
+                      ambiguityResolver:AmbiguityResolver,
+                      yielder=new Yielder()):Q.Promise<{}> {
     //keeps us from crashing on blank input
     if (spreadsheetRows.length === 0) return;
-
-    yielder = yielder || new Yielder();
 
     // parse headers:
     originalHeaders = spreadsheetRows.shift();
@@ -285,29 +294,38 @@ function buildRowInfo(spreadsheetRows:string[][], ambiguityResolver:AmbiguityRes
         headerPaths.push(new loader.path($.trim(rawHeader)));
     })
 
-    var progress = new WeightedMultiProgress("buildRowInfo", 8);
+    var deferred = Q.defer<{}>();
+    var progress = new WeightedMultiProgress(deferred, 8);
     //fetching property metadata early helps in the UI
     freebase.fetchPropertyInfo(getProperties(headerPaths), function() {
-        var p = rowsToRecords(spreadsheetRows, function(singleRecords:string[][][], multiRecords?:string[][][], exampleRecord?:string[][]) {
-            if (exampleRecord === undefined)
-                handleRecords(singleRecords);
-            else
-                ambiguityResolver(exampleRecord, function(useMultiRecords) {
-                    handleRecords(useMultiRecords ? multiRecords : singleRecords);
+        var p = rowsToRecords(spreadsheetRows, yielder);
+        progress.addSubProgress(p);
+
+        return p.then(function(exampleParses:ExampleParses) {
+            if (exampleRecord === undefined) {
+              return handleRecords(exampleParses.singleRecords);
+            } else {
+              return ambiguityResolver(exampleParses.exampleRecord)
+                .then((useMultiRecords) => {
+                  return handleRecords(
+                    useMultiRecords ?
+                      exampleParses.multiRecords :
+                      exampleParses.singleRecords
+                  );
                 });
-        }, yielder);
-        progress.addSubProgress(p.progress);
+            }
+        });
     });
 
     function handleRecords(records:string[][][]) {
-        var p = recordsToEntities(records, onComplete, yielder)
-        progress.addSubProgress(p.progress, 7);
+        var p = recordsToEntities(records, yielder)
+        progress.addSubProgress(p, 7);
     };
     return {progress:progress};
 }
 
-function recordsToTrees(records:string[][][], onComplete:(trees:any[])=>void, yielder:Yielder) {
-    return politeMap(records, recordToTree, onComplete, yielder);
+function recordsToTrees(records:string[][][], yielder:Yielder) {
+    return politeMap(records, recordToTree, null, yielder);
 }
 
 function recordToTree(record:string[][]):any {
@@ -327,21 +345,22 @@ function recordToTree(record:string[][]):any {
     return tree;
 }
 
-function recordsToEntities(records:string[][][], onComplete:()=>void, yielder:Yielder) {
+function recordsToEntities(records:string[][][], yielder:Yielder) {
     var progress = new WeightedMultiProgress("recordsToEntities", 2);
-    var subp = recordsToTrees(records, function(trees) {
-        resetEntities();
-        typesSeen = new PSet();
+    var subp = recordsToTrees(records, yielder);
+    subp.then(function(trees) {
+      resetEntities();
+      typesSeen = new PSet();
 
-
-        var subsubp = treesToEntities(trees, function(entities) {
-            rows = entities;
-            onComplete();
-        }, yielder);
-        progress.addSubProgress(subsubp.progress);
-    }, yielder);
-    progress.addSubProgress(subp.progress);
-    return {progress: progress};
+      var subsubp = treesToEntities(trees, function(entities) {
+          rows = entities;
+          onComplete();
+      }, yielder);
+      progress.addSubProgress(subsubp);
+      return subsubp;
+    });
+    progress.addSubProgress(subp);
+    return ;
 }
 
 /** @param {!Array.<!loader.tree>} trees
