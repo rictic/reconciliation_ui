@@ -131,7 +131,7 @@ function prepareTriples():Tracker<SuperFreeq.TripleLoadCommand[]> {
 
   var progress = new WeightedMultiProgress('prepareTriples', 12);
   var tracker = getSFTriples(entities, assertNaked);
-  progress.addSubProgress(tracker.progress, 11);
+  progress.track(tracker.progress, 11);
   var promise = tracker.promise.then(
     function(triples:SuperFreeq.TripleLoadCommand[]) {
       var subsubp = politeMap(triples, (trip)=> JSON.stringify(trip));
@@ -145,7 +145,7 @@ function prepareTriples():Tracker<SuperFreeq.TripleLoadCommand[]> {
         $(".triplesRendered").show();
       });
 
-      progress.addSubProgress(subsubp.progress);
+      progress.track(subsubp.progress);
       return subsubp.promise.then(() => triples);
     }
   )
@@ -223,10 +223,10 @@ function getSFTriples(entities:tEntity[],
         results.push(sfTriple);
       }
     }, null, tripleGetterYielder);
-    multiProgress.addSubProgress(innerTracker.progress);
+    multiProgress.track(innerTracker.progress);
     return innerTracker.promise.then(() => results);
   });
-  multiProgress.addSubProgress(tracker.progress);
+  multiProgress.track(tracker.progress);
   return {
     progress: multiProgress,
     promise: promise

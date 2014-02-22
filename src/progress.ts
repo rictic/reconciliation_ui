@@ -28,10 +28,11 @@ class QuickProgress {
   }
 }
 
-class WeightedMultiProgress {
+class WeightedMultiProgress<T> {
   private progresses : {lastValue:number; weight:number}[] = [];
   private totalWeight = 0;
-  constructor(private writeTo:Q.Deferred<any>, private expectedTotalWeight=1) {}
+  public writeTo = Q.defer<T>();
+  constructor(private expectedTotalWeight=1) {}
 
   getPercent():number {
     var percentSums = 0;
@@ -41,21 +42,32 @@ class WeightedMultiProgress {
     return percentSums / Math.max(this.totalWeight, this.expectedTotalWeight);
   }
 
-  addSubProgress(promise:Q.Promise<any>, weight=1) {
+  track<U>(promise:Q.Promise<U>, weight=1):Q.Promise<U> {
     this.totalWeight += weight;
     var subProgress = {lastValue:0, weight:weight};
     this.progresses.push(subProgress);
     promise.progress((pct:number) => {
       subProgress.lastValue = pct;
-      this.progressChanged()
+      this.progressChanged();
+    });
+    promise.then(() => {
+      subProgress.lastValue = 1;
+      this.progressChanged();
     });
     this.progressChanged();
+
+    var d = Q.defer<U>();
+    promise.then((r) => d.resolve(r), (r) => d.reject(r));
+    return d.promise;
+  }
+
+  trackFinal(promise:Q.Promise<T>, weight=1):Q.Promise<T> {
+    this.track(promise, weight);
+    promise.then((r) => this.writeTo.resolve(r), (r) => this.writeTo.reject(r));
+    return this.writeTo.promise;
   }
 
   private progressChanged() {
     this.writeTo.notify(this.getPercent());
   }
 }
-
-var d1 = Q.defer();
-var p1 = new WeightedMultiProgress(d1);

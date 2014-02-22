@@ -38,21 +38,25 @@ function handleInput() {
         $("#inputWindow").removeClass("disabled");
         $("#inputWindow button").removeAttr("disabled");
     }
-    function onAmbiguity(ambiguousRecord:string[][],
-                         onAmbiguityResolved:(useMultiRow:boolean)=>void) {
+    function onAmbiguity(ambiguousRecord:string[][]):Q.Promise<boolean> {
         onProgressMade();
+        var d = Q.defer<boolean>();
         showAmbiguousRowPrompt(ambiguousRecord, (useMultiRow) => {
             $('.inputLoading').show();
-            onAmbiguityResolved(useMultiRow);
+            d.resolve(useMultiRow);
         });
+        return d.promise;
     }
-    function onComplete() {
+    parseInput(input, onAmbiguity, inputProcessingYielder).then(
+      (entities) => {
+        rows = entities;
         showConfirmationSpreadsheet(onProgressMade);
-    }
-    var p = parseInput(input, onAmbiguity, onComplete, inputProcessingYielder);
-    p.progress.addListener("progress", (pct) => {
+      }, (err:string) => {
+        inputError(err)
+      }, (pct:number) => {
         $(".inputLoading .progress-bar").width((pct * 100) + '%');
-    });
+      }
+    );
 }
 
 

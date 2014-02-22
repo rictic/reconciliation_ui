@@ -97,7 +97,7 @@ function resetGlobals() {
 */
 
 interface AmbiguityResolver {
-    (rows:string[][], f:(combineRows:boolean)=>void):void;
+    (rows:string[][]):Q.Promise<boolean>;
 }
 
 /** @param {!string} input Either a tsv or a json array of trees
@@ -107,7 +107,7 @@ interface AmbiguityResolver {
   */
 function parseInput(input:string,
                     ambiguityResolver:AmbiguityResolver,
-                    onComplete:()=>void, yielder:Yielder):Q.Promise<{}> {
+                    yielder:Yielder):Q.Promise<tEntity[]> {
     yielder = yielder || new Yielder();
 
     //reset global values
@@ -116,27 +116,21 @@ function parseInput(input:string,
 
     if (input.charAt(0) === "[") {
       inputType = "JSON";
-      parseJSON(input, onComplete, yielder);
-      return;
+      return parseJSON(input, yielder);
     }
 
     inputType = "TSV";
 
-    var deferred = Q.defer<{}>();
-    var progress = new WeightedMultiProgress(deferred, 9);
+    var progress = new WeightedMultiProgress<tEntity[]>(9);
     var p1 = parseTSV(input, yielder)
-    progress.addSubProgress(p1);
-    var p2 = p1.then(function(spreadsheetRowsWithBlanks:string[][]) {
+    var p2 = progress.track(p1).then(function(spreadsheetRowsWithBlanks:string[][]) {
       return removeBlankLines(spreadsheetRowsWithBlanks, yielder);
     });
-    progress.addSubProgress(p2);
-    var p3 = p2.then(function(spreadsheetRows:string[][]) {
+    var p3 : Q.Promise<tEntity[]> = progress.track(p2).then(function(spreadsheetRows:string[][]) {
       return buildRowInfo(spreadsheetRows, ambiguityResolver, yielder);
     });
-    progress.addSubProgress(p3, 7);
 
-    p3.then(() => {return deferred.resolve(null)}, deferred.reject.bind(deferred));
-    return deferred.promise;
+    return progress.trackFinal(p3, 7);
 }
 
 
@@ -271,7 +265,7 @@ function removeBlankLines(rows:string[][], yielder:Yielder) {
   ).then(() => newRows);
 }
 
-declare interface ExampleParses {
+interface ExampleParses {
   singleRecords: string[][][];
   multiRecords?: string[][][];
   exampleRecord?: string[][];
@@ -283,49 +277,42 @@ declare interface ExampleParses {
   */
 function buildRowInfo(spreadsheetRows:string[][],
                       ambiguityResolver:AmbiguityResolver,
-                      yielder=new Yielder()):Q.Promise<{}> {
-    //keeps us from crashing on blank input
-    if (spreadsheetRows.length === 0) return;
+                      yielder=new Yielder()):Q.Promise<tEntity[]> {
+  //keeps us from crashing on blank input
+  if (spreadsheetRows.length === 0) return;
 
-    // parse headers:
-    originalHeaders = spreadsheetRows.shift();
-    headerPaths = [];
-    $.each(originalHeaders, function(_, rawHeader) {
-        headerPaths.push(new loader.path($.trim(rawHeader)));
-    })
+  // parse headers:
+  originalHeaders = spreadsheetRows.shift();
+  headerPaths = [];
+  $.each(originalHeaders, function(_, rawHeader) {
+      headerPaths.push(new loader.path($.trim(rawHeader)));
+  })
 
-    var deferred = Q.defer<{}>();
-    var progress = new WeightedMultiProgress(deferred, 8);
-    //fetching property metadata early helps in the UI
-    freebase.fetchPropertyInfo(getProperties(headerPaths), function() {
-        var p = rowsToRecords(spreadsheetRows, yielder);
-        progress.addSubProgress(p);
-
-        return p.then(function(exampleParses:ExampleParses) {
-            if (exampleRecord === undefined) {
-              return handleRecords(exampleParses.singleRecords);
-            } else {
-              return ambiguityResolver(exampleParses.exampleRecord)
-                .then((useMultiRecords) => {
-                  return handleRecords(
-                    useMultiRecords ?
-                      exampleParses.multiRecords :
-                      exampleParses.singleRecords
-                  );
-                });
-            }
-        });
+  var progress = new WeightedMultiProgress<tEntity[]>(8);
+  //fetching property metadata early helps in the UI
+  freebase.fetchPropertyInfo(getProperties(headerPaths), function() {
+    var examples : ExampleParses;
+    return progress.track(rowsToRecords(spreadsheetRows, yielder)).then(
+      (exampleParses:ExampleParses) => {
+        examples = exampleParses;
+        if (exampleParses.exampleRecord === undefined) {
+          return Q(false);
+        } else {
+          return ambiguityResolver(exampleParses.exampleRecord)
+        }
+      }
+    ).then(function(useMultiRecords) {
+      return useMultiRecords ? examples.multiRecords : examples.singleRecords;
+    }).then(function(records) {
+      return progress.trackFinal(recordsToEntities(records, yielder), 7);
     });
+  });
 
-    function handleRecords(records:string[][][]) {
-        var p = recordsToEntities(records, yielder)
-        progress.addSubProgress(p, 7);
-    };
-    return {progress:progress};
+  return progress.writeTo.promise;
 }
 
 function recordsToTrees(records:string[][][], yielder:Yielder) {
-    return politeMap(records, recordToTree, null, yielder);
+  return politeMap(records, recordToTree, null, yielder);
 }
 
 function recordToTree(record:string[][]):any {
@@ -345,31 +332,23 @@ function recordToTree(record:string[][]):any {
     return tree;
 }
 
-function recordsToEntities(records:string[][][], yielder:Yielder) {
-    var progress = new WeightedMultiProgress("recordsToEntities", 2);
-    var subp = recordsToTrees(records, yielder);
-    subp.then(function(trees) {
-      resetEntities();
-      typesSeen = new PSet();
-
-      var subsubp = treesToEntities(trees, function(entities) {
-          rows = entities;
-          onComplete();
-      }, yielder);
-      progress.addSubProgress(subsubp);
-      return subsubp;
-    });
-    progress.addSubProgress(subp);
-    return ;
+function recordsToEntities(records:string[][][], yielder:Yielder):Q.Promise<tEntity[]> {
+  var progress = new WeightedMultiProgress<tEntity[]>(2);
+  var subp = progress.track(recordsToTrees(records, yielder));
+  return progress.trackFinal(subp.then(function(trees:any[]) {
+    resetEntities();
+    typesSeen = new PSet();
+    return progress.track(treesToEntities(trees, yielder));
+  }));
 }
 
 /** @param {!Array.<!loader.tree>} trees
   * @param {!function(!Array.<!tEntity>)} onComplete
   * @param {Yielder=} yielder
   */
-function treesToEntities(trees:any[], onComplete:(entities:tEntity[])=>void, yielder:Yielder) {
+function treesToEntities(trees:any[], yielder:Yielder):Q.Promise<tEntity[]> {
     yielder = yielder || new Yielder();
-    var progress = new WeightedMultiProgress("treesToEntities", 1);
+    var progress = new WeightedMultiProgress<tEntity[]>(1);
     findAllProperties(trees, function(props: string[]) {
         freebase.fetchPropertyInfo(props, afterPropertiesFetched,
             function onError(errorProps:string[]) {
@@ -379,11 +358,11 @@ function treesToEntities(trees:any[], onComplete:(entities:tEntity[])=>void, yie
         );
 
         function afterPropertiesFetched() {
-            var subp = mapTreesToEntities(trees, onComplete, yielder);
-            progress.addSubProgress(subp.progress);
+            var subp = mapTreesToEntities(trees, yielder);
+            progress.trackFinal(subp);
         }
     }, yielder);
-    return {progress:progress};
+    return progress.writeTo.promise;
 }
 
 /**
@@ -403,38 +382,47 @@ function treesToEntities(trees:any[], onComplete:(entities:tEntity[])=>void, yie
  * @param {!function(!Array.<loader.record>, Array.<loader.record>=, loader.record=)} onComplete
  * @param {Yielder=} yielder
  */
-function rowsToRecords(rows:string[][], onComplete:(records:string[][][], multirecords?:string[][][], firstMultiline?:string[][])=>void, yielder:Yielder) {
-    yielder = yielder || new Yielder();
+function rowsToRecords(rows:string[][], yielder:Yielder):Q.Promise<ExampleParses> {
+  yielder = yielder || new Yielder();
 
-    var firstMultilineRecord : string[][] = undefined;
-    var multiRecords : string[][][] = [];
-    var singleRecords : string[][][] = [];
+  var firstMultilineRecord : string[][] = undefined;
+  var multiRecords : string[][][] = [];
+  var singleRecords : string[][][] = [];
 
-    var currentMultiRecord : string[][] = []
+  var currentMultiRecord : string[][] = []
 
-    function addMultiRecord() {
-        if (currentMultiRecord.length > 1 && !firstMultilineRecord)
-            firstMultilineRecord = currentMultiRecord;
-        multiRecords.push(currentMultiRecord)
-        currentMultiRecord = []
+  function addMultiRecord() {
+    if (currentMultiRecord.length > 1 && !firstMultilineRecord) {
+      firstMultilineRecord = currentMultiRecord;
     }
+    multiRecords.push(currentMultiRecord)
+    currentMultiRecord = []
+  }
 
-    return politeEach(rows, function(_, currentRow) {
-        singleRecords.push([currentRow]);
+  return politeEach(rows, function(_, currentRow) {
+    singleRecords.push([currentRow]);
 
-        // start new record if the first column is non-empty and the current record is non-empty:
-        if(currentRow[0].length > 0 && currentMultiRecord.length > 0)
-            addMultiRecord();
+    // start new record if the first column is non-empty and the current record is non-empty:
+    if(currentRow[0].length > 0 && currentMultiRecord.length > 0)
+        addMultiRecord();
 
-        currentMultiRecord.push(currentRow);
-    }, function() {
-        if(currentMultiRecord.length > 0)
-            addMultiRecord();
-        if (singleRecords.length === multiRecords.length)
-            onComplete(singleRecords);
-        else
-            onComplete(singleRecords, multiRecords, firstMultilineRecord);
-    }, yielder);
+    currentMultiRecord.push(currentRow);
+  }, null, yielder).then(() => {
+    if(currentMultiRecord.length > 0) {
+      addMultiRecord();
+    }
+    if (singleRecords.length === multiRecords.length) {
+      return {
+        singleRecords: singleRecords
+      };
+    } else {
+      return {
+        singleRecords: singleRecords,
+        multiRecords: multiRecords,
+        exampleRecord: firstMultilineRecord
+      };
+    }
+  });
 }
 
 /**
@@ -565,12 +553,9 @@ function findAllProperties(trees:any, onComplete:(props:string[])=>void, yielder
   * @param {!function(!Array.<tEntity>)} onComplete
   * @param {Yielder=} yielder
   */
-function mapTreesToEntities(trees:any[], onComplete:(entity:tEntity[])=>void, yielder:Yielder) {
+function mapTreesToEntities(trees:any[], yielder:Yielder):Q.Promise<tEntity[]> {
     internalReconciler = new InternalReconciler();
-    return politeMap(trees,
-              function(record){return mapTreeToEntity(record)},
-              onComplete,
-              yielder);
+    return politeMap(trees, (record) => mapTreeToEntity(record), null, yielder);
 }
 
 /** Assumes that the metadata for all properties encountered
@@ -695,21 +680,17 @@ function connectCVTProperties(entity:tEntity) {
   * @param {!function()} onComplete
   * @param {Yielder=} yielder
   */
-function parseJSON(json:string, onComplete:()=>void, yielder:Yielder) {
-    yielder = yielder || new Yielder();
-    try {
-        var trees = JSON.parse(json);
-    }
-    catch(e) {
-        inputError("JSON error: " + e);
-        return;
-    }
+function parseJSON(json:string, yielder:Yielder) {
+  yielder = yielder || new Yielder();
+  return Q.promise<tEntity[]>((resolve, reject) => {
+    var trees = JSON.parse(json);
 
-    treesToEntities(trees, function(entities) {
-        rows = entities;
-        headerPaths = rows[0]['/rec_ui/headerPaths'];
-        onComplete();
-    }, yielder);
+    return treesToEntities(trees, yielder).then((entities) => {
+      rows = entities;
+      headerPaths = rows[0]['/rec_ui/headerPaths'];
+      return entities;
+    });
+  })
 }
 
 function warnUnknownProp(_:any, errorProp:string) {
