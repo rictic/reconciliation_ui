@@ -288,9 +288,9 @@ function buildRowInfo(spreadsheetRows:string[][],
       headerPaths.push(new loader.path($.trim(rawHeader)));
   })
 
-  var progress = new WeightedMultiProgress<tEntity[]>(8);
+  var progress = new WeightedMultiProgress<tEntity[]>(9);
   //fetching property metadata early helps in the UI
-  freebase.fetchPropertyInfo(getProperties(headerPaths), function() {
+  progress.track(freebase.fetchPropertyInfo(getProperties(headerPaths))).then(() => {
     var examples : ExampleParses;
     return progress.track(rowsToRecords(spreadsheetRows, yielder)).then(
       (exampleParses:ExampleParses) => {
@@ -348,20 +348,17 @@ function recordsToEntities(records:string[][][], yielder:Yielder):Q.Promise<tEnt
   */
 function treesToEntities(trees:any[], yielder:Yielder):Q.Promise<tEntity[]> {
     yielder = yielder || new Yielder();
-    var progress = new WeightedMultiProgress<tEntity[]>(1);
-    findAllProperties(trees, function(props: string[]) {
-        freebase.fetchPropertyInfo(props, afterPropertiesFetched,
-            function onError(errorProps:string[]) {
-                $.each(errorProps, warnUnknownProp);
-                afterPropertiesFetched();
-            }
-        );
+    var progress = new WeightedMultiProgress<tEntity[]>(3);
+    progress.track(findAllProperties(trees, yielder)).then((props: string[]) => {
+      return progress.track(freebase.fetchPropertyInfo(props));
+    }).then(null,
+      function (errorProps:string[]) {
+        $.each(errorProps, warnUnknownProp);
+      }
+    ).then(() => {
+      return progress.trackFinal(mapTreesToEntities(trees, yielder));
+    })
 
-        function afterPropertiesFetched() {
-            var subp = mapTreesToEntities(trees, yielder);
-            progress.trackFinal(subp);
-        }
-    }, yielder);
     return progress.writeTo.promise;
 }
 
@@ -526,10 +523,10 @@ function addIdColumns() {
   * @param {!function(Array.<string>)} onComplete
   * @param {Yielder=} yielder
   */
-function findAllProperties(trees:any, onComplete:(props:string[])=>void, yielder:Yielder) {
-    politeEach(trees, findProps, function() {
-        onComplete(propertiesSeen.getAll());
-    }, yielder);
+function findAllProperties(trees:any, yielder:Yielder) {
+    return politeEach(trees, findProps, null, yielder).then(() => {
+        return propertiesSeen.getAll();
+    });
 
     function findProps(_:any, obj:any) {
         switch(getType(obj)) {
@@ -617,18 +614,18 @@ function mapTreeToEntity(tree:any, parent?:tEntity):tEntity {
 }
 
 function validateProperty(prop:string, values:string[]) {
-    if (prop === '/type/object/type') {
-        freebase.fetchTypeInfo(values, function(){}, function(invalidTypes:string[]) {
-            $.map(invalidTypes, warnUnknownType);
-        });
-    }
-    var propMetadata = freebase.getPropMetadata(prop);
-    if (propMetadata && propMetadata.expected_type && propMetadata.expected_type.id) {
-        var type = propMetadata.expected_type;
-        $.each(values, function(_:number, value:string) {
-            validateValueForType(value, type.id);
-        })
-    }
+  if (prop === '/type/object/type') {
+    freebase.fetchTypeInfo(values).fail((invalidTypes:string[]) => {
+      $.map(invalidTypes, warnUnknownType);
+    });
+  }
+  var propMetadata = freebase.getPropMetadata(prop);
+  if (propMetadata && propMetadata.expected_type && propMetadata.expected_type.id) {
+    var type = propMetadata.expected_type;
+    values.forEach((value:string) => {
+      validateValueForType(value, type.id);
+    });
+  }
 }
 
 /** @const */

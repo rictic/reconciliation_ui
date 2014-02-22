@@ -93,10 +93,11 @@ function showAmbiguousRowPrompt(ambiguousRecord:string[][], onAmbiguityResolved:
     $(".thingName", context).html(textValue(tree));
     var thingType = tree['/type/object/type'];
     if (thingType){
-        var thingTypeEl = $(".thingType", context);
-        freebase.getName(thingType[0],function(name){
-            thingTypeEl.html(name);
-        });
+      var thingTypeEl = $(".thingType", context);
+      freebase.getName(thingType[0]).then((name) => {
+        thingTypeEl.html(name);
+      });
+      thingTypeEl.html(thingType[0]);
     }
     $(".numThings", context).html(numThings + '');
 

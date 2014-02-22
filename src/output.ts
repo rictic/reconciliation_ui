@@ -492,31 +492,31 @@ function dealWithFailedKeyWrites(job:SuperFreeq.Job) {
         }
       }})
     }
-    freebase.mqlReads(queries, (key: string, result?:{mid:string}) => {
+    return freebase.mqlReads(queries, (key: string, result?:{mid:string}) => {
       if (!result) {
         return;
       }
       items[key].their_mid = result.mid;
-    }, () => {
-      var lines : string[] = [];
-      var badLines : string[] = [];
-      var keys = Object.keys(items);
-      politeEach(keys, (i: number, key: string) => {
-        var item = items[key];
-        if (!item.their_mid) {
-          badLines.push(encodeLineRaw([item.our_mid, ''], 2))
-        } else {
-          lines.push(encodeLineRaw([item.our_mid, item.their_mid], 2));
-        }
-      }, () => {
-        if (badLines.length > 0) {
-          lines = lines.concat(["", "Bad records follow:"]).concat(badLines);
-        }
-        if (lines.length == 0) {
-          return;
-        }
-        $('.failedKeyAssertions').show().find('textarea').val(lines.join('\n'));
-      });
+    })
+  }).then(() => {
+    var lines : string[] = [];
+    var badLines : string[] = [];
+    var keys = Object.keys(items);
+    return politeEach(keys, (i: number, key: string) => {
+      var item = items[key];
+      if (!item.their_mid) {
+        badLines.push(encodeLineRaw([item.our_mid, ''], 2))
+      } else {
+        lines.push(encodeLineRaw([item.our_mid, item.their_mid], 2));
+      }
+    }).then(() => {
+      if (badLines.length > 0) {
+        lines = lines.concat(["", "Bad records follow:"]).concat(badLines);
+      }
+      if (lines.length == 0) {
+        return;
+      }
+      $('.failedKeyAssertions').show().find('textarea').val(lines.join('\n'));
     });
   });
 }

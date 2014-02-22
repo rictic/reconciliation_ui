@@ -42,25 +42,25 @@ function initializeReconciliation():Q.Promise<{}> {
     });
 
     //populate queues and begin reconciliation
-    var progress = new WeightedMultiProgress<{}>(2);
+    var progress = new WeightedMultiProgress<{}>(3);
 
     progress.track(politeEach(rec_partition[0], function(_, unreconciledEntity) {
-        automaticQueue.push(unreconciledEntity);
-    }, function() {
-        progress.track(politeEach(rec_partition[1],function(_,reconciled_row){
-            reconciled_row['/rec_ui/rec_begun'] = true;
-            addReviewItem(reconciled_row, "previously");
-            addColumnRecCases(reconciled_row);
-        }, function() {
-            freebase.fetchTypeInfo(typesSeen.getAll(), function() {
-                $(".initialLoadingMessage").hide();
-                reconciliationBegun = true;
-                reconUndoStack = new UndoStack()
-                setupOutput();
-                progress.writeTo.resolve(null);
-            });
-        }));
-    }));
+      automaticQueue.push(unreconciledEntity);
+    })).then(function() {
+      return progress.track(politeEach(rec_partition[1],(_,reconciled_row) => {
+        reconciled_row['/rec_ui/rec_begun'] = true;
+        addReviewItem(reconciled_row, "previously");
+        addColumnRecCases(reconciled_row);
+      }));
+    }).then(() => {
+      return progress.track(freebase.fetchTypeInfo(typesSeen.getAll()))
+    }).then(function() {
+      $(".initialLoadingMessage").hide();
+      reconciliationBegun = true;
+      reconUndoStack = new UndoStack()
+      setupOutput();
+      progress.writeTo.resolve(null);
+    });
 
     return progress.writeTo.promise;
 }

@@ -72,7 +72,7 @@ function addReviewItem(entity:EntityLike, reconciliationMethod?:string) {
             $(".freebaseName", template).addClass("identicalMatch");
     }
     if (freebaseName) handleName(freebaseName);
-    else freebase.getName(entity.getID(), handleName);
+    else freebase.getName(entity.getID()).then(handleName);
 
     container.append(template);
 }
@@ -101,13 +101,13 @@ function makeInternalLink(content:JQuery, entity:tEntity) {
 }
 
 function addReviewRecGroup(recGroup:RecGroup, template:JQuery) {
-    var repEntity = recGroup.members[0];
-    $(".count", template).html(recGroup.members.length + "");
-    freebase.getName(recGroup.type, function(type_name:string) {
-        $(".type", template).html(type_name);
-    });
-    var name = $(".name", template).html(recGroup.name);
-    makeInternalLink(name, repEntity);
+  var repEntity = recGroup.members[0];
+  $(".count", template).html(recGroup.members.length + "");
+  freebase.getName(recGroup.type).then((type_name) => {
+    $(".type", template).html(type_name);
+  });
+  var name = $(".name", template).html(recGroup.name);
+  makeInternalLink(name, repEntity);
 }
 
 function addReviewEntity(entity:tEntity, template:JQuery) {

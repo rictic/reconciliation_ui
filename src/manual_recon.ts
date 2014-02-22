@@ -131,9 +131,10 @@ function renderInternalReconciliationDialog(entity:tEntity, template:JQuery) {
 
   var context = $(".internalReconciliationPrompt", template);
   $(".count", context).html(recGroup.members.length + "");
-  freebase.getName(recGroup.type, function(type_name:string) {
+  freebase.getName(recGroup.type).then((type_name) => {
     $(".type", context).html(type_name);
   });
+  $(".type", context).html(recGroup.type);
   $(".name", context).html(recGroup.name);
 
   //set up the mapping between the lable and the check box, so that you can click

@@ -47,19 +47,19 @@ if (window.location.hostname.match(/plunder|localhost/)) {
     preReconciledSpreadsheet += preReconciledContent;
   }
 
-  // node('script', {'src': 'lib/live.js'}).appendTo(document.body);
+  node('script', {'src': 'lib/live.js'}).appendTo(document.body);
   debugMode = true;
   setTimeout(function() {
-    $('#initialInput').val(preReconciledSpreadsheet);
-    // $('button')[0].click()
-    // setTimeout(function() {
-    //   $('button.continue').click();
-    //   setTimeout(function() {
+    // $('#initialInput').val(preReconciledSpreadsheet);
+    $('button')[0].click()
+    setTimeout(function() {
+      $('button.continue').click();
+      // setTimeout(function() {
     //     $('#tabs ul li a[href="#spreadsheetRender"]').click()
     //     setTimeout(function() {
     //       $('.displayTriples').click();
     //     }, 100);
-    //   }, 1000)
-    // }, 2500);
+      // }, 1000)
+    }, 2500);
   }, 400);
 }
