@@ -155,6 +155,7 @@ module SuperFreeq {
       }
 
       var defer = Q.defer<LoadTriplesResponse>();
+      var progress = new QuickProgress(defer, commands.length);
       politeEach(commands, (_:any, command:Action) => {
         // Track the variables we're uploading to this job, so that we can
         // later ask for them back.
@@ -195,7 +196,10 @@ module SuperFreeq {
             break;
           default: throw new Error("unknown tripleKind:" + tripleKind);
           }
-          doRequest(this.base_url + '/tasks', request).then(loadSome);
+          doRequest(this.base_url + '/tasks', request).then(function() {
+            progress.increment(batch.length);
+            loadSome();
+          });
         }
         loadSome();
       })
@@ -207,7 +211,10 @@ module SuperFreeq {
       var var_ids = this.vars.getAll();
       var result : SuperFreeq.IdMap = {};
       var BATCH_SIZE = 100;
+      var defer = Q.defer<IdMap>();
+      var progress = new QuickProgress(defer, var_ids.length);
 
+      var self = this;
       var getSome = function():Q.Promise<IdMap> {
         if (var_ids.length === 0) {
           return Q(result);
@@ -217,8 +224,9 @@ module SuperFreeq {
           batch.push(var_ids.shift());
         }
         var vars = batch.join(',').replace(/\$/g,'');
-        return doRequest<IdMap>(this.base_url + '/mids', 'vars=' + vars, 'GET').then(
+        return doRequest<IdMap>(self.base_url + '/mids', 'vars=' + vars, 'GET').then(
           (v:any):Q.Promise<IdMap> => {
+            progress.increment(batch.length);
             $.extend(result, v);
            // TODO(rictic): the <any> here should be unnecessary, need to figure
            //      out what's up.
@@ -226,7 +234,9 @@ module SuperFreeq {
             return d;
         });
       }
-      return getSome();
+      getSome().then((idMap) => defer.resolve(idMap), (error) => defer.reject(error));
+
+      return defer.promise;
     }
 
     getTasks(taskStatus:string,

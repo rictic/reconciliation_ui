@@ -39,26 +39,27 @@ var debugMode : boolean = false;
 
 if (window.location.hostname.match(/plunder|localhost/)) {
   var preReconciledHeaders = "/type/object/name\t/type/object/type\t/film/film/directed_by\tid\t/film/film/directed_by:id\n"
-  var preReconciledContent = "Stolen Kisses\t/film/film\tFrançois Truffaut\t/m/01s9qg\t/m/02x5h\nThe Stoned Age\t/film/film\tJames Melkonian\t/m/06s2j3\t/m/08tz_2\n"
-  var numberOfIterationsToDo = 1;
+  // var preReconciledContent = "Stolen Kisses\t/film/film\tFrançois Truffaut\t/m/01s9qg\t/m/02x5h\nThe Stoned Age\t/film/film\tJames Melkonian\t/m/06s2j3\t/m/08tz_2\n"
+  var preReconciledContent = "Stolen Kisses\t/film/film\tFrançois Truffaut\tNone\tNone\nThe Stoned Age\tNone\tJames Melkonian\tNone\tNone\n"
+  var numberOfIterationsToDo = 45;
   var preReconciledSpreadsheet = preReconciledHeaders;
   for (var i = 0; i < numberOfIterationsToDo; i++) {
     preReconciledSpreadsheet += preReconciledContent;
   }
 
   node('script', {'src': 'lib/live.js'}).appendTo(document.body);
-    debugMode = true;
+  debugMode = true;
+  setTimeout(function() {
+    $('#initialInput').val(preReconciledSpreadsheet);
+    // $('button')[0].click()
     setTimeout(function() {
-      $('#initialInput').val(preReconciledSpreadsheet);
-      // $('button')[0].click()
-    // setTimeout(function() {
-    //   $('button.continue').click();
-    //   setTimeout(function() {
-    //     $('#tabs ul li a[href="#spreadsheetRender"]').click()
-    //     setTimeout(function() {
-    //       $('.displayTriples').click();
-    //     }, 100);
-    //   }, 1000)
-    // }, 2500);
+      $('button.continue').click();
+      setTimeout(function() {
+        $('#tabs ul li a[href="#spreadsheetRender"]').click()
+        setTimeout(function() {
+          $('.displayTriples').click();
+        }, 100);
+      }, 1000)
+    }, 2500);
   }, 400);
 }

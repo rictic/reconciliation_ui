@@ -35,7 +35,8 @@ function onDisplayOutputScreen() {
     addTimeout(() => checkLogin(),0);
     addTimeout(() => displayOutput(),0);
     var progressBar = $('.renderingTriples .progress .progress-bar');
-    addTimeout(() => {prepareTriples().progress.addListener('progress', (p) =>{
+    progressBar.css('width', 0);
+    addTimeout(() => {prepareTriples().progress((p:number) =>{
       progressBar.css('width', p * 100 + '%');
     })}, 0);
 }
@@ -124,19 +125,17 @@ function renderSpreadsheet(onComplete:(val:string)=>void) {
 }
 
 
-function prepareTriples():Tracker<SuperFreeq.TripleLoadCommand[]> {
+function prepareTriples():Q.Promise<SuperFreeq.TripleLoadCommand[]> {
   $(".renderingTriples").show();
   $(".triplesRendered").hide();
   var assertNaked = !! $("#assert_naked_properties").attr('checked');
 
-  var progress = new WeightedMultiProgress('prepareTriples', 12);
-  var tracker = getSFTriples(entities, assertNaked);
-  progress.track(tracker.progress, 11);
-  var promise = tracker.promise.then(
-    function(triples:SuperFreeq.TripleLoadCommand[]) {
-      var subsubp = politeMap(triples, (trip)=> JSON.stringify(trip));
+  var progress = new WeightedMultiProgress<SuperFreeq.TripleLoadCommand[]>(12);
+  return progress.trackFinal(getSFTriples(entities, assertNaked), 11)
+    .then((triples) => {
+      var prom = progress.track(politeMap(triples, (trip)=> JSON.stringify(trip)));
 
-      subsubp.promise.then(function(encodedTriples:string[]) {
+      prom.then(function(encodedTriples:string[]) {
         var tripleString = encodedTriples.join("\n");
         $(".triplesDisplay").html(tripleString);
         $(".triple_count").html("" + encodedTriples.length);
@@ -145,21 +144,15 @@ function prepareTriples():Tracker<SuperFreeq.TripleLoadCommand[]> {
         $(".triplesRendered").show();
       });
 
-      progress.track(subsubp.progress);
-      return subsubp.promise.then(() => triples);
-    }
-  )
-  return {
-      progress:progress,
-      promise: promise
-  };
+      return prom.then(() => triples);
+    });
 }
 
 
 
 function getSFTriples(entities:tEntity[],
                       assertNakedProperties: boolean
-                     ):Tracker<SuperFreeq.TripleLoadCommand[]> {
+                     ):Q.Promise<SuperFreeq.TripleLoadCommand[]> {
   function tripToSfTrip(triple:OldFreeqTriple):SuperFreeq.TripleLoadCommand {
     var obj = triple.o;
 
@@ -213,24 +206,16 @@ function getSFTriples(entities:tEntity[],
     return objType || 'ID'
   }
 
-  var tracker = getTriples(entities, assertNakedProperties)
-  var multiProgress = new WeightedMultiProgress('getSFTriples', 2);
-  var promise = tracker.promise.then(function(triples) {
+  var progress = new WeightedMultiProgress<SuperFreeq.TripleLoadCommand[]>(2);
+  return progress.trackFinal(progress.track(getTriples(entities, assertNakedProperties)).then((triples) => {
     var results : SuperFreeq.TripleLoadCommand[] = [];
-    var innerTracker = politeEach(triples, function(_, triple) {
+    return progress.track(politeEach(triples, function(_, triple) {
       var sfTriple = tripToSfTrip(triple);
       if (sfTriple) {
         results.push(sfTriple);
       }
-    }, null, tripleGetterYielder);
-    multiProgress.track(innerTracker.progress);
-    return innerTracker.promise.then(() => results);
-  });
-  multiProgress.track(tracker.progress);
-  return {
-    progress: multiProgress,
-    promise: promise
-  };
+    }, null, tripleGetterYielder)).then(() => results);
+  }));
 }
 
 interface OldFreeqTriple {
@@ -241,7 +226,7 @@ interface OldFreeqTriple {
 
 var tripleGetterYielder : Yielder;
 function getTriples(entities:tEntity[],
-                    assertNakedProperties:boolean):Tracker<OldFreeqTriple[]> {
+                    assertNakedProperties:boolean):Q.Promise<OldFreeqTriple[]> {
     tripleGetterYielder = new Yielder();
     function hasValidID(entity:tEntity):boolean {
         var id = getID(entity);
@@ -319,7 +304,7 @@ function getTriples(entities:tEntity[],
     }
 
     var triples : OldFreeqTriple[] = [];
-    var tracker = politeEach(entities, function(_,subject) {
+    return politeEach(entities, function(_,subject) {
         if (!subject || !hasValidID(subject) || subject.isCVT())
             return;
 
@@ -391,10 +376,7 @@ function getTriples(entities:tEntity[],
                 triples.push({s:getID(subject),p:predicate,o:getID(object)});
             })
         });
-    }, null, tripleGetterYielder);
-    return {progress: tracker.progress, promise: tracker.promise.then(()=> {
-      return triples;
-    })};
+    }, null, tripleGetterYielder).then(() => triples);
 }
 
 var standardFreeq = "http://data.labs.freebase.com/freeq/spreadsheet/";
@@ -555,37 +537,48 @@ function doLoad() {
   $(".uploadToFreeQ").hide();
   $(".uploadForm .error").hide();
   $(".uploadSpinner").show();
-  SuperFreeq.createJob(name, graph, info_source).then(function(job:SuperFreeq.Job) {
-    prepareTriples().promise.then(function(triples) {
-      return job.load(triples, uploadAction).then(function() {
-        return job.start();
-      }).then(function() {
-        console.log("job started!")
-        $(".freeqLoad").show();
-        $(".freeqLoadInProgress").show();
-        $(".uploadSpinner").hide();
-        $(".peacock_link").attr("href",job.base_url);
-        $(".alternate_link").attr("href", "http://go/freeq-job?id=" + job.id);
-        return new FreeqMonitor(job).promise;
-      }).then(function() {
-        $(".freeqLoadInProgress").hide();
+  var uploadProgressBar = $(".uploadSpinner .progress-bar");
+  var progress = new WeightedMultiProgress<{}>(1 + 8 + 8 + 1);
+  progress.writeTo.promise.progress((pct:number) => {
+    uploadProgressBar.css('width', pct * 100 + '%');
+  })
+  var job : SuperFreeq.Job, triples : SuperFreeq.TripleLoadCommand[];
+  progress.track(SuperFreeq.createJob(name, graph, info_source))
+    .then(function(j:SuperFreeq.Job) {
+      job = j;
+      return progress.track(prepareTriples(), 8);
+    }).then(function(t) {
+      triples = t;
+      return progress.track(job.load(triples, uploadAction), 8).then(()=>triples);
+    }).then(function() {
+      return progress.trackFinal(job.start());
+    }).then(function() {
+      $(".freeqLoad").show();
+      $(".freeqLoadInProgress").show();
+      $(".uploadSpinner").hide();
+      $(".peacock_link").attr("href",job.base_url);
+      $(".alternate_link").attr("href", "http://go/freeq-job?id=" + job.id);
+      return new FreeqMonitor(job).promise;
+    }).then(function() {
+      $(".freeqLoadInProgress").hide();
 
-        if ($("input.graphport:checked").val() === "otg") {
-          job.getIdMapping().then((v:SuperFreeq.IdMap) => {
-            fillinIds(v);
-            $(".fetchingFreeqIds").hide();
-            $(".idsFetched").show();
-            displayOutput();
-            dealWithFailedKeyWrites(job);
-          });
-          $(".uploadToOTGComplete").show();
-        }
-        else {
-          $(".uploadToSandboxComplete").show();
-        }
-      });
+      if ($("input.graphport:checked").val() === "otg" || debugMode) {
+        var fillInIdsProgressBar = $('.fetchingFreeqIds .progress-bar');
+        job.getIdMapping().progress((pct:number) => {
+          fillInIdsProgressBar.css('width', pct * 100 + '%');
+        }).then((v:SuperFreeq.IdMap) => {
+          fillinIds(v);
+          $(".fetchingFreeqIds").hide();
+          $(".idsFetched").show();
+          displayOutput();
+          dealWithFailedKeyWrites(job);
+        });
+        $(".uploadToOTGComplete").show();
+      }
+      else {
+        $(".uploadToSandboxComplete").show();
+      }
     });
-  });
 }
 
 $(document).ready(function () {
