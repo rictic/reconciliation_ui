@@ -15,9 +15,9 @@ function isUnreconciled(entity:tEntity):boolean {
     return Arr.contains([undefined,null,""], entity.id);
 }
 
-function initializeReconciliation(onReady:()=>void) {
+function initializeReconciliation():Q.Promise<{}> {
     totalRecords = rows.length;
-    var rec_partition = Arr.partition(rows,isUnreconciled);
+    var rec_partition = Arr.partition(rows, isUnreconciled);
     //initialize queues and their event handlers
     automaticQueue = new EntityQueue();
     automaticQueue.addListener("changed", function() {
@@ -42,10 +42,12 @@ function initializeReconciliation(onReady:()=>void) {
     });
 
     //populate queues and begin reconciliation
-    politeEach(rec_partition[0], function(_, unreconciledEntity) {
+    var progress = new WeightedMultiProgress<{}>(2);
+
+    progress.track(politeEach(rec_partition[0], function(_, unreconciledEntity) {
         automaticQueue.push(unreconciledEntity);
     }, function() {
-        politeEach(rec_partition[1],function(_,reconciled_row){
+        progress.track(politeEach(rec_partition[1],function(_,reconciled_row){
             reconciled_row['/rec_ui/rec_begun'] = true;
             addReviewItem(reconciled_row, "previously");
             addColumnRecCases(reconciled_row);
@@ -55,10 +57,12 @@ function initializeReconciliation(onReady:()=>void) {
                 reconciliationBegun = true;
                 reconUndoStack = new UndoStack()
                 setupOutput();
-                onReady();
+                progress.writeTo.resolve(null);
             });
-        });
-    });
+        }));
+    }));
+
+    return progress.writeTo.promise;
 }
 
 function handleReconChoice(entity:tEntity, freebaseId:string) {

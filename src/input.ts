@@ -339,7 +339,7 @@ function recordsToEntities(records:string[][][], yielder:Yielder):Q.Promise<tEnt
     resetEntities();
     typesSeen = new PSet();
     return progress.track(treesToEntities(trees, yielder));
-  }));
+  }), 0);
 }
 
 /** @param {!Array.<!loader.tree>} trees

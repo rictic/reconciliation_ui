@@ -44,9 +44,24 @@ class WeightedMultiProgress<T> {
 
   track<U>(promise:Q.Promise<U>, weight=1):Q.Promise<U> {
     this.totalWeight += weight;
+    if (this.totalWeight > this.expectedTotalWeight) {
+      console.error('expected weight', this.expectedTotalWeight, 'got', this.totalWeight);
+    }
     var subProgress = {lastValue:0, weight:weight};
+    var index = this.progresses.length;
     this.progresses.push(subProgress);
+    var movedBackwards = false;
     promise.progress((pct:number) => {
+      if (pct < subProgress.lastValue) {
+        if (!movedBackwards) {
+          promise.then((result) => {
+            console.error('backwards moving progress resolved to ', result);
+          });
+        }
+        movedBackwards = true;
+        console.error('index ' + index + ' tried to move progress backwards');
+        return;
+      }
       subProgress.lastValue = pct;
       this.progressChanged();
     });

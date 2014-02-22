@@ -94,7 +94,12 @@
     <div id="spreadsheetReconcile" class="tab-pane container">
       <div class="manualQueueEmpty">
         <div class="initialLoadingMessage">
-          <h3>Loading, just a moment...</h3>
+          <h3>Loading</h3>
+          <div>
+            <div class="progress progress-thin">
+              <div class="progress-bar no-animate" style="width: 0%"></div>
+            </div>
+          </div>
         </div>
         <div class="nowReconciling gone">
           <h3>Everything's working fine automatically</h3>
@@ -216,6 +221,10 @@
 
       <h3>Your updated <span class='outputFormatText'>spreadsheet</span></h3>
       <textarea id="outputData" class='spreadsheet'></textarea><br>
+      <div class="spreadsheetRenderProgress progress progress-thin invisible">
+        <div class="progress-bar no-animate" style="width: 0%">
+        </div>
+      </div>
       <div class='form-group gone'>
         Format:
         <label for="spreadsheet_out">Spreadsheet</label>
@@ -272,8 +281,8 @@
                 <input type="radio" class='graphport' name="graphport" id='otg'
                      value="otg">
                 <div id='otg_upload_warning' class='gone warning'>
-                  Please upload to Sandbox first and ensure that the upload is as
-                  you expect before uploading to Freebase.com
+                  Please upload to Sandbox first and ensure that the upload is
+                  as you expect before uploading to Freebase.com
                 </div>
               </div>
               <div class='form-group radio-group' id='upload_kind_options'>
@@ -332,8 +341,10 @@
           </div>
 
           <div class="failedKeyAssertions gone">
-            Failed key assertions follow, upload them to the IRQ TSV tool. [[link goes here]]
-
+            Failed key assertions follow, upload them to
+            <a href='https://hume.google.com/turtlewax/#/tsv'>
+              the IRQ TSV tool.
+            </a>
             <textarea class="spreadsheet"></textarea>
           </div>
         </div>

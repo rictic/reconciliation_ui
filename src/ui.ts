@@ -169,10 +169,13 @@ function initializeTabs() {
     $("#tabs").show();
 }
 function continueToReconciliation() {
-    $("#gettingInput").remove();
-    initializeTabs();
-    addIdColumns();
-    initializeReconciliation(beginAutoReconciliation);
+  $("#gettingInput").remove();
+  initializeTabs();
+  addIdColumns();
+  var initialLoadProgress = $('.initialLoadingMessage .progress-bar')
+  initializeReconciliation().progress((pct:number) => {
+    initialLoadProgress.css('width', pct * 100 + '%');
+  }).then(beginAutoReconciliation);
 }
 var reconciliationBegun = false;
 var defaultMDOName = "Spreadsheet Upload about (kind of data)"

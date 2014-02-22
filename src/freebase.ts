@@ -126,7 +126,7 @@ module freebase {
     }
   }
 
-  var nameCache = {};
+  var nameCache = {"None": null, "None (merged)": null};
   /** Given an id and a callback, immediately calls the callback with the
       freebase name if it has been looked up before.
 
@@ -297,7 +297,7 @@ module freebase {
 
   export function getMid(id:string, callback:(mid:string)=>void) {
       callback(id);
-      if (id.match(/\/m\//)) {
+      if (id.match(/\/m\//) || id === 'None' || id == 'None (matched)') {
         return;
       }
       var envelope = {query:{"myId:id":id, "mid":null}}

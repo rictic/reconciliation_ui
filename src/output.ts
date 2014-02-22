@@ -113,15 +113,22 @@ function renderJSON(callback:(val:string)=>void) {
 
 var spreadsheetRendererYielder : Yielder;
 function renderSpreadsheet(onComplete:(val:string)=>void) {
-    var lines : string[] = [];
-    lines.push(encodeLine($.map(headerPaths, function(headerPath){return headerPath.toString()})));
-    spreadsheetRendererYielder = new Yielder();
-    politeEach(rows, function(idx, row) {
-        lines = lines.concat(encodeRow(row));
-    },
-    function() {
-        onComplete(lines.join("\n"));
-    }, spreadsheetRendererYielder);
+  var renderProgress = $('.spreadsheetRenderProgress .progress-bar');
+  renderProgress.css('width', 0);
+  $('.spreadsheetRenderProgress').removeClass('invisible')
+  var lines : string[] = [];
+  lines.push(encodeLine($.map(headerPaths, function(headerPath){return headerPath.toString()})));
+  spreadsheetRendererYielder = new Yielder();
+  politeEach(rows, function(idx, row) {
+    lines = lines.concat(encodeRow(row));
+  },
+  function() {
+    onComplete(lines.join("\n"));
+  }, spreadsheetRendererYielder).progress((pct:number) => {
+    renderProgress.css('width', pct * 100 + '%');
+  }).then(function() {
+    $('.spreadsheetRenderProgress').addClass('invisible');
+  });
 }
 
 
@@ -215,7 +222,7 @@ function getSFTriples(entities:tEntity[],
         results.push(sfTriple);
       }
     }, null, tripleGetterYielder)).then(() => results);
-  }));
+  }), 0);
 }
 
 interface OldFreeqTriple {
@@ -497,11 +504,10 @@ function dealWithFailedKeyWrites(job:SuperFreeq.Job) {
       politeEach(keys, (i: number, key: string) => {
         var item = items[key];
         if (!item.their_mid) {
-          badLines.push(encodeLineRaw([item.our_mid, '', item.failed_key], 3))
+          badLines.push(encodeLineRaw([item.our_mid, ''], 2))
         } else {
-          lines.push(encodeLineRaw([item.our_mid, item.their_mid, item.failed_key], 3));
+          lines.push(encodeLineRaw([item.our_mid, item.their_mid], 2));
         }
-
       }, () => {
         if (badLines.length > 0) {
           lines = lines.concat(["", "Bad records follow:"]).concat(badLines);

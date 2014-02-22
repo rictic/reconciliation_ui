@@ -367,3 +367,7 @@ tbody.middle-header {
 tbody.middle-header tr th {
     border-top: none !important;
 }
+
+.spreadsheetRenderProgress {
+    margin-top: -5px;
+}
